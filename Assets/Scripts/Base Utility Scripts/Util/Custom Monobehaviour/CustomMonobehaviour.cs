@@ -1,5 +1,3 @@
-using Managers;
-using Events;
 using UnityEngine;
 
 namespace Utility
@@ -9,18 +7,18 @@ namespace Utility
     /// </summary>
     public class CustomMonoBehaviour : MonoBehaviour
     {
-        protected BaseEventManager _eventManager;
-        protected BaseGameManager _gameManager;
+        protected EventManager _eventManager;
+        protected GameManager _gameManager;
 
         [Header("Debug Settings")]
         [SerializeField] private bool _debug;
 
         protected virtual void Awake()
         {
-            _gameManager = BaseGameManager.Instance;
+            _gameManager = GameManager.Instance;
             if (_gameManager == null) Debug.LogError($"GameManager is null!");
 
-            _eventManager = BaseEventManager.Instance;
+            _eventManager = EventManager.Instance;
             if (_eventManager == null) Debug.LogError($"EventManager is null!");
 
         }

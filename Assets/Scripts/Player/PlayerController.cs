@@ -1,6 +1,6 @@
+using Utility;
 using UnityEngine;
 
-public class PlayerController : MonoBehaviour
+public class PlayerController : CustomMonoBehaviour
 {
-
 }

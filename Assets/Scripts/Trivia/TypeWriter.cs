@@ -5,14 +5,13 @@ using Utility;
 
 public class TypeWriter : Singleton<TypeWriter>
 {
-    public void WriteText(string textToDisplay, TextMeshProUGUI textBox, float timeDelay = 0f)
+    public void WriteText(string textToDisplay, TextMeshProUGUI textBox, float timeDelay = .2f)
     {
         StartCoroutine(DelayedText(textToDisplay, textBox, timeDelay));
     }
 
-    private IEnumerator DelayedText(string textToDisplay, TextMeshProUGUI textBox, float timeDelay = 0f)
+    private IEnumerator DelayedText(string textToDisplay, TextMeshProUGUI textBox, float timeDelay = .2f)
     {
-        yield return new WaitForSecondsRealtime(5f);
         textBox.text = "";
         for (int i = 0; i < textToDisplay.Length; i++)
         {
@@ -20,6 +19,7 @@ public class TypeWriter : Singleton<TypeWriter>
             yield return new WaitForSecondsRealtime(timeDelay);
 
         }
+        _eventManager.OnQuestionFinished?.Invoke();
 
     }
 
