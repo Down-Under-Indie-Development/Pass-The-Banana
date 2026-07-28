@@ -9,9 +9,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 12f33e02331fbb74784bb3ced95dda6f, type: 3}
-  m_Name: Test Level
-  m_EditorClassIdentifier: Assembly-CSharp::LevelDataSO
-  <levelNumber>k__BackingField: 1
+  m_Script: {fileID: 11500000, guid: cc631af8ca0cf3f48b6ef856b9f44570, type: 3}
+  m_Name: Test Category
+  m_EditorClassIdentifier: Assembly-CSharp::CategorySO
+  <categoryName>k__BackingField: Test
   <questions>k__BackingField:
-  - {fileID: 11400000, guid: ec4c5f091e45c4d44bafab913b47cb31, type: 2}
+  - {fileID: 11400000, guid: 68f09cf2e484a874996f5f71ea46e13b, type: 2}

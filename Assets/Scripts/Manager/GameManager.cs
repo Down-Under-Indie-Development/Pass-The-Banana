@@ -6,13 +6,14 @@ using System.Collections;
 
 public class GameManager : Singleton<GameManager>
 {
-    [SerializeField] private List<LevelDataSO> levelData;
+    [SerializeField] private List<CategorySO> levelData;
 
+    #region TV Screen
     [Header("TV Screen")]
     [SerializeField] private TextMeshProUGUI tvScreen;
     [SerializeField] private GameObject answerPrefab;
     [SerializeField] private Transform answerParent;
-
+    #endregion
 
 
     #region Events
