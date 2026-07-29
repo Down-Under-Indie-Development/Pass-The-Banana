@@ -11,7 +11,7 @@ namespace Utility
         protected GameManager _gameManager;
 
         [Header("Debug Settings")]
-        [SerializeField] private bool _debug;
+        [SerializeField] protected bool _debug;
 
         protected virtual void Awake()
         {

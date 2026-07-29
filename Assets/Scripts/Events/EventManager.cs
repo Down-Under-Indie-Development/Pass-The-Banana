@@ -11,4 +11,16 @@ public class EventManager : Singleton<EventManager>
 
     public NoArgs OnQuestionFinished;
 
+    #region Countdown Events
+    public NoArgs OnCountdownStarted;
+    public NoArgs OnCountdownFinished;
+
+    #endregion
+
+    #region Game Events
+    public NoArgs OnGameStart;
+    public NoArgs OnGameEnd;
+
+    #endregion
+
 }
