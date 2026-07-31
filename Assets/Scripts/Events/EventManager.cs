@@ -23,4 +23,10 @@ public class EventManager : Singleton<EventManager>
 
     #endregion
 
+    #region Main Menu Events
+    public NoArgs OnHostGame;
+    public NoArgs OnJoinGame;
+    public NoArgs OnQuitGame;
+    #endregion
+
 }
