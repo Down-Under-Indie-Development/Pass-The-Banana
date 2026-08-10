@@ -38,7 +38,7 @@ namespace Utility
             OnInstanceCreated();
         }
 
-        protected void OnDestroy()
+        private void OnDestroy()
         {
             if (instance == this) instance = null;
         }

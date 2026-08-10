@@ -1,5 +1,6 @@
 using Utility;
 using UnityEngine;
+using Steamworks.Data;
 
 public class EventManager : Singleton<EventManager>
 {
@@ -25,12 +26,14 @@ public class EventManager : Singleton<EventManager>
 
     #region Main Menu Events
     public NoArgs OnHostGame;
+    public TwoArgs<int, bool> OnCreateLobby;
     public NoArgs OnJoinGame;
     public NoArgs OnQuitGame;
     #endregion
 
     #region Steam Events
     public NoArgs OnConnectedToSteam;
+    public OneArg<Lobby> OnLobbyCreated;
     #endregion
 
 }
