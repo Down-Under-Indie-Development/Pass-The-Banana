@@ -42,7 +42,7 @@ namespace PTB.Menus
         public void CreateLobby()
         {
             if (_hostGamePlayerCountSlider == null) { Debug.LogError($"Slider is null!"); return; }
-            _eventManager.OnCreateLobby?.Invoke((int)_hostGamePlayerCountSlider.value, true);
+            _eventManager.OnCreateLobby?.Invoke((int)_hostGamePlayerCountSlider.value);
 
         }
 

@@ -26,7 +26,7 @@ public class EventManager : Singleton<EventManager>
 
     #region Main Menu Events
     public NoArgs OnHostGame;
-    public TwoArgs<int, bool> OnCreateLobby;
+    public OneArg<int> OnCreateLobby;
     public NoArgs OnJoinGame;
     public NoArgs OnQuitGame;
     #endregion
