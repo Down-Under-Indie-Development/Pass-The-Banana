@@ -10,7 +10,7 @@ using Utility;
 
 namespace PTB.Networking
 {
-    public class LobbyManager : Singleton<LobbyManager>
+    public class LobbyManager : PersistentSingleton<LobbyManager>
     {
         [Header("Steam Settings")]
         [SerializeField] private uint _appId = 480;
