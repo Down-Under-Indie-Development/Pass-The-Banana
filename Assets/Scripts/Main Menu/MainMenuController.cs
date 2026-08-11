@@ -30,7 +30,7 @@ namespace PTB.Menus
         }
 
         #region Menus
-        private void HostGame()
+        public void HostGame()
         {
             if (_debug) SceneManager.LoadScene("Test Scene");
             _eventManager.OnHostGame?.Invoke();
@@ -46,7 +46,7 @@ namespace PTB.Menus
 
         }
 
-        private void JoinGame()
+        public void JoinGame()
         {
             _eventManager.OnJoinGame();
             currentMenuState = MenuState.JoinGame;
@@ -54,7 +54,7 @@ namespace PTB.Menus
 
         }
 
-        private void Options()
+        public void Options()
         {
             currentMenuState = MenuState.Options;
             Debug.LogWarning($"Not implemented!");

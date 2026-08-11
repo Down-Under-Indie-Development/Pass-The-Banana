@@ -12,6 +12,9 @@ namespace PTB.Networking
 {
     public class LobbyManager : Singleton<LobbyManager>
     {
+        [Header("Steam Settings")]
+        [SerializeField] private uint _appId = 480;
+
         private Lobby? currentLobby;
         private FacepunchTransport _networkTransport = null;
         private NetworkManager _networkManager;
@@ -62,6 +65,18 @@ namespace PTB.Networking
 
         private void Start()
         {
+            _networkTransport = GetComponent<FacepunchTransport>();
+            _networkManager = GetComponent<NetworkManager>();
+            EstablishSteamConnection();
+
+        }
+
+        private void EstablishSteamConnection()
+        {
+            _networkTransport.steamAppId = _appId;
+
+            SteamManager.Instance.EstablishSteamConnection();
+
             if (!SteamClient.IsValid)
             {
                 Debug.LogWarning($"Not connected to steam, disabling {name}");
@@ -70,8 +85,8 @@ namespace PTB.Networking
 
             }
 
-            _networkTransport.GetComponent<FacepunchTransport>();
-            _networkManager = NetworkManager.Singleton;
+            string connectionStatus = SteamClient.IsValid ? $"Connected to steam! | {SteamClient.Name} ({SteamClient.AppId})" : "Connection failed";
+            Debug.Log($"{connectionStatus}");
 
         }
 
@@ -157,7 +172,10 @@ namespace PTB.Networking
             }
 
             _networkManager.Shutdown();
-            Debug.Log($"Disconnected");
+            SteamClient.Shutdown();
+
+            Debug.Log($"Connection terminated successfully!");
+
         }
         #endregion
 

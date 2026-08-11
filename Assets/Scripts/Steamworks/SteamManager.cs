@@ -6,7 +6,7 @@ namespace Steamworks
     public class SteamManager : PersistentSingleton<SteamManager>
     {
         [Header("Steam Settings")]
-        [SerializeField] private uint _appID = 480;
+        [field: SerializeField] public uint appID { get; private set; } = 480;
         public static bool connectedToSteam => SteamClient.IsValid;
 
         // INFO: Connect to steam
@@ -30,7 +30,7 @@ namespace Steamworks
 
             try
             {
-                SteamClient.Init(_appID);
+                SteamClient.Init(appID);
                 string connectionStatus = connectedToSteam ? $"Connected to steam! | {SteamClient.Name} ({SteamClient.AppId})" : "Connection failed";
                 Debug.Log($"{connectionStatus}");
 
