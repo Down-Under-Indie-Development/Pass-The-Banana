@@ -31,13 +31,13 @@ namespace PTB.Networking
             SteamMatchmaking.OnLobbyCreated += OnLobbyCreated;
             SteamMatchmaking.OnLobbyMemberJoined += OnLobbyMemberJoined;
             SteamMatchmaking.OnLobbyEntered += OnLobbyEntered;
+            SteamMatchmaking.OnLobbyMemberLeave += OnLobbyMemberLeave;
+            SteamMatchmaking.OnLobbyMemberDisconnected += OnLobbyMemberDisconnected;
 
             // INFO: Client
             SteamMatchmaking.OnLobbyInvite += OnLobbyInvite;
             SteamFriends.OnGameLobbyJoinRequested += OnGameLobbyJoinRequested;
             SteamFriends.OnGameRichPresenceJoinRequested += OnGameRichPresenceJoinRequested;
-
-
 
         }
 
@@ -48,6 +48,8 @@ namespace PTB.Networking
             SteamMatchmaking.OnLobbyCreated -= OnLobbyCreated;
             SteamMatchmaking.OnLobbyMemberJoined -= OnLobbyMemberJoined;
             SteamMatchmaking.OnLobbyEntered -= OnLobbyEntered;
+            SteamMatchmaking.OnLobbyMemberLeave -= OnLobbyMemberLeave;
+            SteamMatchmaking.OnLobbyMemberDisconnected -= OnLobbyMemberDisconnected;
 
             // INFO: Client
             SteamMatchmaking.OnLobbyInvite -= OnLobbyInvite;
@@ -87,6 +89,7 @@ namespace PTB.Networking
         private async void StartSteamServer(int playerCount)
         {
             _eventManager.OnStartHost?.Invoke();
+            if (currentLobby != null) { Debug.LogWarning($"Lobby is already created!"); Test(); return; }
 
             Debug.Log($"[HOST] Lobby request received creating lobby!");
             Debug.Log($"Creating lobby for {playerCount} player(s)");
@@ -102,6 +105,7 @@ namespace PTB.Networking
             if (result != Result.OK) { Debug.LogWarning($"Error creating lobby!"); return; }
 
             lobby.SetJoinable(true);
+            lobby.SetPrivate();
             lobby.SetGameServer(lobby.Owner.Id);
             Debug.Log($"Lobby created! | {lobby.Owner.Name}");
 
@@ -119,11 +123,13 @@ namespace PTB.Networking
         #endregion
 
         #region  Client
+        #region Start Client
         public void StartUnityClient(SteamId steamId)
         {
             _networkTransport.targetSteamId = steamId;
             _eventManager.OnStartClient?.Invoke();
         }
+        #endregion
 
         #region Invited to lobby
         private void OnLobbyInvite(Friend friend, Lobby lobby)
@@ -156,6 +162,7 @@ namespace PTB.Networking
         private void OnLobbyEntered(Lobby lobby)
         {
             if (_networkHelper.networkManager.IsHost) return;
+            currentLobby = lobby;
             Debug.Log($"You entered {lobby.Owner.Name}'s lobby");
             StartUnityClient(lobby.Owner.Id);
 
@@ -163,10 +170,30 @@ namespace PTB.Networking
         #endregion
 
         #region Shared
-        public void Disconnected()
+        #region Member Leaves/Disconnects
+        private void OnLobbyMemberLeave(Lobby lobby, Friend friend)
         {
-            currentLobby?.Leave();
+            Debug.Log($"{friend.Name} left!");
+            Disconnect();
+            if (friend.Id == lobby.Owner.Id || _networkHelper.networkManager.IsHost) _eventManager.OnHostDisconnect?.Invoke();
+
+        }
+
+        private void OnLobbyMemberDisconnected(Lobby lobby, Friend friend)
+        {
+            Debug.Log($"{friend.Name} disconnected!");
+            Disconnect();
+            if (friend.Id != lobby.Owner.Id || !_networkHelper.networkManager.IsHost) return;
+            _eventManager.OnHostDisconnect?.Invoke();
+
+        }
+        #endregion
+
+        public void Disconnect()
+        {
+            if (!SteamManager.Instance.connectedToSteam) return;
             _eventManager.OnClientDisconnect?.Invoke();
+            currentLobby?.Leave();
 
         }
         #endregion
@@ -176,7 +203,8 @@ namespace PTB.Networking
 
         private void OnApplicationQuit()
         {
-            Disconnected();
+            Disconnect();
+
         }
 
         #region Testing

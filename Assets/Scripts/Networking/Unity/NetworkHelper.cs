@@ -1,5 +1,7 @@
 using Unity.Netcode;
+using Unity.VectorGraphics;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Utility;
 
 /// <summary>
@@ -15,14 +17,16 @@ public class NetworkHelper : PersistentSingleton<NetworkHelper>
     {
         _eventManager.OnStartHost += OnStartHost;
         _eventManager.OnStartClient += OnStartClient;
-        _eventManager.OnClientDisconnect += Disconnected;
+        _eventManager.OnClientDisconnect += Disconnect;
+        _eventManager.OnHostDisconnect += OnHostDisconnect;
 
     }
 
     private void OnDisable()
     {
-        _eventManager.OnClientDisconnect -= Disconnected;
+        _eventManager.OnClientDisconnect -= Disconnect;
         _eventManager.OnStartClient -= OnStartClient;
+        _eventManager.OnHostDisconnect -= OnHostDisconnect;
 
         if (networkManager == null) return;
         networkManager.OnClientConnectedCallback -= OnClientConnected;
@@ -56,7 +60,7 @@ public class NetworkHelper : PersistentSingleton<NetworkHelper>
     #endregion
 
     #region Shared
-    protected virtual void Disconnected()
+    protected virtual void Disconnect()
     {
         if (networkManager == null) return;
         if (!networkManager.IsHost)
@@ -66,6 +70,7 @@ public class NetworkHelper : PersistentSingleton<NetworkHelper>
         }
 
         networkManager.Shutdown();
+
     }
 
     #endregion
@@ -81,6 +86,13 @@ public class NetworkHelper : PersistentSingleton<NetworkHelper>
         if (!networkManager.StartHost()) return;
         Debug.Log($"Host has started");
 
+    }
+
+    protected virtual void OnHostDisconnect()
+    {
+        Debug.LogWarning($"The host has disconnected closing server");
+        SceneManager.LoadScene(0);
+        Disconnect();
     }
     #endregion
 

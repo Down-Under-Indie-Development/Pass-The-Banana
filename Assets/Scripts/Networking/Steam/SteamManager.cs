@@ -7,7 +7,7 @@ namespace Steamworks
     {
         [Header("Steam Settings")]
         [field: SerializeField] public uint appID { get; private set; } = 480;
-        public static bool connectedToSteam => SteamClient.IsValid;
+        public bool connectedToSteam => SteamClient.IsValid;
 
         // INFO: Connect to steam
         protected override void Awake()
@@ -55,6 +55,7 @@ namespace Steamworks
         public void TerminateSteamConnection()
         {
             if (!connectedToSteam) return;
+
             try
             {
                 SteamClient.Shutdown();

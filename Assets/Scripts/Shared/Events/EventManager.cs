@@ -38,6 +38,7 @@ public class EventManager : Singleton<EventManager>
     public OneArg<Lobby> OnLobbyCreated;
     public NoArgs OnClientDisconnect;
     public NoArgs OnClientConnect;
+    public NoArgs OnHostDisconnect;
     public NoArgs OnStartHost;
     public NoArgs OnStartClient;
 

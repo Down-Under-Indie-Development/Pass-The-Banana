@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using Steamworks;
 using UnityEngine.UI;
+using PTB.Networking;
 // using Unity.VisualScripting;
 
 namespace PTB.Menus
@@ -79,6 +80,7 @@ namespace PTB.Menus
             {
                 case MenuState.HostGame:
                     HandleMenuSwitching(_hostGameMenu, MenuState.MainMenu);
+                    SteamLobbyManager.Instance.Disconnect();
                     break;
             }
 
