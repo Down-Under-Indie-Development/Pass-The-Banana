@@ -94,6 +94,7 @@ namespace PTB.Networking
             Debug.Log($"[HOST] Lobby request received creating lobby!");
             Debug.Log($"Creating lobby for {playerCount} player(s)");
             currentLobby = await SteamMatchmaking.CreateLobbyAsync(playerCount);
+            SteamFriends.SetRichPresence("connect", currentLobby.Value.Id.ToString());
             // if (!friendsOnly) currentLobby?.SetPublic();
             if (_debug) Test();
 
@@ -192,6 +193,7 @@ namespace PTB.Networking
         public void Disconnect()
         {
             if (!SteamManager.Instance.connectedToSteam) return;
+            SteamFriends.SetRichPresence("connect", null);
             _eventManager.OnClientDisconnect?.Invoke();
             currentLobby?.Leave();
 

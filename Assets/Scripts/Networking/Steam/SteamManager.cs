@@ -32,10 +32,10 @@ namespace Steamworks
             try
             {
                 SteamClient.Init(appID);
-                string connectionStatus = connectedToSteam ? $"Connected to steam! | {SteamClient.Name} ({SteamClient.AppId})" : "Connection failed";
-                Debug.Log($"{connectionStatus}");
+                bool success = connectedToSteam;
+                Debug.Log(success ? $"Connected to steam! | {SteamClient.Name} ({SteamClient.AppId})" : "Connection failed");
 
-                _eventManager.OnConnectedToSteam?.Invoke();
+                if (success) _eventManager.OnConnectedToSteam?.Invoke();
 
 
             }
@@ -71,7 +71,6 @@ namespace Steamworks
 
         // INFO: Ensure correct termination
         private void OnDestroy() => TerminateSteamConnection();
-        private void OnDisable() => TerminateSteamConnection();
         private void OnApplicationQuit() => TerminateSteamConnection();
         #endregion
 
