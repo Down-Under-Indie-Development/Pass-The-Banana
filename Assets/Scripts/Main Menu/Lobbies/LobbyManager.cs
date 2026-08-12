@@ -20,7 +20,7 @@ namespace PTB.Networking
         private NetworkManager _networkManager;
 
         [Header("Testing")]
-        [SerializeField] private List<string> _devNames = new();
+        [SerializeField] private List<string> _devSteamId = new();
 
         #region Events
         private void OnEnable()
@@ -229,9 +229,11 @@ namespace PTB.Networking
         #region Testing
         private void Test()
         {
+            if (!_debug) return;
+
             foreach (Friend friend in SteamFriends.GetFriends())
             {
-                if (!_devNames.Contains(friend.Name)) continue;
+                if (!_devSteamId.Contains(friend.Id.ToString())) continue;
                 friend.InviteToGame(currentLobby.Value.Id.ToString());
                 friend.SendMessage("This should work, accept it plz");
                 // friend.SendMessage($"Hey I created another lobby, {lobbyID} (Don't use this code i'm still testing).");

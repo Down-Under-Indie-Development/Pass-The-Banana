@@ -1286,10 +1286,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1c46b3a7e9a8bb24c9e97b2f4ba0fa21, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PTB.Networking.LobbyManager
-  _debug: 0
+  _debug: 1
   _appId: 480
-  _devNames:
-  - Expresso Machine
+  _devSteamId:
+  - 76561198075835864
 --- !u!4 &1148045442
 Transform:
   m_ObjectHideFlags: 0
