@@ -59,7 +59,7 @@ namespace Steamworks
             try
             {
                 SteamClient.Shutdown();
-                if (!connectedToSteam) Debug.Log($"Connection terminated successfully!");
+                if (!connectedToSteam) Debug.Log($"<color=green>Connection terminated successfully!</color>");
             }
             catch (System.Exception e)
             {
