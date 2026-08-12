@@ -5,11 +5,12 @@ using TMPro;
 using System.Collections;
 using HealthSystem;
 using PTB.Client.Player;
+using UnityEngine.SceneManagement;
 
 public class GameManager : Singleton<GameManager>
 {
     [SerializeField] private List<CategorySO> _categories;
-    [SerializeField] private PlayerController _playerWithBanana;
+    [SerializeField] private PlayerNetworkedController _playerWithBanana;
 
     #region Events
     private void OnEnable()
@@ -40,6 +41,24 @@ public class GameManager : Singleton<GameManager>
     private void Test()
     {
         _playerWithBanana?.GetComponent<Health>().Die();
+
+    }
+
+    private void Update()
+    {
+        if (NetworkHelper.Instance.networkManager.ConnectedClients.Count < 2) return;
+        ChangeScene();
+
+    }
+
+    private bool changed = false;
+    private void ChangeScene()
+    {
+        if (changed) return;
+        changed = true;
+
+        SceneManager.LoadScene(1);
+
 
     }
 

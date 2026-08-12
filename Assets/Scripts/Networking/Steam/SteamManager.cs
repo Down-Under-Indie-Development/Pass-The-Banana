@@ -23,7 +23,8 @@ namespace Steamworks
         }
 
         #region Steam Connection
-        // INFO: Force the script to spawn
+        #region Establish Connection
+        // INFO: Establish connection to steam servers
         public bool EstablishSteamConnection()
         {
             if (connectedToSteam) return true; // INFO: Prevent calling more than once
@@ -47,7 +48,9 @@ namespace Steamworks
             return true;
 
         }
+        #endregion
 
+        #region Terminate Connection
         // INFO: Disconnect from steam
         public void TerminateSteamConnection()
         {
@@ -69,6 +72,7 @@ namespace Steamworks
         private void OnDestroy() => TerminateSteamConnection();
         private void OnDisable() => TerminateSteamConnection();
         private void OnApplicationQuit() => TerminateSteamConnection();
+        #endregion
 
     }
 }

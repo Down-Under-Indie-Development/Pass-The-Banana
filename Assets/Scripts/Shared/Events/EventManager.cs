@@ -26,14 +26,26 @@ public class EventManager : Singleton<EventManager>
 
     #region Main Menu Events
     public NoArgs OnHostGame;
-    public OneArg<int> OnCreateLobby;
+    public OneArg<int> OnCreateLobbyRequest;
     public NoArgs OnJoinGame;
     public NoArgs OnQuitGame;
     #endregion
 
-    #region Steam Events
+    #region Network Events
+
+    #region Steam
     public NoArgs OnConnectedToSteam;
     public OneArg<Lobby> OnLobbyCreated;
+    public NoArgs OnClientDisconnect;
+    public NoArgs OnClientConnect;
+    public NoArgs OnStartHost;
+    public NoArgs OnStartClient;
+
+    #endregion
+
+    #region Unity
+    #endregion
+
     #endregion
 
 }

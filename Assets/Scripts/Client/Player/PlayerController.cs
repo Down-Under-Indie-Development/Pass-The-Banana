@@ -1,9 +1,10 @@
 using Utility;
 using UnityEngine;
+using Unity.Netcode;
 
 namespace PTB.Client.Player
 {
-    public class PlayerController : MonoBehaviour
+    public class PlayerNetworkedController : NetworkBehaviour
     {
 
     }

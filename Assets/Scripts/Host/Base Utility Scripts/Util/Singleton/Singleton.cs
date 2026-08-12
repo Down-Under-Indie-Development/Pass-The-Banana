@@ -8,7 +8,7 @@ namespace Utility
 {
     public abstract class Singleton<T> : CustomMonoBehaviour where T : MonoBehaviour
     {
-        protected static T instance;
+        private static T instance;
 
         // INFO: Set the instance
         public static T Instance
