@@ -46,8 +46,8 @@ public class GameManager : Singleton<GameManager>
 
     private void Update()
     {
-        if (NetworkHelper.Instance.networkManager.ConnectedClients.Count < 2) return;
-        ChangeScene();
+        // if (NetworkHelper.Instance.networkManager.ConnectedClients.Count < 2 || NetworkHelper.Instance.networkManager == null) return;
+        // ChangeScene();
 
     }
 

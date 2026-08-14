@@ -13,7 +13,7 @@ namespace Steamworks
         protected override void Awake()
         {
             base.Awake();
-            EstablishSteamConnection();
+            EstablishClientSteamConnection();
 
         }
 
@@ -25,7 +25,7 @@ namespace Steamworks
         #region Steam Connection
         #region Establish Connection
         // INFO: Establish connection to steam servers
-        public bool EstablishSteamConnection()
+        public bool EstablishClientSteamConnection()
         {
             if (connectedToSteam) return true; // INFO: Prevent calling more than once
 

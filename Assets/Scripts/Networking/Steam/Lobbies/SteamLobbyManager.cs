@@ -15,10 +15,10 @@ namespace PTB.Networking
         [Header("Steam Settings")]
         [SerializeField] private uint _appId = 480;
 
-        private Lobby? currentLobby;
+        public Lobby? currentLobby { get; private set; }
         private FacepunchTransport _networkTransport;
-        private NetworkHelper _networkHelper;
-
+        private NetworkHelper _networkHelper => NetworkHelper.Instance;
+        private SteamManager _steamManager => SteamManager.Instance;
 
         [Header("Testing")]
         [SerializeField] private List<string> _devSteamId = new();
@@ -60,47 +60,40 @@ namespace PTB.Networking
 
         #endregion
 
-        private void Start()
+        protected override void Awake()
         {
+            base.Awake();
             _networkTransport = GetComponent<FacepunchTransport>();
-            _networkHelper = NetworkHelper.Instance;
-            EstablishSteamConnection();
+            EstablishUnitySteamConnection();
 
         }
 
-        private void EstablishSteamConnection()
+        private void EstablishUnitySteamConnection()
         {
+            _steamManager.EstablishClientSteamConnection();
+            if (SteamClient.IsValid) return;
             _networkTransport.steamAppId = _appId;
 
-            SteamManager.Instance.EstablishSteamConnection();
-
-            if (!SteamClient.IsValid)
-            {
-                Debug.LogWarning($"Not connected to steam, disabling {name}");
-                gameObject.SetActive(false);
-                return;
-
-            }
+            // INFO: Not Connected
+            Debug.LogWarning($"Not connected to steam, disabling {name}");
+            gameObject.SetActive(false);
 
         }
 
+        // INFO: DO NOT EDIT!
         #region Steamworks
-        #region Host
+        #region Create Server
         private async void StartSteamServer(int playerCount)
         {
-            _eventManager.OnStartHost?.Invoke();
-            if (currentLobby != null) { Debug.LogWarning($"Lobby is already created!"); Test(); return; }
+            if (currentLobby != null) { Debug.LogWarning($"Lobby is already created!"); return; }
 
-            Debug.Log($"[HOST] Lobby request received creating lobby!");
+            Debug.Log($"<color=orange>[SERVER]</color> Lobby request received creating lobby!");
             Debug.Log($"Creating lobby for {playerCount} player(s)");
-            currentLobby = await SteamMatchmaking.CreateLobbyAsync(playerCount);
-            SteamFriends.SetRichPresence("connect", currentLobby.Value.Id.ToString());
-            // if (!friendsOnly) currentLobby?.SetPublic();
-            if (_debug) Test();
+            await SteamMatchmaking.CreateLobbyAsync(playerCount);
+            _eventManager.OnStartHost?.Invoke();
 
         }
 
-        #region Create Lobby
         private void OnLobbyCreated(Result result, Lobby lobby)
         {
             if (result != Result.OK) { Debug.LogWarning($"Error creating lobby!"); return; }
@@ -108,31 +101,15 @@ namespace PTB.Networking
             lobby.SetJoinable(true);
             lobby.SetPrivate();
             lobby.SetGameServer(lobby.Owner.Id);
+            currentLobby = lobby;
+
             Debug.Log($"Lobby created! | {lobby.Owner.Name}");
 
         }
-        #endregion
-
-        #region Join Lobby
-        private void OnLobbyMemberJoined(Lobby lobby, Friend friend)
-        {
-            Debug.Log($"{friend.Name} has joined!");
-
-        }
 
         #endregion
-        #endregion
 
-        #region  Client
-        #region Start Client
-        public void StartUnityClient(SteamId steamId)
-        {
-            _networkTransport.targetSteamId = steamId;
-            _eventManager.OnStartClient?.Invoke();
-        }
-        #endregion
-
-        #region Invited to lobby
+        #region Invite Player
         private void OnLobbyInvite(Friend friend, Lobby lobby)
         {
             Debug.Log($"{friend.Name} was invited to {lobby.Id}");
@@ -156,26 +133,35 @@ namespace PTB.Networking
             currentLobby = joinedLobby;
 
         }
-
         #endregion
 
-        #region Lobby Entered 
+        #region Player Joining/Joined
+        private void OnLobbyMemberJoined(Lobby lobby, Friend friend)
+        {
+            Debug.Log($"{friend.Name} is joining!");
+            if (_debug && !_devSteamId.Contains(friend.Id.ToString())) DisconnectPlayer(friend);
+
+        }
+
         private void OnLobbyEntered(Lobby lobby)
         {
-            if (_networkHelper.networkManager.IsHost) return;
             currentLobby = lobby;
+            if (_networkHelper.networkManager.IsHost) { OnSteamHostLobbyEnter(); return; }
+            OnClientEnterLobby(lobby);
+
+            // INFO: Client
             Debug.Log($"You entered {lobby.Owner.Name}'s lobby");
             StartUnityClient(lobby.Owner.Id);
+
 
         }
         #endregion
 
-        #region Shared
-        #region Member Leaves/Disconnects
+        #region Player Left/Disconnected
         private void OnLobbyMemberLeave(Lobby lobby, Friend friend)
         {
             Debug.Log($"{friend.Name} left!");
-            Disconnect();
+            DisconnectPlayer(friend);
             if (friend.Id == lobby.Owner.Id || _networkHelper.networkManager.IsHost) _eventManager.OnHostDisconnect?.Invoke();
 
         }
@@ -183,50 +169,44 @@ namespace PTB.Networking
         private void OnLobbyMemberDisconnected(Lobby lobby, Friend friend)
         {
             Debug.Log($"{friend.Name} disconnected!");
-            Disconnect();
-            if (friend.Id != lobby.Owner.Id || !_networkHelper.networkManager.IsHost) return;
-            _eventManager.OnHostDisconnect?.Invoke();
+            DisconnectPlayer(friend);
+
+
+        }
+        #endregion
+        #endregion
+
+        #region Host
+        protected virtual void OnSteamHostLobbyEnter()
+        {
 
         }
         #endregion
 
-        public void Disconnect()
+        #region Client
+        private void StartUnityClient(SteamId steamId)
+        {
+            _networkTransport.targetSteamId = steamId;
+            _eventManager.OnStartClient?.Invoke();
+
+        }
+
+        protected virtual void OnClientEnterLobby(Lobby lobby)
+        {
+            SteamFriends.SetRichPresence("connect", currentLobby.Value.Id.ToString());
+        }
+        #endregion
+
+
+        public virtual void DisconnectPlayer(Friend friend = default)
         {
             if (!SteamManager.Instance.connectedToSteam) return;
             SteamFriends.SetRichPresence("connect", null);
             _eventManager.OnClientDisconnect?.Invoke();
             currentLobby?.Leave();
+            if (friend.Id == currentLobby.Value.Owner.Id || _networkHelper.networkManager.IsHost) _eventManager.OnHostDisconnect?.Invoke();
 
         }
-        #endregion
-
-        #endregion
-        #endregion
-
-        private void OnApplicationQuit()
-        {
-            Disconnect();
-
-        }
-
-        #region Testing
-        private void Test()
-        {
-            if (!_debug) return;
-
-            foreach (Friend friend in SteamFriends.GetFriends())
-            {
-                if (!_devSteamId.Contains(friend.Id.ToString())) continue;
-                friend.InviteToGame(currentLobby.Value.Id.ToString());
-                friend.SendMessage("This should work, accept it plz");
-                // friend.SendMessage($"Hey I created another lobby, {lobbyID} (Don't use this code i'm still testing).");
-                // Debug.Log($"{friend.Name}");
-
-            }
-
-        }
-        #endregion
-
 
     }
 }

@@ -10,7 +10,7 @@ using Utility;
 public class NetworkHelper : PersistentSingleton<NetworkHelper>
 {
 
-    public NetworkManager networkManager { get; private set; }
+    public NetworkManager networkManager => NetworkManager.Singleton;
 
     #region Events
     private void OnEnable()
@@ -34,13 +34,6 @@ public class NetworkHelper : PersistentSingleton<NetworkHelper>
 
     }
     #endregion
-
-    private void Start()
-    {
-        networkManager = NetworkManager.Singleton;
-        if (networkManager == null) { Debug.LogError($"Network manager not found, disabling {name}"); gameObject.SetActive(false); return; }
-
-    }
 
     #region Client
     // INFO: Start client connection 
@@ -84,7 +77,7 @@ public class NetworkHelper : PersistentSingleton<NetworkHelper>
 
         // GUARD: Ensure server started
         if (!networkManager.StartHost()) return;
-        Debug.Log($"Host has started");
+        Debug.Log($"{CheckPrivilege(networkManager.IsHost)} has started");
 
     }
 
@@ -95,6 +88,19 @@ public class NetworkHelper : PersistentSingleton<NetworkHelper>
         Disconnect();
     }
     #endregion
+
+    public string CheckPrivilege(bool obj)
+    {
+        switch (obj)
+        {
+            case true:
+                return "[HOST]";
+            case false:
+                return "[CLIENT]";
+
+        }
+
+    }
 
 
 

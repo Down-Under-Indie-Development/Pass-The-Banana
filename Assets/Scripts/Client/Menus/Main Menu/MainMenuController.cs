@@ -80,7 +80,7 @@ namespace PTB.Menus
             {
                 case MenuState.HostGame:
                     HandleMenuSwitching(_hostGameMenu, MenuState.MainMenu);
-                    SteamLobbyManager.Instance.Disconnect();
+                    SteamLobbyManager.Instance.DisconnectPlayer();
                     break;
             }
 
