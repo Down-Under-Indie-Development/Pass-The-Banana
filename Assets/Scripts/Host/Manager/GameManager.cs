@@ -1,86 +1,92 @@
 using Utility;
 using UnityEngine;
 using System.Collections.Generic;
-using TMPro;
-using System.Collections;
-using HealthSystem;
 using PTB.Client.Player;
+using Unity.Netcode;
 using UnityEngine.SceneManagement;
 
-public class GameManager : Singleton<GameManager>
+public class GameManager : NetworkBehaviour
 {
+
+    #region Singleton
+    public static GameManager Instance;
+    #endregion
+
+    private EventManager _eventManager => EventManager.Instance;
+
+    [Header("Game Settings")]
     [SerializeField] private List<CategorySO> _categories;
+
+    [Header("Player Tracking")]
     [SerializeField] private PlayerNetworkedController _playerWithBanana;
+    [SerializeField] private GameObject _playerPrefab;
+    [field: SerializeField] public GameState currentGameState { get; set; }
+
+    private void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(this);
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+
+    }
 
     #region Events
     private void OnEnable()
     {
         // _eventManager.OnQuestionFinished += DisplayAnswers;
-        _eventManager.OnCountdownFinished += Test;
+        _eventManager.OnGameStart += RequestStartGameRPC;
     }
 
     private void OnDisable()
     {
-        // _eventManager.OnQuestionFinished -= DisplayAnswers;
-        _eventManager.OnCountdownFinished -= Test;
+        _eventManager.OnGameStart -= RequestStartGameRPC;
 
     }
     #endregion
 
-    private void Start()
-    {
-        // if (_categories.Count <= 0) { Debug.LogError($"No categories provided"); return; }
-        _eventManager.OnGameStart?.Invoke();
-        _eventManager.OnCountdownStarted?.Invoke();
-
-
-        // TypeWriter.Instance.WriteText(categoryData[0].questions[0].question, tvScreen);
-
-    }
-
-    private void Test()
-    {
-        _playerWithBanana?.GetComponent<Health>().Die();
-
-    }
-
+    private bool ran;
     private void Update()
     {
-        // if (NetworkHelper.Instance.networkManager.ConnectedClients.Count < 2 || NetworkHelper.Instance.networkManager == null) return;
-        // ChangeScene();
+        if (!ran)
+            if (NetworkManager.Singleton.IsServer && SceneManager.GetActiveScene().name == "Test Scene") { RequestStartGameRPC(); ran = true; }
 
     }
 
-    private bool changed = false;
-    private void ChangeScene()
+    [Rpc(SendTo.Server)]
+    private void RequestStartGameRPC()
     {
-        if (changed) return;
-        changed = true;
-
-        SceneManager.LoadScene(1);
-
+        currentGameState = GameState.Playing;
+        if (!IsHost) return;
+        SpawnPlayers();
 
     }
 
-    #region  Answers
-    // private void DisplayAnswers()
-    // {
-    //     StartCoroutine(ShowAnswers());
-    // }
+    private void SpawnPlayers()
+    {
+        if (!IsHost) return;
+        if (_playerPrefab == null) return;
 
-    // private IEnumerator ShowAnswers()
-    // {
-    //     // GUARD: Prevent Nulls
-    //     if (answerParent == null) { Debug.LogError($"Answer parent is null"); yield break; }
-    //     if (answerPrefab == null) { Debug.LogError($"Answer prefab is null"); yield break; }
+        foreach (ulong clientId in NetworkManager.Singleton.ConnectedClientsIds)
+        {
+            GameObject instance = Instantiate(_playerPrefab);
+            instance.GetComponent<NetworkObject>().SpawnAsPlayerObject(clientId);
 
-    //     for (int i = 0; i < categoryData[0].questions[0].answers.Count; i++)
-    //     {
-    //         GameObject answerGO = Instantiate(answerPrefab, answerParent);
-    //         answerGO.GetComponentInChildren<TextMeshProUGUI>().text = categoryData[0].questions[0].answers[i];
-    //         yield return new WaitForSecondsRealtime(.5f);
-    //     }
-    // }
-    #endregion
+        }
+    }
+}
+
+
+public enum GameState
+{
+    MainMenu,
+    Lobby,
+    Playing,
+
 
 }

@@ -23,6 +23,14 @@ namespace PTB.Networking
         [Header("Testing")]
         [SerializeField] private List<string> _devSteamId = new();
 
+        protected override void Awake()
+        {
+            base.Awake();
+            _networkTransport = GetComponent<FacepunchTransport>();
+            EstablishUnitySteamConnection();
+
+        }
+
         #region Events
         private void OnEnable()
         {
@@ -59,14 +67,6 @@ namespace PTB.Networking
         }
 
         #endregion
-
-        protected override void Awake()
-        {
-            base.Awake();
-            _networkTransport = GetComponent<FacepunchTransport>();
-            EstablishUnitySteamConnection();
-
-        }
 
         private void EstablishUnitySteamConnection()
         {
@@ -146,12 +146,13 @@ namespace PTB.Networking
         private void OnLobbyEntered(Lobby lobby)
         {
             currentLobby = lobby;
+            _networkTransport.targetSteamId = lobby.Owner.Id;
             if (_networkHelper.networkManager.IsHost) { OnSteamHostLobbyEnter(); return; }
             OnClientEnterLobby(lobby);
 
             // INFO: Client
             Debug.Log($"You entered {lobby.Owner.Name}'s lobby");
-            StartUnityClient(lobby.Owner.Id);
+            StartUnityClient();
 
 
         }
@@ -184,9 +185,8 @@ namespace PTB.Networking
         #endregion
 
         #region Client
-        private void StartUnityClient(SteamId steamId)
+        private void StartUnityClient()
         {
-            _networkTransport.targetSteamId = steamId;
             _eventManager.OnStartClient?.Invoke();
 
         }

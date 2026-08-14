@@ -24,10 +24,8 @@ namespace Utility
         // GUARD: override to opt out of being parented under "Singletons" (e.g. PersistentSingleton)
         protected virtual bool _parentUnderSingletonsContainer => true;
 
-        protected override void Awake()
+        protected virtual void Awake()
         {
-            base.Awake();
-
             if (instance != null && instance != this)
             {
                 Destroy(gameObject);

@@ -6,6 +6,5 @@ namespace PTB.Client.Player
 {
     public class PlayerNetworkedController : NetworkBehaviour
     {
-
     }
 }

@@ -2,14 +2,11 @@ using Utility;
 using UnityEngine;
 using Steamworks.Data;
 using Steamworks;
-using PTB.Networking;
-using System;
-using System.Linq;
-using System.Collections;
-using Unity.VisualScripting;
 using System.Collections.Generic;
-using Unity.Services.Authentication;
-using UnityEngine.UIElements;
+using Unity.VisualScripting;
+using UnityEngine.SceneManagement;
+using PTB.Menus;
+using System.Threading.Tasks;
 
 public class LobbyUIManager : CustomMonoBehaviour
 {
@@ -22,64 +19,42 @@ public class LobbyUIManager : CustomMonoBehaviour
     #region Events
     private void OnEnable()
     {
+        SteamMatchmaking.OnLobbyCreated += OnLobbyCreated;
         SteamMatchmaking.OnLobbyEntered += OnLobbyEntered;
     }
 
     private void OnDisable()
     {
+        SteamMatchmaking.OnLobbyCreated -= OnLobbyCreated;
         SteamMatchmaking.OnLobbyEntered -= OnLobbyEntered;
 
     }
     #endregion
 
-    private void Start()
+    private void Awake()
     {
+
         _connectedMembers = new();
-        _eventManager.OnCreateLobbyRequest?.Invoke(1);
+
     }
 
     #region Steamworks
+    private void OnLobbyCreated(Result result, Lobby lobby)
+    {
+        if (result == Result.OK) RefreshUI(lobby);
+
+    }
+
     private void OnLobbyEntered(Lobby lobby)
     {
-        StartCoroutine(PublishPingLocationRoutine(lobby));
-    }
-
-    private IEnumerator PublishPingLocationRoutine(Lobby lobby)
-    {
-        SteamNetworkingUtils.InitRelayNetworkAccess();
-
-        float timeout = 10f;
-        float elapsed = 0f;
-        NetPingLocation? pingLocation = null;
-
-        while (elapsed < timeout)
-        {
-            pingLocation = SteamNetworkingUtils.LocalPingLocation;
-            if (pingLocation.HasValue) break;
-
-            elapsed += Time.deltaTime;
-            yield return null;
-        }
-
-        if (pingLocation.HasValue)
-        {
-            lobby.SetMemberData("ping_location", pingLocation.Value.ToString());
-            Debug.Log("Published ping location");
-        }
-        else
-        {
-            Debug.LogWarning("Ping location unavailable after 10s timeout.");
-        }
-
-
-
         RefreshUI(lobby);
     }
-    #endregion
 
+    #endregion
 
     private void RefreshUI(Lobby lobby)
     {
+
         if (playerPanelContent == null) { Debug.LogError($"Player panel content is null!"); return; }
         if (playerInfoPanel == null) { Debug.LogError($"Player info panel is null, cannot display player"); return; }
 
@@ -89,6 +64,7 @@ public class LobbyUIManager : CustomMonoBehaviour
             _connectedMembers.Enqueue(member);
             GameObject playerInfoGO = Instantiate(playerInfoPanel);
             playerInfoGO.transform.SetParent(playerPanelContent.transform, false);
+
             // INFO: Set Display
             PlayerUIInfo playerInfo = playerInfoGO.GetComponent<PlayerUIInfo>();
             bool isHost = lobby.Owner.Id == member.Id;
@@ -98,17 +74,9 @@ public class LobbyUIManager : CustomMonoBehaviour
         }
     }
 
-    [ContextMenu("Testing")]
-    public void Test()
-    {
-
-
-    }
-
     int GetEstimatedPing(Lobby? lobby, SteamId memberId)
     {
         if (lobby == null) return -1;
-        Debug.Log($"Test");
 
         Friend member = new Friend(memberId);
         string encoded = lobby.Value.GetMemberData(member, "ping_location");
@@ -119,6 +87,19 @@ public class LobbyUIManager : CustomMonoBehaviour
 
         int estimatedPing = SteamNetworkingUtils.EstimatePingTo(theirLocation.Value);
         return estimatedPing;
+    }
+
+    public void FuckingWork()
+    {
+        _ = StartGame();
+    }
+
+    public async Task StartGame()
+    {
+        MainMenuController _mainMenuController = MainMenuController.Instance;
+        if (_connectedMembers.Count < _mainMenuController.minimumPlayers && !_debug) { Debug.LogWarning($"Need {_mainMenuController.minimumPlayers} players to start"); return; }
+        await SceneManager.LoadSceneAsync(1);
+
     }
 
 }

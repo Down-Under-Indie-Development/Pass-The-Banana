@@ -7,20 +7,11 @@ namespace Utility
     /// </summary>
     public class CustomMonoBehaviour : MonoBehaviour
     {
-        protected EventManager _eventManager;
-        protected GameManager _gameManager;
+        protected EventManager _eventManager => EventManager.Instance;
+        protected GameManager _gameManager => GameManager.Instance;
 
         [Header("Debug Settings")]
         [SerializeField] protected bool _debug;
 
-        protected virtual void Awake()
-        {
-            _gameManager = GameManager.Instance;
-            if (_gameManager == null) Debug.LogError($"GameManager is null!");
-
-            _eventManager = EventManager.Instance;
-            if (_eventManager == null) Debug.LogError($"EventManager is null!");
-
-        }
     }
 }

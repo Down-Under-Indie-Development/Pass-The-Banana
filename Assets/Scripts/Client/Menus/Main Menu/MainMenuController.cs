@@ -20,6 +20,9 @@ namespace PTB.Menus
         [Header("Options")]
         [SerializeField] private GameObject _optionsMenu;
 
+        [Header("Game Settings")]
+        [field: SerializeField] public int minimumPlayers { get; private set; } = 2;
+
         private MenuState _currentMenuState = MenuState.MainMenu;
 
         private void Start()
