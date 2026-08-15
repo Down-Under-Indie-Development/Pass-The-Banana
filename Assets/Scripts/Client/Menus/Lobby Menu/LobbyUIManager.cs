@@ -7,6 +7,8 @@ using Unity.VisualScripting;
 using UnityEngine.SceneManagement;
 using PTB.Menus;
 using System.Threading.Tasks;
+using Unity.Netcode;
+using PTB.Networking;
 
 public class LobbyUIManager : CustomMonoBehaviour
 {
@@ -14,27 +16,26 @@ public class LobbyUIManager : CustomMonoBehaviour
     [SerializeField] private GameObject playerPanelContent;
     [SerializeField] private GameObject playerInfoPanel;
 
-    private Queue<Friend> _connectedMembers;
+    private Queue<SteamId> _connectedMembers = new();
 
     #region Events
     private void OnEnable()
     {
         SteamMatchmaking.OnLobbyCreated += OnLobbyCreated;
-        SteamMatchmaking.OnLobbyEntered += OnLobbyEntered;
+        SteamMatchmaking.OnLobbyEntered += OnLobbyMemberJoined;
     }
 
     private void OnDisable()
     {
         SteamMatchmaking.OnLobbyCreated -= OnLobbyCreated;
-        SteamMatchmaking.OnLobbyEntered -= OnLobbyEntered;
+        SteamMatchmaking.OnLobbyEntered -= OnLobbyMemberJoined;
 
     }
     #endregion
 
     private void Awake()
     {
-
-        _connectedMembers = new();
+        Debug.Log($"[LobbyUIManager] Awake on {gameObject.name}, active={gameObject.activeInHierarchy}");
 
     }
 
@@ -45,33 +46,41 @@ public class LobbyUIManager : CustomMonoBehaviour
 
     }
 
-    private void OnLobbyEntered(Lobby lobby)
+    private void OnLobbyMemberJoined(Lobby lobby)
     {
         RefreshUI(lobby);
     }
 
     #endregion
 
-    private void RefreshUI(Lobby lobby)
+    private void RefreshUI(Lobby? lobby)
     {
 
         if (playerPanelContent == null) { Debug.LogError($"Player panel content is null!"); return; }
         if (playerInfoPanel == null) { Debug.LogError($"Player info panel is null, cannot display player"); return; }
+        if (lobby == null) { Debug.LogError($"Lobby is null!"); return; }
 
-        foreach (Friend member in lobby.Members)
+        foreach (Friend member in lobby.Value.Members)
         {
-            if (_connectedMembers.Contains(member)) continue; // INFO: Already showing (Hopefully)
-            _connectedMembers.Enqueue(member);
+            if (_connectedMembers.Contains(member.Id)) continue; // INFO: Already showing (Hopefully)
+            _connectedMembers.Enqueue(member.Id);
+
             GameObject playerInfoGO = Instantiate(playerInfoPanel);
             playerInfoGO.transform.SetParent(playerPanelContent.transform, false);
 
             // INFO: Set Display
             PlayerUIInfo playerInfo = playerInfoGO.GetComponent<PlayerUIInfo>();
-            bool isHost = lobby.Owner.Id == member.Id;
+            bool isHost = lobby.Value.Owner.Id == member.Id;
             playerInfo.playerName = $"{member.Name} {(isHost ? "[HOST]" : "")}";
             playerInfo.playerPing = $"{GetEstimatedPing(lobby, member.Id)}";
 
+
         }
+    }
+
+    private void LateUpdate()
+    {
+        RefreshUI(SteamLobbyManager.Instance.currentLobby);
     }
 
     int GetEstimatedPing(Lobby? lobby, SteamId memberId)
@@ -89,16 +98,11 @@ public class LobbyUIManager : CustomMonoBehaviour
         return estimatedPing;
     }
 
-    public void FuckingWork()
-    {
-        _ = StartGame();
-    }
-
-    public async Task StartGame()
+    public void StartGame()
     {
         MainMenuController _mainMenuController = MainMenuController.Instance;
         if (_connectedMembers.Count < _mainMenuController.minimumPlayers && !_debug) { Debug.LogWarning($"Need {_mainMenuController.minimumPlayers} players to start"); return; }
-        await SceneManager.LoadSceneAsync(1);
+        NetworkManager.Singleton.SceneManager.LoadScene("Test Scene", LoadSceneMode.Single);
 
     }
 

@@ -10,9 +10,9 @@ public class GameManager : NetworkBehaviour
 
     #region Singleton
     public static GameManager Instance;
+    private EventManager _eventManager => EventManager.Instance;
     #endregion
 
-    private EventManager _eventManager => EventManager.Instance;
 
     [Header("Game Settings")]
     [SerializeField] private List<CategorySO> _categories;
@@ -20,18 +20,24 @@ public class GameManager : NetworkBehaviour
     [Header("Player Tracking")]
     [SerializeField] private PlayerNetworkedController _playerWithBanana;
     [SerializeField] private GameObject _playerPrefab;
+
+    [Header("Game State")]
     [field: SerializeField] public GameState currentGameState { get; set; }
+
+    [Header("Player Settings")]
+    [SerializeField] private List<Transform> _spawnPositions = new();
 
     private void Awake()
     {
         if (Instance == null)
         {
             Instance = this;
-            DontDestroyOnLoad(this);
+            // DontDestroyOnLoad(this);
         }
         else
         {
-            Destroy(gameObject);
+            // Destroy(gameObject);
+            NetworkObject.Despawn(true);
         }
 
     }
@@ -45,37 +51,43 @@ public class GameManager : NetworkBehaviour
 
     private void OnDisable()
     {
+        if (_eventManager == null) return;
         _eventManager.OnGameStart -= RequestStartGameRPC;
 
     }
     #endregion
 
-    private bool ran;
-    private void Update()
+    public override void OnNetworkSpawn()
     {
-        if (!ran)
-            if (NetworkManager.Singleton.IsServer && SceneManager.GetActiveScene().name == "Test Scene") { RequestStartGameRPC(); ran = true; }
+
+        if (!IsServer) return;
+        RequestStartGameRPC();
 
     }
 
-    [Rpc(SendTo.Server)]
+    [Rpc(SendTo.ClientsAndHost)]
     private void RequestStartGameRPC()
     {
         currentGameState = GameState.Playing;
-        if (!IsHost) return;
         SpawnPlayers();
 
     }
 
     private void SpawnPlayers()
     {
-        if (!IsHost) return;
+        if (!IsServer) return;
         if (_playerPrefab == null) return;
+        Debug.Log($"Connected clients: {NetworkManager.Singleton.ConnectedClientsIds.Count}");
 
-        foreach (ulong clientId in NetworkManager.Singleton.ConnectedClientsIds)
+
+        List<ulong> clientIds = new List<ulong>(NetworkManager.Singleton.ConnectedClientsIds);
+        for (int i = 0; i < clientIds.Count; i++)
         {
+            ulong currentClient = clientIds[i];
             GameObject instance = Instantiate(_playerPrefab);
-            instance.GetComponent<NetworkObject>().SpawnAsPlayerObject(clientId);
+            instance.transform.position = _spawnPositions[i].position;
+            instance.GetComponent<NetworkObject>().SpawnAsPlayerObject(currentClient);
+
 
         }
     }
