@@ -37,7 +37,7 @@ public class EventManager : Singleton<EventManager>
     public NoArgs OnConnectedToSteam;
     public OneArg<Lobby> OnLobbyCreated;
     public NoArgs OnUnityClientDisconnect;
-    public NoArgs OnClientConnect;
+    public NoArgs OnSteamClientConnect;
     public NoArgs OnUnityHostDisconnect;
     public NoArgs OnStartUnityHost;
     public NoArgs OnStartUnityClient;

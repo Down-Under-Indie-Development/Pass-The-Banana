@@ -1,9 +1,10 @@
 using UnityEngine;
 using Utility;
+using Steamworks;
 
-namespace Steamworks
+namespace PTB.Networking
 {
-    public class SteamManager : PersistentSingleton<SteamManager>
+    public class SteamManager : Singleton<SteamManager>
     {
         [Header("Steam Settings")]
         [field: SerializeField] public uint appID { get; private set; } = 480;

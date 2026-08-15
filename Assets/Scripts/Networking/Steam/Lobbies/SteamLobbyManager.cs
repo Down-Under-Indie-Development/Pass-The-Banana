@@ -4,20 +4,15 @@ using System.Collections.Generic;
 using Netcode.Transports.Facepunch;
 using Steamworks;
 using Steamworks.Data;
-using Unity.Netcode;
-using Unity.VisualScripting;
 using UnityEngine;
 using Utility;
 
 namespace PTB.Networking
 {
-    public class SteamLobbyManager : PersistentSingleton<SteamLobbyManager>
+    public class SteamLobbyManager : Singleton<SteamLobbyManager>
     {
         [Header("Steam Settings")]
         [SerializeField] private uint _appId = 480;
-
-        [Header("UI")]
-        [SerializeField] private GameObject lobbyScreen;
 
         public Lobby? currentLobby { get; private set; }
         private FacepunchTransport _networkTransport;
@@ -141,24 +136,23 @@ namespace PTB.Networking
         {
             Debug.Log($"{friend.Name} is joining!");
 
-            if (!_debug && !_devSteamId.Contains(friend.Id.ToString()))
-            {
-                Debug.Log($"{friend.Name} was kicked as they're not on the list!");
-                DisconnectPlayer();
-
-            }
-
-
-            currentLobby = lobby;
-
         }
+
 
         private void OnLobbyEntered(Lobby lobby)
         {
             currentLobby = lobby;
+
+            // GUARD: self-check whitelist before doing anything else
+            if (!_debug && !_devSteamId.Contains(SteamClient.SteamId.ToString()))
+            {
+                Debug.Log($"You're not whitelisted, leaving lobby.");
+                DisconnectPlayer();
+                return;
+            }
+
             _networkTransport.targetSteamId = lobby.Owner.Id;
             SteamFriends.SetRichPresence("connect", currentLobby.Value.Id.ToString());
-
             if (_networkHelper.networkManager.IsHost) { OnSteamHostLobbyEnter(); return; }
             OnClientEnterLobby(lobby);
 
@@ -213,8 +207,8 @@ namespace PTB.Networking
         {
             // INFO: Client
             Debug.Log($"You entered {lobby.Owner.Name}'s lobby");
+            _eventManager.OnSteamClientConnect?.Invoke();
             StartUnityClient();
-            lobbyScreen?.SetActive(true);
 
         }
         #endregion

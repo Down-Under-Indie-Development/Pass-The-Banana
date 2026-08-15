@@ -1901,13 +1901,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 8392585063905765127}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8bfaacd77d5c6bc43ba0ba48b1d1fe79, type: 3}
+  m_Script: {fileID: 11500000, guid: 47cd14ab8e33b4940887b2687c29e23e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LobbyUIManager
   _debug: 0
   playerPanelContent: {fileID: 4938979042110284032}
   playerInfoPanel: {fileID: 5007616894640670429, guid: 6b25faf223707b5478bbd8483bf2a549, type: 3}
-  _startGameBTN: {fileID: 0}
+  _startGameBTN: {fileID: 7773334689440716104}
 --- !u!1 &8786689336638418506
 GameObject:
   m_ObjectHideFlags: 0

@@ -7,9 +7,26 @@ using Utility;
 /// <summary>
 /// Handles Unity Netcode side for connecting and disconnecting clients
 /// </summary>
-public class NetworkHelper : PersistentSingleton<NetworkHelper>
+public class NetworkHelper : NetworkBehaviour
 {
+    public static NetworkHelper Instance;
+    private EventManager _eventManager => EventManager.Instance;
     public NetworkManager networkManager => NetworkManager.Singleton;
+
+    private void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+            // DontDestroyOnLoad(this);
+        }
+        else
+        {
+            // Destroy(gameObject);
+            NetworkObject.Despawn(true);
+        }
+
+    }
 
     #region Events
     private void OnEnable()
@@ -41,9 +58,9 @@ public class NetworkHelper : PersistentSingleton<NetworkHelper>
 
         networkManager.OnClientConnectedCallback += OnUnityClientConnected;
         networkManager.OnClientDisconnectCallback += OnUnityClientDisconnect;
-        if (!networkManager.StartClient()) { Debug.LogError($"Client failed to start!"); return; }
+        if (!networkManager.StartClient()) { Debug.LogError($"{CheckPrivilege()} Client failed to start!"); return; }
 
-        Debug.Log($"Client has started");
+        Debug.Log($"{CheckPrivilege()} Client has started");
 
     }
 
@@ -63,6 +80,7 @@ public class NetworkHelper : PersistentSingleton<NetworkHelper>
         }
 
         networkManager.SceneManager.LoadScene("Main Menu Scene", LoadSceneMode.Single);
+        networkManager.Shutdown();
     }
 
     #endregion
@@ -84,7 +102,7 @@ public class NetworkHelper : PersistentSingleton<NetworkHelper>
     protected virtual void OnUnityHostDisconnectRPC()
     {
         networkManager.SceneManager.LoadScene("Main Menu Scene", LoadSceneMode.Single);
-        Debug.Log($"{CheckPrivilege()} Host has disconnected closing server");
+        if (!networkManager.IsHost) Debug.Log($"{CheckPrivilege()} Host has disconnected closing server");
         StopUnityClient();
 
 

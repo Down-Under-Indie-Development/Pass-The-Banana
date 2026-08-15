@@ -39,7 +39,7 @@ public class LobbyUIManager : CustomMonoBehaviour
     }
     #endregion
 
-    private void Awake()
+    private void Start()
     {
         if (!_networkHelper.networkManager.IsHost && _startGameBTN != null) _startGameBTN.interactable = false;
 

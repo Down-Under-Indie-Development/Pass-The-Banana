@@ -27,21 +27,35 @@ namespace PTB.Menus
 
         private GameState _currentGameState = GameState.MainMenu;
 
+        #region Events
+        private void OnEnable()
+        {
+            _eventManager.OnSteamClientConnect += OnSteamClientConnect;
+        }
+
+        private void OnDisable()
+        {
+            _eventManager.OnSteamClientConnect -= OnSteamClientConnect;
+
+        }
+        #endregion
+
         private void Start()
         {
             if (_hostGameMenu != null) _hostGameMenu.SetActive(false);
             if (_lobbyScreen != null) _lobbyScreen.SetActive(false);
             if (_joinGameMenu != null) _joinGameMenu.SetActive(false);
             if (_optionsMenu != null) _optionsMenu.SetActive(false);
+            SceneManager.LoadScene("Networking Scene", LoadSceneMode.Additive);
 
         }
 
         #region Menus
         public void HostGame()
         {
-            if (_debug) SceneManager.LoadScene("Test Scene");
-            _eventManager.OnHostGame?.Invoke();
+            if (_hostGameMenu == null) { Debug.LogWarning($"Host game menu is null!"); return; }
             _hostGameMenu?.SetActive(true);
+            _eventManager.OnHostGame?.Invoke();
             _currentGameState = GameState.HostGame;
 
         }
@@ -56,9 +70,10 @@ namespace PTB.Menus
 
         public void JoinGame()
         {
-            _eventManager.OnJoinGame();
+            if (_joinGameMenu == null) { Debug.LogWarning($"Join game menu is null!"); return; }
+            _joinGameMenu.SetActive(true);
+            _eventManager.OnJoinGame?.Invoke();
             _currentGameState = GameState.JoinGame;
-            Debug.LogWarning($"Not implemented!");
 
         }
 
@@ -69,6 +84,13 @@ namespace PTB.Menus
 
         }
         #endregion
+
+        private void OnSteamClientConnect()
+        {
+            _lobbyScreen?.SetActive(true);
+            _joinGameMenu?.SetActive(false);
+
+        }
 
         #region Utility
         // INFO: Prevent switching to null UI
@@ -90,6 +112,9 @@ namespace PTB.Menus
                     break;
                 case GameState.Lobby:
                     SteamLobbyManager.Instance.DisconnectPlayer();
+                    break;
+                case GameState.JoinGame:
+                    HandleMenuSwitching(_joinGameMenu, GameState.MainMenu);
                     break;
 
             }
