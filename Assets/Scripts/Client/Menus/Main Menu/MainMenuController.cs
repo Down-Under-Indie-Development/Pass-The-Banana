@@ -4,6 +4,7 @@ using UnityEngine.SceneManagement;
 using Steamworks;
 using UnityEngine.UI;
 using PTB.Networking;
+using Unity.Netcode;
 // using Unity.VisualScripting;
 
 namespace PTB.Menus
@@ -13,6 +14,7 @@ namespace PTB.Menus
         [Header("Host Game")]
         [SerializeField] private GameObject _hostGameMenu;
         [SerializeField] private Slider _hostGamePlayerCountSlider; // TODO: Find a better way to do this
+        [SerializeField] private GameObject _lobbyScreen;
 
         [Header("Join Game")]
         [SerializeField] private GameObject _joinGameMenu;
@@ -23,11 +25,12 @@ namespace PTB.Menus
         [Header("Game Settings")]
         [field: SerializeField] public int minimumPlayers { get; private set; } = 2;
 
-        private MenuState _currentMenuState = MenuState.MainMenu;
+        private GameState _currentGameState = GameState.MainMenu;
 
         private void Start()
         {
             if (_hostGameMenu != null) _hostGameMenu.SetActive(false);
+            if (_lobbyScreen != null) _lobbyScreen.SetActive(false);
             if (_joinGameMenu != null) _joinGameMenu.SetActive(false);
             if (_optionsMenu != null) _optionsMenu.SetActive(false);
 
@@ -39,7 +42,7 @@ namespace PTB.Menus
             if (_debug) SceneManager.LoadScene("Test Scene");
             _eventManager.OnHostGame?.Invoke();
             _hostGameMenu?.SetActive(true);
-            _currentMenuState = MenuState.HostGame;
+            _currentGameState = GameState.HostGame;
 
         }
 
@@ -47,20 +50,21 @@ namespace PTB.Menus
         {
             if (_hostGamePlayerCountSlider == null) { Debug.LogError($"Slider is null!"); return; }
             _eventManager.OnCreateLobbyRequest?.Invoke((int)_hostGamePlayerCountSlider.value);
+            _currentGameState = GameState.Lobby;
 
         }
 
         public void JoinGame()
         {
             _eventManager.OnJoinGame();
-            _currentMenuState = MenuState.JoinGame;
+            _currentGameState = GameState.JoinGame;
             Debug.LogWarning($"Not implemented!");
 
         }
 
         public void Options()
         {
-            _currentMenuState = MenuState.Options;
+            _currentGameState = GameState.Options;
             Debug.LogWarning($"Not implemented!");
 
         }
@@ -68,23 +72,26 @@ namespace PTB.Menus
 
         #region Utility
         // INFO: Prevent switching to null UI
-        private void HandleMenuSwitching(GameObject menuToDisable, MenuState menuStateToSwitchTo)
+        private void HandleMenuSwitching(GameObject menuToDisable, GameState menuStateToSwitchTo)
         {
-            if (menuStateToSwitchTo == _currentMenuState) { Debug.LogWarning($"Already on this state, enabling object!"); }
+            if (menuStateToSwitchTo == _currentGameState) { Debug.LogWarning($"Already on this state, enabling object!"); }
             if (menuToDisable == null) { Debug.LogWarning($"The provided menu is null"); return; }
             menuToDisable.SetActive(false);
-            _currentMenuState = menuStateToSwitchTo;
+            _currentGameState = menuStateToSwitchTo;
 
         }
 
         public void BackButton()
         {
-            switch (_currentMenuState)
+            switch (_currentGameState)
             {
-                case MenuState.HostGame:
-                    HandleMenuSwitching(_hostGameMenu, MenuState.MainMenu);
+                case GameState.HostGame:
+                    HandleMenuSwitching(_hostGameMenu, GameState.MainMenu);
+                    break;
+                case GameState.Lobby:
                     SteamLobbyManager.Instance.DisconnectPlayer();
                     break;
+
             }
 
         }
@@ -112,13 +119,6 @@ namespace PTB.Menus
         #endregion
     }
 
-    // INFO: Menu state
-    public enum MenuState
-    {
-        MainMenu,
-        HostGame,
-        JoinGame,
-        Options,
-    }
+
 
 }

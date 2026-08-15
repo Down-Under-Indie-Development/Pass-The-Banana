@@ -9,46 +9,50 @@ using PTB.Menus;
 using System.Threading.Tasks;
 using Unity.Netcode;
 using PTB.Networking;
+using UnityEngine.UI;
 
 public class LobbyUIManager : CustomMonoBehaviour
 {
 
+    [Header("Player Panel")]
     [SerializeField] private GameObject playerPanelContent;
     [SerializeField] private GameObject playerInfoPanel;
+
+    [Header("Buttons")]
+    [SerializeField] private Button _startGameBTN;
+
 
     private Queue<SteamId> _connectedMembers = new();
 
     #region Events
     private void OnEnable()
     {
-        SteamMatchmaking.OnLobbyCreated += OnLobbyCreated;
-        SteamMatchmaking.OnLobbyEntered += OnLobbyMemberJoined;
+        SteamMatchmaking.OnLobbyMemberJoined += OnLobbyMemberJoined;
     }
 
     private void OnDisable()
     {
-        SteamMatchmaking.OnLobbyCreated -= OnLobbyCreated;
-        SteamMatchmaking.OnLobbyEntered -= OnLobbyMemberJoined;
+        SteamMatchmaking.OnLobbyMemberJoined -= OnLobbyMemberJoined;
 
     }
     #endregion
 
     private void Awake()
     {
-        Debug.Log($"[LobbyUIManager] Awake on {gameObject.name}, active={gameObject.activeInHierarchy}");
+        if (!NetworkManager.Singleton.IsHost && _startGameBTN != null) _startGameBTN.interactable = false;
 
     }
+
+    private void LateUpdate()
+    {
+        RefreshUI(SteamLobbyManager.Instance.currentLobby);
+    }
+
 
     #region Steamworks
-    private void OnLobbyCreated(Result result, Lobby lobby)
+    private void OnLobbyMemberJoined(Lobby lobby, Friend friend)
     {
-        if (result == Result.OK) RefreshUI(lobby);
-
-    }
-
-    private void OnLobbyMemberJoined(Lobby lobby)
-    {
-        RefreshUI(lobby);
+        AddNewPlayer(friend);
     }
 
     #endregion
@@ -58,13 +62,16 @@ public class LobbyUIManager : CustomMonoBehaviour
 
         if (playerPanelContent == null) { Debug.LogError($"Player panel content is null!"); return; }
         if (playerInfoPanel == null) { Debug.LogError($"Player info panel is null, cannot display player"); return; }
-        if (lobby == null) { Debug.LogError($"Lobby is null!"); return; }
+        if (lobby == null) return;
+
+        for (int i = 0; i < playerPanelContent.transform.childCount; i++)
+        {
+            Destroy(playerPanelContent.transform.GetChild(i).gameObject);
+
+        }
 
         foreach (Friend member in lobby.Value.Members)
         {
-            if (_connectedMembers.Contains(member.Id)) continue; // INFO: Already showing (Hopefully)
-            _connectedMembers.Enqueue(member.Id);
-
             GameObject playerInfoGO = Instantiate(playerInfoPanel);
             playerInfoGO.transform.SetParent(playerPanelContent.transform, false);
 
@@ -78,9 +85,10 @@ public class LobbyUIManager : CustomMonoBehaviour
         }
     }
 
-    private void LateUpdate()
+    private void AddNewPlayer(Friend member)
     {
-        RefreshUI(SteamLobbyManager.Instance.currentLobby);
+        if (!_connectedMembers.Contains(member.Id)) _connectedMembers.Enqueue(member.Id);
+
     }
 
     int GetEstimatedPing(Lobby? lobby, SteamId memberId)
@@ -98,6 +106,7 @@ public class LobbyUIManager : CustomMonoBehaviour
         return estimatedPing;
     }
 
+    #region Buttons
     public void StartGame()
     {
         MainMenuController _mainMenuController = MainMenuController.Instance;
@@ -105,5 +114,6 @@ public class LobbyUIManager : CustomMonoBehaviour
         NetworkManager.Singleton.SceneManager.LoadScene("Test Scene", LoadSceneMode.Single);
 
     }
+    #endregion
 
 }

@@ -17,16 +17,16 @@ public class NetworkHelper : PersistentSingleton<NetworkHelper>
     {
         _eventManager.OnStartHost += OnStartHost;
         _eventManager.OnStartClient += OnStartClient;
-        _eventManager.OnClientDisconnect += Disconnect;
-        _eventManager.OnHostDisconnect += OnHostDisconnect;
+        _eventManager.OnClientDisconnect += StopUnityClient;
+        _eventManager.OnHostDisconnect += OnHostDisconnectRPC;
 
     }
 
     private void OnDisable()
     {
-        _eventManager.OnClientDisconnect -= Disconnect;
+        _eventManager.OnClientDisconnect -= StopUnityClient;
         _eventManager.OnStartClient -= OnStartClient;
-        _eventManager.OnHostDisconnect -= OnHostDisconnect;
+        _eventManager.OnHostDisconnect -= OnHostDisconnectRPC;
 
         if (networkManager == null) return;
         networkManager.OnClientConnectedCallback -= OnClientConnected;
@@ -53,7 +53,7 @@ public class NetworkHelper : PersistentSingleton<NetworkHelper>
     #endregion
 
     #region Shared
-    protected virtual void Disconnect()
+    protected virtual void StopUnityClient()
     {
         if (networkManager == null) return;
         if (!networkManager.IsHost)
@@ -62,6 +62,7 @@ public class NetworkHelper : PersistentSingleton<NetworkHelper>
             networkManager.OnClientDisconnectCallback -= OnClientDisconnect;
         }
 
+        networkManager.SceneManager.LoadScene("Main Menu Scene", LoadSceneMode.Single);
         networkManager.Shutdown();
 
     }
@@ -81,12 +82,16 @@ public class NetworkHelper : PersistentSingleton<NetworkHelper>
 
     }
 
-    protected virtual void OnHostDisconnect()
+    [Rpc(SendTo.ClientsAndHost)]
+    protected virtual void OnHostDisconnectRPC()
     {
-        Debug.LogWarning($"The host has disconnected closing server");
-        SceneManager.LoadScene(0);
-        Disconnect();
+        networkManager.SceneManager.LoadScene("Main Menu Scene", LoadSceneMode.Single);
+        Debug.Log($"The host has disconnected closing server");
+        StopUnityClient();
+
+
     }
+
     #endregion
 
     public string CheckPrivilege(bool obj)

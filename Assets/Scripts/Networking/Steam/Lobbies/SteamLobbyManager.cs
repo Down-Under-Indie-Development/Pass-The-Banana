@@ -93,7 +93,7 @@ namespace PTB.Networking
 
             Debug.Log($"<color=orange>[SERVER]</color> Lobby request received creating lobby!");
             Debug.Log($"Creating lobby for {playerCount} player(s)");
-            currentLobby = await SteamMatchmaking.CreateLobbyAsync(playerCount);
+            await SteamMatchmaking.CreateLobbyAsync(playerCount);
             _eventManager.OnStartHost?.Invoke();
 
         }
@@ -147,9 +147,11 @@ namespace PTB.Networking
             if (!_debug && !_devSteamId.Contains(friend.Id.ToString()))
             {
                 Debug.Log($"{friend.Name} was kicked as they're not on the list!");
-                DisconnectPlayer(friend);
+                DisconnectPlayer();
 
             }
+
+            currentLobby = lobby;
 
         }
 
@@ -172,7 +174,7 @@ namespace PTB.Networking
         private void OnLobbyMemberLeave(Lobby lobby, Friend friend)
         {
             Debug.Log($"{friend.Name} left!");
-            DisconnectPlayer(friend);
+            DisconnectPlayer();
             if (friend.Id == lobby.Owner.Id || _networkHelper.networkManager.IsHost) _eventManager.OnHostDisconnect?.Invoke();
 
         }
@@ -180,7 +182,7 @@ namespace PTB.Networking
         private void OnLobbyMemberDisconnected(Lobby lobby, Friend friend)
         {
             Debug.Log($"{friend.Name} disconnected!");
-            DisconnectPlayer(friend);
+            DisconnectPlayer();
 
 
         }
@@ -212,19 +214,19 @@ namespace PTB.Networking
         #endregion
 
 
-        public virtual void DisconnectPlayer(Friend friend = default)
+        public virtual void DisconnectPlayer()
         {
             if (!SteamManager.Instance.connectedToSteam) return;
 
-            bool isSelf = friend.Id == 0 || friend.Id == SteamClient.SteamId;
-            bool leaverWasHost = friend.Id == currentLobby.Value.Owner.Id;
+            // bool isSelf = friend.Id == 0 || friend.Id == SteamClient.SteamId;
+            bool leaverWasHost = _networkHelper.networkManager.IsHost;
 
-            if (isSelf)
-            {
-                SteamFriends.SetRichPresence("connect", null);
-                _eventManager.OnClientDisconnect?.Invoke();
-                currentLobby?.Leave();
-            }
+
+            SteamFriends.SetRichPresence("connect", null);
+            currentLobby?.Leave();
+            currentLobby = null;
+
+            _eventManager.OnClientDisconnect?.Invoke();
 
             if (leaverWasHost)
                 _eventManager.OnHostDisconnect?.Invoke();

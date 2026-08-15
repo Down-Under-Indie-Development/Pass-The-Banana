@@ -450,9 +450,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Back
-
-'
+  m_text: Leave
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -645,9 +643,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: PTB.Menus.MainMenuController, Assembly-CSharp
-        m_MethodName: BackButton
+      - m_Target: {fileID: 1484427009199260316}
+        m_TargetAssemblyTypeName: LobbyUIManager, Assembly-CSharp
+        m_MethodName: StartGame
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1906,8 +1904,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8bfaacd77d5c6bc43ba0ba48b1d1fe79, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LobbyUIManager
+  _debug: 0
   playerPanelContent: {fileID: 4938979042110284032}
   playerInfoPanel: {fileID: 5007616894640670429, guid: 6b25faf223707b5478bbd8483bf2a549, type: 3}
+  _startGameBTN: {fileID: 0}
 --- !u!1 &8786689336638418506
 GameObject:
   m_ObjectHideFlags: 0
@@ -1921,7 +1921,7 @@ GameObject:
   - component: {fileID: 66603157058861239}
   - component: {fileID: 5399242630693377700}
   m_Layer: 5
-  m_Name: BTN_Back
+  m_Name: BTN_Leave
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2028,19 +2028,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 66603157058861239}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 8392585063905765127}
-        m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
-        m_MethodName: SetActive
-        m_Mode: 6
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
 --- !u!1 &8814802858930624413
 GameObject:
   m_ObjectHideFlags: 0
