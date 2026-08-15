@@ -36,11 +36,11 @@ public class EventManager : Singleton<EventManager>
     #region Steam
     public NoArgs OnConnectedToSteam;
     public OneArg<Lobby> OnLobbyCreated;
-    public NoArgs OnClientDisconnect;
+    public NoArgs OnUnityClientDisconnect;
     public NoArgs OnClientConnect;
-    public NoArgs OnHostDisconnect;
-    public NoArgs OnStartHost;
-    public NoArgs OnStartClient;
+    public NoArgs OnUnityHostDisconnect;
+    public NoArgs OnStartUnityHost;
+    public NoArgs OnStartUnityClient;
 
     #endregion
 

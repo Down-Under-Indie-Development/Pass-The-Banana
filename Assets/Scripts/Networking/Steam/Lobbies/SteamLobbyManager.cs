@@ -75,8 +75,8 @@ namespace PTB.Networking
         private void EstablishUnitySteamConnection()
         {
             _steamManager.EstablishClientSteamConnection();
-            if (SteamClient.IsValid) return;
             _networkTransport.steamAppId = _appId;
+            if (_steamManager.connectedToSteam) return;
 
             // INFO: Not Connected
             Debug.LogWarning($"Not connected to steam, disabling {name}");
@@ -91,10 +91,9 @@ namespace PTB.Networking
         {
             if (currentLobby != null) { Debug.LogWarning($"Lobby is already created!"); return; }
 
-            Debug.Log($"<color=orange>[SERVER]</color> Lobby request received creating lobby!");
-            Debug.Log($"Creating lobby for {playerCount} player(s)");
+            _eventManager.OnStartUnityHost?.Invoke();
+            Debug.Log($"{_networkHelper.CheckPrivilege()} Lobby request received creating lobby!");
             await SteamMatchmaking.CreateLobbyAsync(playerCount);
-            _eventManager.OnStartHost?.Invoke();
 
         }
 
@@ -105,9 +104,7 @@ namespace PTB.Networking
             lobby.SetJoinable(true);
             lobby.SetPrivate();
             lobby.SetGameServer(lobby.Owner.Id);
-            currentLobby = lobby;
-
-            Debug.Log($"Lobby created! | {lobby.Owner.Name}");
+            Debug.Log($"{_networkHelper.CheckPrivilege()} Lobby created! | {lobby.Owner.Name} ({lobby.Id}) | {lobby.MemberCount}/{lobby.MaxMembers}");
 
         }
 
@@ -151,6 +148,7 @@ namespace PTB.Networking
 
             }
 
+
             currentLobby = lobby;
 
         }
@@ -174,15 +172,18 @@ namespace PTB.Networking
         private void OnLobbyMemberLeave(Lobby lobby, Friend friend)
         {
             Debug.Log($"{friend.Name} left!");
-            DisconnectPlayer();
-            if (friend.Id == lobby.Owner.Id || _networkHelper.networkManager.IsHost) _eventManager.OnHostDisconnect?.Invoke();
+            currentLobby = null;
+            if (friend.Id == lobby.Owner.Id || _networkHelper.networkManager.IsHost) OnSteamHostLobbyLeave();
+            // DisconnectPlayer();
 
         }
 
         private void OnLobbyMemberDisconnected(Lobby lobby, Friend friend)
         {
             Debug.Log($"{friend.Name} disconnected!");
-            DisconnectPlayer();
+            currentLobby = null;
+            if (friend.Id == lobby.Owner.Id || _networkHelper.networkManager.IsHost) OnSteamHostLobbyLeave();
+            // DisconnectPlayer();
 
 
         }
@@ -194,12 +195,17 @@ namespace PTB.Networking
         {
 
         }
+
+        protected virtual void OnSteamHostLobbyLeave()
+        {
+            _eventManager.OnUnityHostDisconnect?.Invoke();
+        }
         #endregion
 
         #region Client
         private void StartUnityClient()
         {
-            _eventManager.OnStartClient?.Invoke();
+            _eventManager.OnStartUnityClient?.Invoke();
 
         }
 
@@ -213,7 +219,6 @@ namespace PTB.Networking
         }
         #endregion
 
-
         public virtual void DisconnectPlayer()
         {
             if (!SteamManager.Instance.connectedToSteam) return;
@@ -221,15 +226,14 @@ namespace PTB.Networking
             // bool isSelf = friend.Id == 0 || friend.Id == SteamClient.SteamId;
             bool leaverWasHost = _networkHelper.networkManager.IsHost;
 
-
             SteamFriends.SetRichPresence("connect", null);
             currentLobby?.Leave();
             currentLobby = null;
 
-            _eventManager.OnClientDisconnect?.Invoke();
+            _eventManager.OnUnityClientDisconnect?.Invoke();
 
             if (leaverWasHost)
-                _eventManager.OnHostDisconnect?.Invoke();
+                _eventManager.OnUnityHostDisconnect?.Invoke();
         }
 
     }

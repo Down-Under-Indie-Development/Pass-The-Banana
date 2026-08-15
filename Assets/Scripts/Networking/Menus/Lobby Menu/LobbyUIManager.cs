@@ -21,6 +21,8 @@ public class LobbyUIManager : CustomMonoBehaviour
     [Header("Buttons")]
     [SerializeField] private Button _startGameBTN;
 
+    private NetworkHelper _networkHelper => NetworkHelper.Instance;
+
 
     private Queue<SteamId> _connectedMembers = new();
 
@@ -39,7 +41,7 @@ public class LobbyUIManager : CustomMonoBehaviour
 
     private void Awake()
     {
-        if (!NetworkManager.Singleton.IsHost && _startGameBTN != null) _startGameBTN.interactable = false;
+        if (!_networkHelper.networkManager.IsHost && _startGameBTN != null) _startGameBTN.interactable = false;
 
     }
 
@@ -111,7 +113,8 @@ public class LobbyUIManager : CustomMonoBehaviour
     {
         MainMenuController _mainMenuController = MainMenuController.Instance;
         if (_connectedMembers.Count < _mainMenuController.minimumPlayers && !_debug) { Debug.LogWarning($"Need {_mainMenuController.minimumPlayers} players to start"); return; }
-        NetworkManager.Singleton.SceneManager.LoadScene("Test Scene", LoadSceneMode.Single);
+        Debug.Log($"{_networkHelper.CheckPrivilege()} Started the game!");
+        _networkHelper.networkManager.SceneManager.LoadScene("Test Scene", LoadSceneMode.Single);
 
     }
     #endregion

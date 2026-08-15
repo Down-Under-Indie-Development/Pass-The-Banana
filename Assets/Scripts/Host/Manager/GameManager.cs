@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using PTB.Client.Player;
 using Unity.Netcode;
 using UnityEngine.SceneManagement;
+using PTB.Networking;
 
 public class GameManager : NetworkBehaviour
 {
@@ -26,6 +27,10 @@ public class GameManager : NetworkBehaviour
 
     [Header("Player Settings")]
     [SerializeField] private List<Transform> _spawnPositions = new();
+
+    // INFO: Network Components
+    private NetworkHelper _networkHelper => NetworkHelper.Instance;
+    private SteamLobbyManager _steamLobbyManager => SteamLobbyManager.Instance;
 
     private void Awake()
     {
@@ -57,6 +62,7 @@ public class GameManager : NetworkBehaviour
     }
     #endregion
 
+    // INFO: Players spawned in (Get the host to start it)
     public override void OnNetworkSpawn()
     {
 
@@ -71,16 +77,16 @@ public class GameManager : NetworkBehaviour
         currentGameState = GameState.Playing;
         SpawnPlayers();
 
+
     }
 
+    // INFO: Called on the host
     private void SpawnPlayers()
     {
         if (!IsServer) return;
         if (_playerPrefab == null) return;
-        Debug.Log($"Connected clients: {NetworkManager.Singleton.ConnectedClientsIds.Count}");
 
-
-        List<ulong> clientIds = new List<ulong>(NetworkManager.Singleton.ConnectedClientsIds);
+        List<ulong> clientIds = new List<ulong>(_networkHelper.networkManager.ConnectedClientsIds);
         for (int i = 0; i < clientIds.Count; i++)
         {
             ulong currentClient = clientIds[i];
@@ -90,7 +96,19 @@ public class GameManager : NetworkBehaviour
 
 
         }
+
+        StartGameRPC();
     }
+
+    // INFO: All players spawn now do shit!
+    [Rpc(SendTo.ClientsAndHost)]
+    private void StartGameRPC()
+    {
+        Debug.Log($"{_networkHelper.CheckPrivilege()} All players spawned ready to start!");
+
+    }
+
+
 }
 
 

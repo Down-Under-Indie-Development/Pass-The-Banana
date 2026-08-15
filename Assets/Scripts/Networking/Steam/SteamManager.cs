@@ -8,6 +8,7 @@ namespace Steamworks
         [Header("Steam Settings")]
         [field: SerializeField] public uint appID { get; private set; } = 480;
         public bool connectedToSteam => SteamClient.IsValid;
+        private NetworkHelper _networkHelper => NetworkHelper.Instance;
 
         // INFO: Connect to steam
         protected override void Awake()
@@ -20,6 +21,7 @@ namespace Steamworks
         private void Update()
         {
             if (connectedToSteam) SteamClient.RunCallbacks();
+
         }
 
         #region Steam Connection
@@ -32,10 +34,8 @@ namespace Steamworks
             try
             {
                 SteamClient.Init(appID);
-                bool success = connectedToSteam;
-                Debug.Log(success ? $"Connected to steam! | {SteamClient.Name} ({SteamClient.AppId})" : "Connection failed");
-
-                if (success) _eventManager.OnConnectedToSteam?.Invoke();
+                Debug.Log($"<color=orange>{_networkHelper.CheckPrivilege()}</color> Successfully Connected to steam! | {SteamClient.Name} ({SteamClient.AppId})");
+                _eventManager.OnConnectedToSteam?.Invoke();
 
 
             }
@@ -59,7 +59,7 @@ namespace Steamworks
             try
             {
                 SteamClient.Shutdown();
-                if (!connectedToSteam) Debug.Log($"<color=green>Connection terminated successfully!</color>");
+                if (!connectedToSteam) Debug.Log($"<color=orange>[CLIENT]</color> Connection terminated successfully!");
             }
             catch (System.Exception e)
             {

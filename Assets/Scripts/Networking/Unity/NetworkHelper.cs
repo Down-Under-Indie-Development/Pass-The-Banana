@@ -9,84 +9,82 @@ using Utility;
 /// </summary>
 public class NetworkHelper : PersistentSingleton<NetworkHelper>
 {
-
     public NetworkManager networkManager => NetworkManager.Singleton;
 
     #region Events
     private void OnEnable()
     {
-        _eventManager.OnStartHost += OnStartHost;
-        _eventManager.OnStartClient += OnStartClient;
-        _eventManager.OnClientDisconnect += StopUnityClient;
-        _eventManager.OnHostDisconnect += OnHostDisconnectRPC;
+        _eventManager.OnStartUnityHost += OnStartUnityHost;
+        _eventManager.OnStartUnityClient += OnStartUnityClient;
+        // _eventManager.OnUnityClientDisconnect += StopUnityClient;
+        _eventManager.OnUnityHostDisconnect += OnUnityHostDisconnectRPC;
 
     }
 
     private void OnDisable()
     {
-        _eventManager.OnClientDisconnect -= StopUnityClient;
-        _eventManager.OnStartClient -= OnStartClient;
-        _eventManager.OnHostDisconnect -= OnHostDisconnectRPC;
+        // _eventManager.OnUnityClientDisconnect -= StopUnityClient;
+        _eventManager.OnStartUnityClient -= OnStartUnityClient;
+        _eventManager.OnUnityHostDisconnect -= OnUnityHostDisconnectRPC;
 
         if (networkManager == null) return;
-        networkManager.OnClientConnectedCallback -= OnClientConnected;
-        networkManager.OnClientDisconnectCallback -= OnClientDisconnect;
+        networkManager.OnClientConnectedCallback -= OnUnityClientConnected;
+        networkManager.OnClientDisconnectCallback -= OnUnityClientDisconnect;
 
     }
     #endregion
 
     #region Client
     // INFO: Start client connection 
-    protected virtual void OnStartClient()
+    protected virtual void OnStartUnityClient()
     {
 
-        networkManager.OnClientConnectedCallback += OnClientConnected;
-        networkManager.OnClientDisconnectCallback += OnClientDisconnect;
+        networkManager.OnClientConnectedCallback += OnUnityClientConnected;
+        networkManager.OnClientDisconnectCallback += OnUnityClientDisconnect;
         if (!networkManager.StartClient()) { Debug.LogError($"Client failed to start!"); return; }
 
         Debug.Log($"Client has started");
 
     }
 
-    protected virtual void OnClientConnected(ulong obj) { Debug.Log($"{obj} has connected!"); }
-    protected virtual void OnClientDisconnect(ulong obj) { Debug.Log($"{obj} has disconnected!"); }
-    #endregion
+    protected virtual void OnUnityClientConnected(ulong obj) { Debug.Log($"{obj} has connected!"); }
+    protected virtual void OnUnityClientDisconnect(ulong obj)
+    {
+        StopUnityClient();
+    }
 
-    #region Shared
     protected virtual void StopUnityClient()
     {
         if (networkManager == null) return;
         if (!networkManager.IsHost)
         {
-            networkManager.OnClientConnectedCallback -= OnClientConnected;
-            networkManager.OnClientDisconnectCallback -= OnClientDisconnect;
+            networkManager.OnClientConnectedCallback -= OnUnityClientConnected;
+            networkManager.OnClientDisconnectCallback -= OnUnityClientDisconnect;
         }
 
         networkManager.SceneManager.LoadScene("Main Menu Scene", LoadSceneMode.Single);
-        networkManager.Shutdown();
-
     }
 
     #endregion
 
     #region Host
     // INFO: Start host connection
-    protected virtual void OnStartHost()
+    protected virtual void OnStartUnityHost()
     {
         // GUARD: Ensure host isn't already running
         if (networkManager.IsHost) return;
 
         // GUARD: Ensure server started
         if (!networkManager.StartHost()) return;
-        Debug.Log($"{CheckPrivilege(networkManager.IsHost)} has started");
+        Debug.Log($"{CheckPrivilege()} Unity Server has started");
 
     }
 
     [Rpc(SendTo.ClientsAndHost)]
-    protected virtual void OnHostDisconnectRPC()
+    protected virtual void OnUnityHostDisconnectRPC()
     {
         networkManager.SceneManager.LoadScene("Main Menu Scene", LoadSceneMode.Single);
-        Debug.Log($"The host has disconnected closing server");
+        Debug.Log($"{CheckPrivilege()} Host has disconnected closing server");
         StopUnityClient();
 
 
@@ -94,14 +92,16 @@ public class NetworkHelper : PersistentSingleton<NetworkHelper>
 
     #endregion
 
-    public string CheckPrivilege(bool obj)
+    public string CheckPrivilege()
     {
-        switch (obj)
+        if (networkManager == null || networkManager.IsHost == default) return "<color=orange>[CLIENT]</color>";
+
+        switch (networkManager.IsHost)
         {
             case true:
-                return "[HOST]";
+                return "<color=orange>[HOST]</color>";
             case false:
-                return "[CLIENT]";
+                return "<color=orange>[CLIENT]</color>";
 
         }
 
