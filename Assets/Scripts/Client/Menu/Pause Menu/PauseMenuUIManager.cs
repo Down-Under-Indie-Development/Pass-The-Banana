@@ -19,7 +19,7 @@ namespace PTB.Client.Menus
 
         public void ReturnToMainMenu()
         {
-            if (SteamLobbyManager.hasInstance) SteamLobbyManager.Instance.DisconnectPlayer(); // TODO: Make an event for this
+            _eventManager.OnSteamClientDisconnect?.Invoke();
 
         }
 

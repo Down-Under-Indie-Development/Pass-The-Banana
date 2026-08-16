@@ -25,7 +25,7 @@ namespace PTB.Menus
         [SerializeField] private GameObject _optionsMenu;
 
         // INFO: Steam lobby settings
-        public int minimumPlayers => SteamLobbyManager.Instance.minimumPlayers;
+        public int minimumPlayers => SteamManager.Instance.minimumPlayers;
 
         public GameState currentGameState = GameState.MainMenu;
 
@@ -115,7 +115,7 @@ namespace PTB.Menus
                     HandleMenuSwitching(_hostGameMenu, GameState.MainMenu);
                     break;
                 case GameState.Lobby:
-                    SteamLobbyManager.Instance.DisconnectPlayer();
+                    _eventManager.OnSteamClientDisconnect?.Invoke();
                     break;
                 case GameState.JoinGame:
                     HandleMenuSwitching(_joinGameMenu, GameState.MainMenu);

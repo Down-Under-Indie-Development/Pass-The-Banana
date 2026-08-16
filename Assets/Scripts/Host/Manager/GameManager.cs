@@ -34,7 +34,7 @@ public class GameManager : NetworkBehaviour
     #region Networking Components
     // INFO: Network Components
     private UnityNetworkHelper _networkHelper => UnityNetworkHelper.Instance;
-    private SteamLobbyManager _steamLobbyManager => SteamLobbyManager.Instance;
+    private SteamManager _steamManager => SteamManager.Instance;
     #endregion
 
     private void Awake()

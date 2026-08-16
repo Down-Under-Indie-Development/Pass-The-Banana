@@ -237,14 +237,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 1070026297}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8f8fd618bc91ca14b9c7bb3fd839a8d0, type: 3}
+  m_Script: {fileID: 11500000, guid: 60c50a79ff9ba864da8593dd44d1f871, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PTB.Networking.SteamLobbyManager
-  _debug: 1
-  _appId: 480
+  _debug: 0
+  <appID>k__BackingField: 480
   <minimumPlayers>k__BackingField: 2
-  _devSteamId:
-  - 76561198075835864
 --- !u!4 &1070026302
 Transform:
   m_ObjectHideFlags: 0
@@ -341,7 +339,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1148045442}
-  - component: {fileID: 1148045443}
+  - component: {fileID: 1148045445}
   - component: {fileID: 1148045444}
   - component: {fileID: 1148045439}
   m_Layer: 0
@@ -381,23 +379,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1148045443
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1148045438}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8f8fd618bc91ca14b9c7bb3fd839a8d0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PTB.Networking.SteamLobbyManager
-  _debug: 1
-  _appId: 480
-  <minimumPlayers>k__BackingField: 2
-  _devSteamId:
-  - 76561198075835864
 --- !u!114 &1148045444
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -441,6 +422,21 @@ MonoBehaviour:
     OldPrefabList: []
   RunInBackground: 1
   LogLevel: 2
+--- !u!114 &1148045445
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1148045438}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 60c50a79ff9ba864da8593dd44d1f871, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PTB.Networking.SteamManager
+  _debug: 0
+  <appID>k__BackingField: 480
+  <minimumPlayers>k__BackingField: 2
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

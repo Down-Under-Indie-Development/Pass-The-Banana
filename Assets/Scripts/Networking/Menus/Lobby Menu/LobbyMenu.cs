@@ -25,7 +25,7 @@ public class LobbyUIManager : CustomMonoBehaviour
     [SerializeField] private TextMeshProUGUI _lobbyCodeTxt;
 
     private UnityNetworkHelper _networkHelper => UnityNetworkHelper.Instance;
-    private SteamLobbyManager _steamLobbyManager => SteamLobbyManager.Instance;
+    private SteamManager _steamManager => SteamManager.Instance;
 
 
     private Queue<SteamId> _connectedMembers = new();
@@ -56,7 +56,7 @@ public class LobbyUIManager : CustomMonoBehaviour
 
     private void LateUpdate()
     {
-        if (_steamLobbyManager.currentLobby != null) RefreshUI(_steamLobbyManager.currentLobby);
+        if (_steamManager.currentLobby != null) RefreshUI(_steamManager.currentLobby);
     }
 
 
@@ -65,7 +65,7 @@ public class LobbyUIManager : CustomMonoBehaviour
     private void OnLobbyEntered(Lobby lobby)
     {
         MainMenuController.Instance.currentGameState = GameState.Lobby;
-        RefreshUI(_steamLobbyManager.currentLobby);
+        RefreshUI(_steamManager.currentLobby);
 
     }
 
@@ -73,7 +73,7 @@ public class LobbyUIManager : CustomMonoBehaviour
 
     private void UpdateLobbyCodeText(ulong obj)
     {
-        if (_lobbyCodeTxt != null) _lobbyCodeTxt.text = $"Code: {SteamLobbyManager.Instance.currentLobby.Value.Id}";
+        if (_lobbyCodeTxt != null) _lobbyCodeTxt.text = $"Code: {SteamManager.Instance.currentLobby.Value.Id}";
 
     }
 
