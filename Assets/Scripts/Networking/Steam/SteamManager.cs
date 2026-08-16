@@ -4,24 +4,18 @@ using Steamworks;
 
 namespace PTB.Networking
 {
-    public class SteamManager : Singleton<SteamManager>
+    public class SteamManager : PersistentSingleton<SteamManager>
     {
         [Header("Steam Settings")]
         [field: SerializeField] public uint appID { get; private set; } = 480;
         public bool connectedToSteam => SteamClient.IsValid;
-        private NetworkHelper _networkHelper => NetworkHelper.Instance;
+        private UnityNetworkHelper _networkHelper => UnityNetworkHelper.Instance;
 
         // INFO: Connect to steam
         protected override void Awake()
         {
             base.Awake();
             EstablishClientSteamConnection();
-
-        }
-
-        private void Update()
-        {
-            if (connectedToSteam) SteamClient.RunCallbacks();
 
         }
 
@@ -61,6 +55,7 @@ namespace PTB.Networking
             {
                 SteamClient.Shutdown();
                 if (!connectedToSteam) Debug.Log($"<color=orange>[CLIENT]</color> Connection terminated successfully!");
+
             }
             catch (System.Exception e)
             {

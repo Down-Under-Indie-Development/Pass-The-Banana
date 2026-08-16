@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Unity.Netcode;
 using PTB.Networking;
 using UnityEngine.UI;
+using TMPro;
 
 public class LobbyUIManager : CustomMonoBehaviour
 {
@@ -21,7 +22,10 @@ public class LobbyUIManager : CustomMonoBehaviour
     [Header("Buttons")]
     [SerializeField] private Button _startGameBTN;
 
-    private NetworkHelper _networkHelper => NetworkHelper.Instance;
+    [SerializeField] private TextMeshProUGUI _lobbyCodeTxt;
+
+    private UnityNetworkHelper _networkHelper => UnityNetworkHelper.Instance;
+    private SteamLobbyManager _steamLobbyManager => SteamLobbyManager.Instance;
 
 
     private Queue<SteamId> _connectedMembers = new();
@@ -29,11 +33,13 @@ public class LobbyUIManager : CustomMonoBehaviour
     #region Events
     private void OnEnable()
     {
+        SteamMatchmaking.OnLobbyEntered += UpdateLobbyCodeText;
         SteamMatchmaking.OnLobbyMemberJoined += OnLobbyMemberJoined;
     }
 
     private void OnDisable()
     {
+        SteamMatchmaking.OnLobbyEntered -= UpdateLobbyCodeText;
         SteamMatchmaking.OnLobbyMemberJoined -= OnLobbyMemberJoined;
 
     }
@@ -47,21 +53,27 @@ public class LobbyUIManager : CustomMonoBehaviour
 
     private void LateUpdate()
     {
-        RefreshUI(SteamLobbyManager.Instance.currentLobby);
+        RefreshUI(_steamLobbyManager.currentLobby);
     }
 
 
     #region Steamworks
+
     private void OnLobbyMemberJoined(Lobby lobby, Friend friend)
     {
-        AddNewPlayer(friend);
+        RefreshUI(_steamLobbyManager.currentLobby);
     }
 
     #endregion
 
+    private void UpdateLobbyCodeText(Lobby lobby)
+    {
+        if (_lobbyCodeTxt != null) _lobbyCodeTxt.text = $"Code: {lobby.Id}";
+
+    }
+
     private void RefreshUI(Lobby? lobby)
     {
-
         if (playerPanelContent == null) { Debug.LogError($"Player panel content is null!"); return; }
         if (playerInfoPanel == null) { Debug.LogError($"Player info panel is null, cannot display player"); return; }
         if (lobby == null) return;
@@ -85,12 +97,6 @@ public class LobbyUIManager : CustomMonoBehaviour
 
 
         }
-    }
-
-    private void AddNewPlayer(Friend member)
-    {
-        if (!_connectedMembers.Contains(member.Id)) _connectedMembers.Enqueue(member.Id);
-
     }
 
     int GetEstimatedPing(Lobby? lobby, SteamId memberId)

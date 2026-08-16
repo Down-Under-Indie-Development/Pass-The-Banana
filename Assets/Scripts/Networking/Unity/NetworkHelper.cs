@@ -7,24 +7,23 @@ using Utility;
 /// <summary>
 /// Handles Unity Netcode side for connecting and disconnecting clients
 /// </summary>
-public class NetworkHelper : NetworkBehaviour
+public class UnityNetworkHelper : NetworkBehaviour
 {
-    public static NetworkHelper Instance;
+    public static UnityNetworkHelper Instance;
     private EventManager _eventManager => EventManager.Instance;
     public NetworkManager networkManager => NetworkManager.Singleton;
 
     private void Awake()
     {
-        if (Instance == null)
+        // GUARD: Destroy duplicate
+        if (Instance != null && Instance != this)
         {
-            Instance = this;
-            // DontDestroyOnLoad(this);
+            Destroy(gameObject);
+            return;
         }
-        else
-        {
-            // Destroy(gameObject);
-            NetworkObject.Despawn(true);
-        }
+
+        Instance = this;
+        DontDestroyOnLoad(gameObject); // note: DontDestroyOnLoad(this) also works for a component but gameObject is the clearer form
 
     }
 

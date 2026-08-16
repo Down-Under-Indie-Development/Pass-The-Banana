@@ -4,19 +4,23 @@ using System.Collections.Generic;
 using Netcode.Transports.Facepunch;
 using Steamworks;
 using Steamworks.Data;
+using UnityEditor;
 using UnityEngine;
 using Utility;
 
 namespace PTB.Networking
 {
-    public class SteamLobbyManager : Singleton<SteamLobbyManager>
+    public class SteamLobbyManager : PersistentSingleton<SteamLobbyManager>
     {
         [Header("Steam Settings")]
         [SerializeField] private uint _appId = 480;
 
+        [Header("Lobby Settings")]
+        [field: SerializeField] public int minimumPlayers { get; private set; } = 2;
+
         public Lobby? currentLobby { get; private set; }
         private FacepunchTransport _networkTransport;
-        private NetworkHelper _networkHelper => NetworkHelper.Instance;
+        private UnityNetworkHelper _networkHelper => UnityNetworkHelper.Instance;
         private SteamManager _steamManager => SteamManager.Instance;
 
         [Header("Testing")]
@@ -100,6 +104,7 @@ namespace PTB.Networking
             lobby.SetPrivate();
             lobby.SetGameServer(lobby.Owner.Id);
             Debug.Log($"{_networkHelper.CheckPrivilege()} Lobby created! | {lobby.Owner.Name} ({lobby.Id}) | {lobby.MemberCount}/{lobby.MaxMembers}");
+            GUIUtility.systemCopyBuffer = lobby.Id.ToString(); // INFO: Copies lobby code to peoples keyboard
 
         }
 
@@ -144,9 +149,9 @@ namespace PTB.Networking
             currentLobby = lobby;
 
             // GUARD: self-check whitelist before doing anything else
-            if (!_debug && !_devSteamId.Contains(SteamClient.SteamId.ToString()))
+            if (!_debug && !_devSteamId.Contains(SteamClient.SteamId.ToString()) && SteamClient.SteamId != lobby.Owner.Id)
             {
-                Debug.Log($"You're not whitelisted, leaving lobby.");
+                Debug.LogWarning($"You're not whitelisted, leaving lobby.");
                 DisconnectPlayer();
                 return;
             }
@@ -206,6 +211,7 @@ namespace PTB.Networking
         protected virtual void OnClientEnterLobby(Lobby lobby)
         {
             // INFO: Client
+
             Debug.Log($"You entered {lobby.Owner.Name}'s lobby");
             _eventManager.OnSteamClientConnect?.Invoke();
             StartUnityClient();
@@ -216,6 +222,7 @@ namespace PTB.Networking
         public virtual void DisconnectPlayer()
         {
             if (!SteamManager.Instance.connectedToSteam) return;
+            if (currentLobby == null) return;
 
             // bool isSelf = friend.Id == 0 || friend.Id == SteamClient.SteamId;
             bool leaverWasHost = _networkHelper.networkManager.IsHost;

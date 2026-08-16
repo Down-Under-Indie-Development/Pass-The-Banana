@@ -23,7 +23,7 @@ public class JoinGameMenu : MonoBehaviour
 
         if (!ulong.TryParse(_joinCodeInputField.text, out ulong lobbyId))
         {
-            Debug.LogWarning($"{NetworkHelper.Instance.CheckPrivilege()} Invalid join code: {_joinCodeInputField.text}");
+            Debug.LogWarning($"{UnityNetworkHelper.Instance.CheckPrivilege()} Invalid join code: {_joinCodeInputField.text}");
             _joinCodeInputField.text = "";
             _errorTXT?.gameObject.SetActive(true);
             return;

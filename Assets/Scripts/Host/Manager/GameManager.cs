@@ -5,6 +5,8 @@ using PTB.Client.Player;
 using Unity.Netcode;
 using UnityEngine.SceneManagement;
 using PTB.Networking;
+using Unity.VisualScripting;
+using UnityEngine.InputSystem;
 
 public class GameManager : NetworkBehaviour
 {
@@ -14,23 +16,26 @@ public class GameManager : NetworkBehaviour
     private EventManager _eventManager => EventManager.Instance;
     #endregion
 
-
     [Header("Game Settings")]
     [SerializeField] private List<CategorySO> _categories;
 
+
     [Header("Player Tracking")]
     [SerializeField] private PlayerNetworkedController _playerWithBanana;
-    [SerializeField] private GameObject _playerPrefab;
 
     [Header("Game State")]
     [field: SerializeField] public GameState currentGameState { get; set; }
 
     [Header("Player Settings")]
+    [SerializeField] private GameObject _playerPrefab;
     [SerializeField] private List<Transform> _spawnPositions = new();
+    [SerializeField] private GameObject _pauseMenuGO;
 
+    #region Networking Components
     // INFO: Network Components
-    private NetworkHelper _networkHelper => NetworkHelper.Instance;
+    private UnityNetworkHelper _networkHelper => UnityNetworkHelper.Instance;
     private SteamLobbyManager _steamLobbyManager => SteamLobbyManager.Instance;
+    #endregion
 
     private void Awake()
     {
@@ -62,6 +67,28 @@ public class GameManager : NetworkBehaviour
     }
     #endregion
 
+    private void Start()
+    {
+        _pauseMenuGO?.SetActive(false);
+
+    }
+
+    private void Update()
+    {
+        if (Keyboard.current.escapeKey.wasPressedThisFrame) TogglePauseMenu(); // INFO: Check for pause menu
+    }
+
+    #region Menus
+    private void TogglePauseMenu()
+    {
+        if (_pauseMenuGO == null) { Debug.LogWarning($"Pause menu is null!"); return; }
+        _pauseMenuGO?.SetActive(!_pauseMenuGO.activeSelf);
+
+    }
+    #endregion
+
+
+    #region Networking
     // INFO: Players spawned in (Get the host to start it)
     public override void OnNetworkSpawn()
     {
@@ -99,6 +126,7 @@ public class GameManager : NetworkBehaviour
 
         StartGameRPC();
     }
+    #endregion
 
     // INFO: All players spawn now do shit!
     [Rpc(SendTo.ClientsAndHost)]

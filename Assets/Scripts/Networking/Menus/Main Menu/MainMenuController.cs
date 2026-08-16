@@ -11,19 +11,21 @@ namespace PTB.Menus
 {
     public class MainMenuController : Singleton<MainMenuController>
     {
-        [Header("Host Game")]
+        [Header("Host Game Menu")]
         [SerializeField] private GameObject _hostGameMenu;
         [SerializeField] private Slider _hostGamePlayerCountSlider; // TODO: Find a better way to do this
+
+        [Header("Lobby Menu")]
         [SerializeField] private GameObject _lobbyScreen;
 
-        [Header("Join Game")]
+        [Header("Join Game Menu")]
         [SerializeField] private GameObject _joinGameMenu;
 
-        [Header("Options")]
+        [Header("Options Menu")]
         [SerializeField] private GameObject _optionsMenu;
 
-        [Header("Game Settings")]
-        [field: SerializeField] public int minimumPlayers { get; private set; } = 2;
+        // INFO: Steam lobby settings
+        public int minimumPlayers => SteamLobbyManager.Instance.minimumPlayers;
 
         private GameState _currentGameState = GameState.MainMenu;
 
