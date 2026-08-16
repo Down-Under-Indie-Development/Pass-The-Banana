@@ -31,7 +31,7 @@ public class UnityNetworkHelper : NetworkBehaviour
     private void OnEnable()
     {
         // INFO: Host
-        _eventManager.OnStartUnityHost += OnStartUnityHost;
+        _eventManager.OnSteamHostConnect += OnStartUnityHost;
         _eventManager.OnStopUnityHost += OnStopUnityHost;
 
         // INFO: Client
@@ -43,7 +43,7 @@ public class UnityNetworkHelper : NetworkBehaviour
     private void OnDisable()
     {
         // INFO: Host
-        _eventManager.OnStartUnityHost -= OnStartUnityHost;
+        _eventManager.OnSteamHostConnect -= OnStartUnityHost;
         _eventManager.OnSteamClientConnect -= OnStartUnityClient;
 
         // INFO: Client
@@ -83,6 +83,7 @@ public class UnityNetworkHelper : NetworkBehaviour
         // GUARD: Ensure server started
         if (!networkManager.StartHost()) return;
         Debug.Log($"{CheckPrivilege()} Unity Server has started");
+        _eventManager.OnStartUnityClient?.Invoke();
 
     }
 

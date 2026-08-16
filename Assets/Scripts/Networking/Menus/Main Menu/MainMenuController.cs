@@ -32,12 +32,13 @@ namespace PTB.Menus
         #region Events
         private void OnEnable()
         {
-            _eventManager.OnSteamClientConnect += OnSteamClientConnect;
+            _eventManager.OnStartUnityClient += OnSteamClientConnect;
         }
 
         private void OnDisable()
         {
-            _eventManager.OnSteamClientConnect -= OnSteamClientConnect;
+            _eventManager.OnStartUnityClient -= OnSteamClientConnect;
+
 
         }
         #endregion

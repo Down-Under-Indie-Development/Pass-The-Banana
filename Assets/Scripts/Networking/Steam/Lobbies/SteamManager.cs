@@ -186,7 +186,6 @@ namespace PTB.Networking
             if (currentLobby != null) { Debug.LogWarning($"Lobby is already created!"); return; }
 
             Debug.Log($"{CheckPrivilege()} Lobby request received creating lobby!");
-            _eventManager.OnStartUnityHost?.Invoke();
             await SteamMatchmaking.CreateLobbyAsync(playerCount);
 
         }
@@ -266,6 +265,7 @@ namespace PTB.Networking
         #region Host
         protected virtual void OnSteamHostEntered()
         {
+            _eventManager.OnSteamHostConnect?.Invoke();
             Debug.Log($"{CheckPrivilege()} Oh herro mister Host!");
 
         }

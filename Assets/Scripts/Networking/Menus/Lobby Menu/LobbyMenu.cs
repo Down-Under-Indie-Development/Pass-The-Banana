@@ -30,19 +30,21 @@ public class LobbyUIManager : CustomMonoBehaviour
 
     private Queue<SteamId> _connectedMembers = new();
 
+    // TODO: Make this a network behaviour
+
     #region Events
     private void OnEnable()
     {
-        _networkHelper.networkManager.OnClientConnectedCallback += UpdateLobbyCodeText;
-        // SteamMatchmaking.OnLobbyEntered += UpdateLobbyCodeText;
+        // _networkHelper.networkManager.OnClientConnectedCallback += UpdateLobbyCodeText;
+        SteamMatchmaking.OnLobbyEntered += OnLobbyEntered;
 
         SteamMatchmaking.OnLobbyEntered += OnLobbyEntered;
     }
 
     private void OnDisable()
     {
-        _networkHelper.networkManager.OnClientConnectedCallback += UpdateLobbyCodeText;
-        // SteamMatchmaking.OnLobbyEntered -= UpdateLobbyCodeText;
+        // _networkHelper.networkManager.OnClientConnectedCallback += UpdateLobbyCodeText;
+        SteamMatchmaking.OnLobbyEntered -= OnLobbyEntered;
         SteamMatchmaking.OnLobbyEntered -= OnLobbyEntered;
 
     }
@@ -65,13 +67,14 @@ public class LobbyUIManager : CustomMonoBehaviour
     private void OnLobbyEntered(Lobby lobby)
     {
         MainMenuController.Instance.currentGameState = GameState.Lobby;
-        RefreshUI(_steamManager.currentLobby);
+        UpdateLobbyCodeText();
+        RefreshUI(lobby);
 
     }
 
     #endregion
 
-    private void UpdateLobbyCodeText(ulong obj)
+    private void UpdateLobbyCodeText()
     {
         if (_lobbyCodeTxt != null) _lobbyCodeTxt.text = $"Code: {SteamManager.Instance.currentLobby.Value.Id}";
 
