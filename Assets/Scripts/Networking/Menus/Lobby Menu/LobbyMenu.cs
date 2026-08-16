@@ -33,14 +33,17 @@ public class LobbyUIManager : CustomMonoBehaviour
     #region Events
     private void OnEnable()
     {
-        SteamMatchmaking.OnLobbyEntered += UpdateLobbyCodeText;
-        SteamMatchmaking.OnLobbyMemberJoined += OnLobbyMemberJoined;
+        _networkHelper.networkManager.OnClientConnectedCallback += UpdateLobbyCodeText;
+        // SteamMatchmaking.OnLobbyEntered += UpdateLobbyCodeText;
+
+        SteamMatchmaking.OnLobbyEntered += OnLobbyEntered;
     }
 
     private void OnDisable()
     {
-        SteamMatchmaking.OnLobbyEntered -= UpdateLobbyCodeText;
-        SteamMatchmaking.OnLobbyMemberJoined -= OnLobbyMemberJoined;
+        _networkHelper.networkManager.OnClientConnectedCallback += UpdateLobbyCodeText;
+        // SteamMatchmaking.OnLobbyEntered -= UpdateLobbyCodeText;
+        SteamMatchmaking.OnLobbyEntered -= OnLobbyEntered;
 
     }
     #endregion
@@ -53,22 +56,24 @@ public class LobbyUIManager : CustomMonoBehaviour
 
     private void LateUpdate()
     {
-        RefreshUI(_steamLobbyManager.currentLobby);
+        if (_steamLobbyManager.currentLobby != null) RefreshUI(_steamLobbyManager.currentLobby);
     }
 
 
     #region Steamworks
 
-    private void OnLobbyMemberJoined(Lobby lobby, Friend friend)
+    private void OnLobbyEntered(Lobby lobby)
     {
+        MainMenuController.Instance.currentGameState = GameState.Lobby;
         RefreshUI(_steamLobbyManager.currentLobby);
+
     }
 
     #endregion
 
-    private void UpdateLobbyCodeText(Lobby lobby)
+    private void UpdateLobbyCodeText(ulong obj)
     {
-        if (_lobbyCodeTxt != null) _lobbyCodeTxt.text = $"Code: {lobby.Id}";
+        if (_lobbyCodeTxt != null) _lobbyCodeTxt.text = $"Code: {SteamLobbyManager.Instance.currentLobby.Value.Id}";
 
     }
 

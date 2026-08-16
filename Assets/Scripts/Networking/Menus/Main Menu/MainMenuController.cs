@@ -27,7 +27,7 @@ namespace PTB.Menus
         // INFO: Steam lobby settings
         public int minimumPlayers => SteamLobbyManager.Instance.minimumPlayers;
 
-        private GameState _currentGameState = GameState.MainMenu;
+        public GameState currentGameState = GameState.MainMenu;
 
         #region Events
         private void OnEnable()
@@ -48,6 +48,7 @@ namespace PTB.Menus
             if (_lobbyScreen != null) _lobbyScreen.SetActive(false);
             if (_joinGameMenu != null) _joinGameMenu.SetActive(false);
             if (_optionsMenu != null) _optionsMenu.SetActive(false);
+
             SceneManager.LoadScene("Networking Scene", LoadSceneMode.Additive);
 
         }
@@ -58,30 +59,31 @@ namespace PTB.Menus
             if (_hostGameMenu == null) { Debug.LogWarning($"Host game menu is null!"); return; }
             _hostGameMenu?.SetActive(true);
             _eventManager.OnHostGame?.Invoke();
-            _currentGameState = GameState.HostGame;
+            currentGameState = GameState.HostGame;
 
         }
 
         public void CreateLobby()
         {
             if (_hostGamePlayerCountSlider == null) { Debug.LogError($"Slider is null!"); return; }
+            // currentGameState = GameState.Lobby;
             _eventManager.OnCreateLobbyRequest?.Invoke((int)_hostGamePlayerCountSlider.value);
-            _currentGameState = GameState.Lobby;
 
         }
 
         public void JoinGame()
         {
             if (_joinGameMenu == null) { Debug.LogWarning($"Join game menu is null!"); return; }
+            currentGameState = GameState.JoinGame;
             _joinGameMenu.SetActive(true);
             _eventManager.OnJoinGame?.Invoke();
-            _currentGameState = GameState.JoinGame;
+
 
         }
 
         public void Options()
         {
-            _currentGameState = GameState.Options;
+            currentGameState = GameState.Options;
             Debug.LogWarning($"Not implemented!");
 
         }
@@ -98,16 +100,16 @@ namespace PTB.Menus
         // INFO: Prevent switching to null UI
         private void HandleMenuSwitching(GameObject menuToDisable, GameState menuStateToSwitchTo)
         {
-            if (menuStateToSwitchTo == _currentGameState) { Debug.LogWarning($"Already on this state, enabling object!"); }
+            if (menuStateToSwitchTo == currentGameState) { Debug.LogWarning($"Already on this state, enabling object!"); }
             if (menuToDisable == null) { Debug.LogWarning($"The provided menu is null"); return; }
             menuToDisable.SetActive(false);
-            _currentGameState = menuStateToSwitchTo;
+            currentGameState = menuStateToSwitchTo;
 
         }
 
         public void BackButton()
         {
-            switch (_currentGameState)
+            switch (currentGameState)
             {
                 case GameState.HostGame:
                     HandleMenuSwitching(_hostGameMenu, GameState.MainMenu);
@@ -117,6 +119,9 @@ namespace PTB.Menus
                     break;
                 case GameState.JoinGame:
                     HandleMenuSwitching(_joinGameMenu, GameState.MainMenu);
+                    break;
+                default:
+                    Debug.LogWarning($"Don't have logic for Game State: {_gameManager.currentGameState}");
                     break;
 
             }

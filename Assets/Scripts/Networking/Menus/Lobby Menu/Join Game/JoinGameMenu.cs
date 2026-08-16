@@ -1,3 +1,4 @@
+using PTB.Menus;
 using PTB.Networking;
 using Steamworks;
 using Steamworks.Data;
@@ -31,7 +32,8 @@ public class JoinGameMenu : MonoBehaviour
         }
 
         _errorTXT?.gameObject.SetActive(false);
-        await SteamMatchmaking.JoinLobbyAsync(lobbyId);
+        Lobby? lobby = await SteamMatchmaking.JoinLobbyAsync(lobbyId);
+        if (lobby != null) MainMenuController.Instance.currentGameState = GameState.Lobby;
 
 
     }

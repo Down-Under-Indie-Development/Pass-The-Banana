@@ -2,7 +2,7 @@ using Utility;
 using UnityEngine;
 using Steamworks.Data;
 
-public class EventManager : Singleton<EventManager>
+public class EventManager : PersistentSingleton<EventManager>
 {
     public delegate void NoArgs();
     public delegate void OneArg<T1>(T1 t1);

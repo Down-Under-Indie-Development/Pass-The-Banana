@@ -128,13 +128,15 @@ public class GameManager : NetworkBehaviour
     }
     #endregion
 
+    #region Game Sequence
     // INFO: All players spawn now do shit!
-    [Rpc(SendTo.ClientsAndHost)]
+    [Rpc(SendTo.Server)]
     private void StartGameRPC()
     {
         Debug.Log($"{_networkHelper.CheckPrivilege()} All players spawned ready to start!");
 
     }
+    #endregion
 
 
 }

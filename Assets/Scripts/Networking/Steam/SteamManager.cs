@@ -67,7 +67,7 @@ namespace PTB.Networking
 
         // INFO: Ensure correct termination
         private void OnDestroy() => TerminateSteamConnection();
-        private void OnApplicationQuit() => TerminateSteamConnection();
+        protected void OnApplicationQuit() => TerminateSteamConnection();
         #endregion
 
     }
