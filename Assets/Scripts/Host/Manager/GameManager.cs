@@ -39,16 +39,14 @@ public class GameManager : NetworkBehaviour
 
     private void Awake()
     {
-        if (Instance == null)
+        // GUARD: Destroy duplicate
+        if (Instance != null && Instance != this)
         {
-            Instance = this;
-            // DontDestroyOnLoad(this);
+            Destroy(gameObject);
+            return;
         }
-        else
-        {
-            // Destroy(gameObject);
-            NetworkObject.Despawn(true);
-        }
+
+        Instance = this;
 
     }
 

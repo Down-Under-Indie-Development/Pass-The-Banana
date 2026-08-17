@@ -27,19 +27,27 @@ namespace PTB.Menus
         // INFO: Steam lobby settings
         public int minimumPlayers => SteamManager.Instance.minimumPlayers;
 
-        public GameState currentGameState = GameState.MainMenu;
+        [SerializeField] private SessionStateManager _sessionStateManager;
+        private GameState _localCurrentGameSate = GameState.MainMenu;
 
         #region Events
         private void OnEnable()
         {
-            _eventManager.OnStartUnityClient += OnSteamClientConnect;
+            _eventManager.OnStartUnityClient += OnStartUnityClient;
+            _sessionStateManager.currentSessionState.OnValueChanged += HandleSessionStateChange;
         }
 
         private void OnDisable()
         {
-            _eventManager.OnStartUnityClient -= OnSteamClientConnect;
+            _eventManager.OnStartUnityClient -= OnStartUnityClient;
+            _sessionStateManager.currentSessionState.OnValueChanged -= HandleSessionStateChange;
 
 
+        }
+
+        private void HandleSessionStateChange(GameState previousValue, GameState newValue)
+        {
+            _localCurrentGameSate = newValue;
         }
         #endregion
 
@@ -50,8 +58,6 @@ namespace PTB.Menus
             if (_joinGameMenu != null) _joinGameMenu.SetActive(false);
             if (_optionsMenu != null) _optionsMenu.SetActive(false);
 
-            SceneManager.LoadScene("Networking Scene", LoadSceneMode.Additive);
-
         }
 
         #region Menus
@@ -59,39 +65,40 @@ namespace PTB.Menus
         {
             if (_hostGameMenu == null) { Debug.LogWarning($"Host game menu is null!"); return; }
             _hostGameMenu?.SetActive(true);
-            _eventManager.OnHostGame?.Invoke();
-            currentGameState = GameState.HostGame;
+            _eventManager.OnStartUnityHost?.Invoke();
+            _localCurrentGameSate = GameState.HostGame;
 
         }
+
 
         public void CreateLobby()
         {
             if (_hostGamePlayerCountSlider == null) { Debug.LogError($"Slider is null!"); return; }
-            // currentGameState = GameState.Lobby;
             _eventManager.OnCreateLobbyRequest?.Invoke((int)_hostGamePlayerCountSlider.value);
+
 
         }
 
         public void JoinGame()
         {
             if (_joinGameMenu == null) { Debug.LogWarning($"Join game menu is null!"); return; }
-            currentGameState = GameState.JoinGame;
             _joinGameMenu.SetActive(true);
-            _eventManager.OnJoinGame?.Invoke();
+            _localCurrentGameSate = GameState.JoinGame;
 
 
         }
 
         public void Options()
         {
-            currentGameState = GameState.Options;
+            _localCurrentGameSate = GameState.Options;
             Debug.LogWarning($"Not implemented!");
 
         }
         #endregion
 
-        private void OnSteamClientConnect()
+        private void OnStartUnityClient()
         {
+            _sessionStateManager.UpdateSessionState(GameState.Lobby);
             _lobbyScreen?.SetActive(true);
             _joinGameMenu?.SetActive(false);
 
@@ -101,16 +108,16 @@ namespace PTB.Menus
         // INFO: Prevent switching to null UI
         private void HandleMenuSwitching(GameObject menuToDisable, GameState menuStateToSwitchTo)
         {
-            if (menuStateToSwitchTo == currentGameState) { Debug.LogWarning($"Already on this state, enabling object!"); }
+            if (menuStateToSwitchTo == _sessionStateManager.currentSessionState.Value) { Debug.LogWarning($"Already on this state, enabling object!"); }
             if (menuToDisable == null) { Debug.LogWarning($"The provided menu is null"); return; }
             menuToDisable.SetActive(false);
-            currentGameState = menuStateToSwitchTo;
+            _sessionStateManager.UpdateSessionState(menuStateToSwitchTo);
 
         }
 
         public void BackButton()
         {
-            switch (currentGameState)
+            switch (_localCurrentGameSate)
             {
                 case GameState.HostGame:
                     HandleMenuSwitching(_hostGameMenu, GameState.MainMenu);
@@ -122,7 +129,7 @@ namespace PTB.Menus
                     HandleMenuSwitching(_joinGameMenu, GameState.MainMenu);
                     break;
                 default:
-                    Debug.LogWarning($"Don't have logic for Game State: {_gameManager.currentGameState}");
+                    Debug.LogWarning($"Don't have logic for Game State: {_localCurrentGameSate}");
                     break;
 
             }

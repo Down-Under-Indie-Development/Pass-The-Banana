@@ -25,9 +25,7 @@ public class EventManager : PersistentSingleton<EventManager>
     #endregion
 
     #region Main Menu Events
-    public NoArgs OnHostGame;
     public OneArg<int> OnCreateLobbyRequest;
-    public NoArgs OnJoinGame;
     public NoArgs OnQuitGame;
     #endregion
 

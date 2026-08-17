@@ -33,8 +33,6 @@ public class JoinGameMenu : MonoBehaviour
 
         _errorTXT?.gameObject.SetActive(false);
         Lobby? lobby = await SteamMatchmaking.JoinLobbyAsync(lobbyId);
-        if (lobby != null) MainMenuController.Instance.currentGameState = GameState.Lobby;
-
 
     }
 }

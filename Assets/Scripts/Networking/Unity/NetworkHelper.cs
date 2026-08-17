@@ -23,7 +23,6 @@ public class UnityNetworkHelper : NetworkBehaviour
         }
 
         Instance = this;
-        DontDestroyOnLoad(gameObject);
 
     }
 
@@ -61,6 +60,7 @@ public class UnityNetworkHelper : NetworkBehaviour
         if (!networkManager.StartClient()) { Debug.LogError($"{CheckPrivilege()} Client failed to start!"); return; }
 
         Debug.Log($"{CheckPrivilege()} Client has started");
+        _eventManager.OnStartUnityClient?.Invoke();
 
     }
 

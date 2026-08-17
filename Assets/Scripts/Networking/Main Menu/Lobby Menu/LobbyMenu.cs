@@ -66,7 +66,6 @@ public class LobbyUIManager : CustomMonoBehaviour
 
     private void OnLobbyEntered(Lobby lobby)
     {
-        MainMenuController.Instance.currentGameState = GameState.Lobby;
         UpdateLobbyCodeText();
         RefreshUI(lobby);
 
@@ -101,7 +100,7 @@ public class LobbyUIManager : CustomMonoBehaviour
             PlayerUIInfo playerInfo = playerInfoGO.GetComponent<PlayerUIInfo>();
             bool isHost = lobby.Value.Owner.Id == member.Id;
             playerInfo.playerName = $"{member.Name} {(isHost ? "[HOST]" : "")}";
-            playerInfo.playerPing = $"{GetEstimatedPing(lobby, member.Id)}";
+            playerInfo.playerPing = $"{-1}ms";
 
 
         }

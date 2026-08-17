@@ -22,10 +22,10 @@ namespace PTB.Networking
         [Header("Lobby Settings")]
         [field: SerializeField] public int minimumPlayers { get; protected set; } = 2;
 
+
+
+        #region Networking
         public Lobby? currentLobby { get; protected set; } = null;
-
-
-        #region Steamworks
         protected FacepunchTransport _networkTransport;
         protected bool IsHost => SteamClient.SteamId == currentLobby.Value.Owner.Id;
         #endregion
@@ -119,7 +119,7 @@ namespace PTB.Networking
         #region Steam Connection
         #region Establish Connection
         // INFO: Establish connection to steam servers
-        protected bool EstablishSteamConnection()
+        protected virtual bool EstablishSteamConnection()
         {
             if (connectedToSteam) return true; // INFO: Prevent calling more than once
 
@@ -145,7 +145,7 @@ namespace PTB.Networking
 
         #region Terminate Connection
         // INFO: Disconnect from steam
-        protected void TerminateSteamConnection()
+        protected virtual void TerminateSteamConnection()
         {
             if (!connectedToSteam) return;
 
@@ -167,7 +167,7 @@ namespace PTB.Networking
         protected void OnApplicationQuit() => TerminateSteamConnection();
         #endregion
 
-        private void CheckSteamConnection()
+        protected void CheckSteamConnection()
         {
             if (connectedToSteam) return;
 
@@ -272,8 +272,8 @@ namespace PTB.Networking
 
         protected virtual void OnSteamHostLeave()
         {
-            Debug.Log($"Hi?");
             _eventManager.OnStopUnityHost?.Invoke();
+
         }
         #endregion
 
