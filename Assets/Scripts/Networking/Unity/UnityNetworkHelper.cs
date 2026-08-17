@@ -1,3 +1,4 @@
+using PTB.Networking;
 using Unity.Netcode;
 using Unity.VectorGraphics;
 using UnityEngine;
@@ -7,27 +8,14 @@ using Utility;
 /// <summary>
 /// Handles Unity Netcode side for connecting and disconnecting clients
 /// </summary>
-public class UnityNetworkHelper : NetworkBehaviour
+public class UnityNetworkHelper : NetworkedSingleton<UnityNetworkHelper>
 {
-    public static UnityNetworkHelper Instance;
     private EventManager _eventManager => EventManager.Instance;
-    public NetworkManager networkManager => NetworkManager.Singleton;
-
-    private void Awake()
-    {
-        // GUARD: Destroy duplicate
-        if (Instance != null && Instance != this)
-        {
-            Destroy(gameObject);
-            return;
-        }
-
-        Instance = this;
-
-    }
+    public virtual NetworkManager networkManager => NetworkManager.Singleton;
+    public virtual SessionStateManager sessionStateManager => SessionStateManager.Instance;
 
     #region Events
-    private void OnEnable()
+    protected virtual void OnEnable()
     {
         // INFO: Host
         _eventManager.OnSteamHostConnect += OnStartUnityHost;
@@ -39,7 +27,7 @@ public class UnityNetworkHelper : NetworkBehaviour
 
     }
 
-    private void OnDisable()
+    protected virtual void OnDisable()
     {
         // INFO: Host
         _eventManager.OnSteamHostConnect -= OnStartUnityHost;
@@ -99,7 +87,7 @@ public class UnityNetworkHelper : NetworkBehaviour
     #endregion
 
     #region Utility
-    public string CheckPrivilege()
+    public virtual string CheckPrivilege()
     {
         if (networkManager == null || networkManager.IsHost == default) return $"<color={LogColours.Unity}>[UNITY]</color>";
 

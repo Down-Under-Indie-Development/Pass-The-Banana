@@ -1,12 +1,11 @@
 using Unity.Netcode;
 using UnityEngine;
+using Utility;
 
 namespace PTB.Networking
 {
-    [RequireComponent(typeof(NetworkObject))]
-    public class SessionStateManager : NetworkBehaviour
+    public class SessionStateManager : NetworkedSingleton<SessionStateManager>
     {
-        public static SessionStateManager Instance;
 
 
         public NetworkVariable<GameState> currentSessionState { get; private set; } = new NetworkVariable<GameState>
@@ -17,26 +16,6 @@ NetworkVariableReadPermission.Everyone,
 NetworkVariableWritePermission.Server
         );
 
-        public override void OnNetworkSpawn()
-        {
-            if (Instance != null && Instance != this)
-            {
-                // Not the server-authorized instance — shouldn't normally happen if you only spawn one
-                NetworkObject.Despawn(true);
-                return;
-
-            }
-
-            Instance = this;
-            // No DontDestroyOnLoad needed — dynamically spawned objects persist
-            // across scene loads by default unless DestroyWithScene is set true.
-            NetworkObject.DestroyWithScene = false;
-        }
-
-        public override void OnNetworkDespawn()
-        {
-            Instance = null;
-        }
 
         #region Events
         private void OnEnable()

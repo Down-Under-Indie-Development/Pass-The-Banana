@@ -5,12 +5,17 @@ using Steamworks;
 using UnityEngine.UI;
 using PTB.Networking;
 using Unity.Netcode;
+using TMPro;
 // using Unity.VisualScripting;
 
 namespace PTB.Menus
 {
     public class MainMenuController : Singleton<MainMenuController>
     {
+
+        // INFO: Networking Components
+        private UnityNetworkHelper _unityNetworkHelper => UnityNetworkHelper.Instance;
+
         [Header("Host Game Menu")]
         [SerializeField] private GameObject _hostGameMenu;
         [SerializeField] private Slider _hostGamePlayerCountSlider; // TODO: Find a better way to do this
@@ -27,20 +32,23 @@ namespace PTB.Menus
         // INFO: Steam lobby settings
         public int minimumPlayers => SteamManager.Instance.minimumPlayers;
 
-        [SerializeField] private SessionStateManager _sessionStateManager;
         private GameState _localCurrentGameSate = GameState.MainMenu;
+
+        [Header("Debugging")]
+        [SerializeField] private TextMeshProUGUI _debugTXT;
 
         #region Events
         private void OnEnable()
         {
+
             _eventManager.OnStartUnityClient += OnStartUnityClient;
-            _sessionStateManager.currentSessionState.OnValueChanged += HandleSessionStateChange;
+            _unityNetworkHelper.sessionStateManager.currentSessionState.OnValueChanged += HandleSessionStateChange;
         }
 
         private void OnDisable()
         {
             _eventManager.OnStartUnityClient -= OnStartUnityClient;
-            _sessionStateManager.currentSessionState.OnValueChanged -= HandleSessionStateChange;
+            _unityNetworkHelper.sessionStateManager.currentSessionState.OnValueChanged -= HandleSessionStateChange;
 
 
         }
@@ -48,6 +56,8 @@ namespace PTB.Menus
         private void HandleSessionStateChange(GameState previousValue, GameState newValue)
         {
             _localCurrentGameSate = newValue;
+            if (_debugTXT != null && _unityNetworkHelper != null & _unityNetworkHelper.sessionStateManager != null) _debugTXT.text = $"{newValue}";
+
         }
         #endregion
 
@@ -98,7 +108,7 @@ namespace PTB.Menus
 
         private void OnStartUnityClient()
         {
-            _sessionStateManager.UpdateSessionState(GameState.Lobby);
+            _unityNetworkHelper.sessionStateManager.UpdateSessionState(GameState.Lobby);
             _lobbyScreen?.SetActive(true);
             _joinGameMenu?.SetActive(false);
 
@@ -108,10 +118,10 @@ namespace PTB.Menus
         // INFO: Prevent switching to null UI
         private void HandleMenuSwitching(GameObject menuToDisable, GameState menuStateToSwitchTo)
         {
-            if (menuStateToSwitchTo == _sessionStateManager.currentSessionState.Value) { Debug.LogWarning($"Already on this state, enabling object!"); }
+            if (menuStateToSwitchTo == _unityNetworkHelper.sessionStateManager.currentSessionState.Value) { Debug.LogWarning($"Already on this state, enabling object!"); }
             if (menuToDisable == null) { Debug.LogWarning($"The provided menu is null"); return; }
             menuToDisable.SetActive(false);
-            _sessionStateManager.UpdateSessionState(menuStateToSwitchTo);
+            _unityNetworkHelper.sessionStateManager.UpdateSessionState(menuStateToSwitchTo);
 
         }
 
