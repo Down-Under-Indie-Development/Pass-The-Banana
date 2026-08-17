@@ -1,4 +1,5 @@
 using Unity.Netcode;
+using Unity.VisualScripting;
 using UnityEngine;
 using Utility;
 
@@ -6,8 +7,6 @@ namespace PTB.Networking
 {
     public class SessionStateManager : NetworkedSingleton<SessionStateManager>
     {
-
-
         public NetworkVariable<GameState> currentSessionState { get; private set; } = new NetworkVariable<GameState>
         (
             GameState.MainMenu,
@@ -20,7 +19,9 @@ NetworkVariableWritePermission.Server
         #region Events
         private void OnEnable()
         {
+
             currentSessionState.OnValueChanged += SessionStateChanged;
+
         }
 
         private void OnDisable()

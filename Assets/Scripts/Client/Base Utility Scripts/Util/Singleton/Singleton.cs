@@ -91,16 +91,23 @@ namespace Utility
     public abstract class NetworkedSingleton<T> : NetworkBehaviour where T : NetworkBehaviour
     {
         private static T instance;
-        public static bool hasInstance => instance != null;
 
         public static T Instance
         {
             get
             {
                 if (instance == null)
-                    instance = CreateSingletonInstance();
+                    FindInstance();
                 return instance;
             }
+        }
+
+        private static T FindInstance()
+        {
+            instance = FindAnyObjectByType<T>();
+            if (instance == null) Debug.LogError($"Networked Singletons cannot be created at run time! ({typeof(T).Name})");
+
+            return instance;
         }
 
         public override void OnNetworkSpawn()
@@ -131,17 +138,6 @@ namespace Utility
         {
             if (instance == this)
                 instance = null;
-        }
-
-        protected static T CreateSingletonInstance()
-        {
-            instance = FindAnyObjectByType<T>();
-            if (instance != null) return instance;
-            if (!Application.isPlaying) return instance;
-
-            GameObject singletonObject = new GameObject($"{typeof(T).Name} (Networked Singleton)");
-            instance = singletonObject.AddComponent<T>();
-            return instance;
         }
     }
 

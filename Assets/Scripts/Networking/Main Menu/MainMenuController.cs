@@ -56,7 +56,7 @@ namespace PTB.Menus
         private void HandleSessionStateChange(GameState previousValue, GameState newValue)
         {
             _localCurrentGameSate = newValue;
-            if (_debugTXT != null && _unityNetworkHelper != null & _unityNetworkHelper.sessionStateManager != null) _debugTXT.text = $"{newValue}";
+
 
         }
         #endregion
@@ -67,6 +67,12 @@ namespace PTB.Menus
             if (_lobbyScreen != null) _lobbyScreen.SetActive(false);
             if (_joinGameMenu != null) _joinGameMenu.SetActive(false);
             if (_optionsMenu != null) _optionsMenu.SetActive(false);
+
+        }
+
+        private void LateUpdate()
+        {
+            if (_debugTXT != null) _debugTXT.text = $"{_unityNetworkHelper.sessionStateManager.currentSessionState.Value}";
 
         }
 
