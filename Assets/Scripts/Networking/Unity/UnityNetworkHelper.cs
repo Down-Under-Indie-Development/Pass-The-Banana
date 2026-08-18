@@ -7,7 +7,7 @@ using Utility;
 /// <summary>
 /// Handles Unity Netcode side for connecting and disconnecting clients
 /// </summary>
-public class UnityNetworkHelper : NetworkedSingleton<UnityNetworkHelper>
+public class UnityNetworkHelper : PersistentSingleton<UnityNetworkHelper>
 {
     // private EventManager _eventManager => EventManager.Instance;
     public virtual NetworkManager networkManager => NetworkManager.Singleton;
@@ -30,11 +30,11 @@ public class UnityNetworkHelper : NetworkedSingleton<UnityNetworkHelper>
     {
         // INFO: Host
         _eventManager.OnSteamHostConnect -= OnStartUnityHost;
-        _eventManager.OnSteamClientConnect -= OnStartUnityClient;
+        _eventManager.OnStopUnityHost -= OnStopUnityHost;
 
         // INFO: Client
+        _eventManager.OnSteamClientConnect -= OnStartUnityClient;
         _eventManager.OnStopUnityClient -= StopUnityClient;
-        _eventManager.OnStopUnityHost -= OnStopUnityHost;
 
     }
     #endregion
@@ -55,8 +55,8 @@ public class UnityNetworkHelper : NetworkedSingleton<UnityNetworkHelper>
     {
         if (networkManager == null) return;
 
-        string privilege = IsServer ? "host" : "client";
-        string color = IsServer ? LogColours.Host : LogColours.Client;
+        string privilege = networkManager.IsServer ? "host" : "client";
+        string color = networkManager.IsServer ? LogColours.Host : LogColours.Client;
 
         Debug.Log($"<color={LogColours.Unity}>[UNITY]</color> <color={color}>[{privilege.ToUpper()}]</color> Shutting down {privilege}...");
         networkManager.Shutdown();

@@ -10,8 +10,8 @@ GameObject:
   m_Component:
   - component: {fileID: 5616377386487969847}
   - component: {fileID: 4351680910361170167}
-  - component: {fileID: 6501890190019536515}
   - component: {fileID: 4510424224395082140}
+  - component: {fileID: 3705569912611099471}
   - component: {fileID: 1411108395906664839}
   m_Layer: 0
   m_Name: Player
@@ -63,21 +63,6 @@ MonoBehaviour:
   AutoObjectParentSync: 1
   SyncOwnerTransformWhenParented: 1
   AllowOwnerToParent: 0
---- !u!114 &6501890190019536515
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4949907646720940390}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b49bf1f8b236ea845adb214834378178, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerController
-  ShowTopMostFoldoutHeaderGroup: 1
-  _pauseMenuGO: {fileID: 169822467709620466}
-  _correctAnswers: 0
 --- !u!114 &4510424224395082140
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -124,6 +109,21 @@ MonoBehaviour:
   SwitchTransformSpaceWhenParented: 0
   Interpolate: 1
   SlerpPosition: 0
+--- !u!114 &3705569912611099471
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4949907646720940390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d193f01dff2565741b6ec1198e4ab557, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PTB.Client.Player.PlayerNetworkedController
+  ShowTopMostFoldoutHeaderGroup: 1
+  _pauseMenuGO: {fileID: 169822467709620466}
+  _correctAnswers: 0
 --- !u!114 &1411108395906664839
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -335,7 +335,7 @@ Canvas:
   m_RenderMode: 0
   m_Camera: {fileID: 0}
   m_PlaneDistance: 100
-  m_PixelPerfect: 0
+  m_PixelPerfect: 1
   m_ReceivesEvents: 1
   m_OverrideSorting: 0
   m_OverridePixelPerfect: 0
@@ -422,19 +422,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5914585870187084445, guid: 12251edbf385f8e45b617aad020744f4, type: 3}
       propertyPath: m_AnchorMax.x
-      value: 0.5
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5914585870187084445, guid: 12251edbf385f8e45b617aad020744f4, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0.5
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5914585870187084445, guid: 12251edbf385f8e45b617aad020744f4, type: 3}
       propertyPath: m_AnchorMin.x
-      value: 0.5
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5914585870187084445, guid: 12251edbf385f8e45b617aad020744f4, type: 3}
       propertyPath: m_AnchorMin.y
-      value: 0.5
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5914585870187084445, guid: 12251edbf385f8e45b617aad020744f4, type: 3}
       propertyPath: m_SizeDelta.x

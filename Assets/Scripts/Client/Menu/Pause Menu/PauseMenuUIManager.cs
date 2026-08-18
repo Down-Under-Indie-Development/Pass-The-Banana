@@ -29,7 +29,8 @@ namespace PTB.Client.Menus
         {
             _eventManager.OnQuitGame?.Invoke();
 #if UNITY_EDITOR
-            Debug.Log($"<color=orange>Sike this is the editor!</color>");
+            Debug.Log($"<color={LogColours.Unity}>[UNITY]</color> Sike this is the editor!</color>");
+            ReturnToMainMenu();
 #endif
             Application.Quit();
 

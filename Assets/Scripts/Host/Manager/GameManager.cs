@@ -8,6 +8,7 @@ using PTB.Networking;
 using Unity.VisualScripting;
 using UnityEngine.InputSystem;
 using TMPro;
+using Unity.Services.Lobbies.Models;
 
 public class GameManager : NetworkedSingleton<GameManager>
 {
@@ -21,6 +22,8 @@ public class GameManager : NetworkedSingleton<GameManager>
     [Space()]
     [Header("Player Tracking")]
     [SerializeField] private PlayerNetworkedController _playerWithBanana;
+    private IReadOnlyDictionary<ulong, NetworkClient> _connectedClients => NetworkManager.Singleton.ConnectedClients;
+    private IReadOnlyList<ulong> _connectedClientIds => NetworkManager.Singleton.ConnectedClientsIds;
 
     [Space()]
     [Header("Player Settings")]
@@ -51,11 +54,6 @@ public class GameManager : NetworkedSingleton<GameManager>
     }
     #endregion
 
-
-
-
-
-
     #region Networking
     public override void OnNetworkSpawn()
     {
@@ -79,13 +77,13 @@ public class GameManager : NetworkedSingleton<GameManager>
         if (!IsServer) return;
         if (_playerPrefab == null) { Debug.LogError($"Player prefab is null, cannot spawn!"); return; }
 
-        List<ulong> clientIds = new List<ulong>(_networkHelper.networkManager.ConnectedClientsIds);
-        for (int i = 0; i < clientIds.Count; i++)
+
+        for (int i = 0; i < _connectedClientIds.Count; i++)
         {
-            ulong currentClient = clientIds[i];
+            ulong currentClient = _connectedClientIds[i];
             GameObject instance = Instantiate(_playerPrefab);
             instance.transform.position = _spawnPositions[i].position;
-            instance.GetComponent<NetworkObject>().SpawnAsPlayerObject(currentClient);
+            instance.GetComponent<NetworkObject>().SpawnAsPlayerObject(currentClient, true);
 
 
         }
@@ -103,6 +101,24 @@ public class GameManager : NetworkedSingleton<GameManager>
         if (_networkHelper.sessionStateManager.currentSessionState.Value != GameState.Playing) return;
         Debug.Log($"{_networkHelper.CheckPrivilege()} All players spawned ready to start!");
 
+    }
+    #endregion
+
+    #region Host Pausing
+    [Rpc(SendTo.NotServer)] // INFO: Notify the clients the host has paused!
+    public void NotifyServerOfHostPauseRPC()
+    {
+        if (!NetworkManager.Singleton.IsServer) return;
+
+        Debug.Log($"{_networkHelper.CheckPrivilege()} OMG the host has paused!");
+
+        foreach (NetworkClient netObj in _connectedClients.Values)
+        {
+            PlayerNetworkedController playerController = netObj.PlayerObject.GetComponent<PlayerNetworkedController>();
+            if (playerController == null) continue;
+            playerController.PausePlayer();
+
+        }
     }
     #endregion
 
