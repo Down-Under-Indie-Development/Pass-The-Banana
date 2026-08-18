@@ -106,7 +106,7 @@ namespace Utility
         private static T FindInstance()
         {
             instance = FindAnyObjectByType<T>();
-            DontDestroyOnLoad(instance);
+            DontDestroyOnLoad(instance?.transform?.root);
 
             if (instance != null) return instance;
             if (!Application.isPlaying) return instance;

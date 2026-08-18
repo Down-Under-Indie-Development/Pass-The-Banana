@@ -1,6 +1,7 @@
 using PTB.Networking;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Utility;
 
 /// <summary>
@@ -38,7 +39,7 @@ public class UnityNetworkHelper : NetworkedSingleton<UnityNetworkHelper>
     }
     #endregion
 
-    #region Client
+    #region Unity Client
     // INFO: Start client connection 
     protected virtual void OnStartUnityClient()
     {
@@ -46,7 +47,7 @@ public class UnityNetworkHelper : NetworkedSingleton<UnityNetworkHelper>
         if (!networkManager.StartClient()) { Debug.LogError($"{CheckPrivilege()} Client failed to start!"); return; }
 
         Debug.Log($"{CheckPrivilege()} Client has started");
-        _eventManager.OnStartUnityClient?.Invoke();
+        _eventManager.OnStartUnityClient?.Invoke(); // INFO: Client started let other scripts know
 
     }
 
@@ -59,27 +60,27 @@ public class UnityNetworkHelper : NetworkedSingleton<UnityNetworkHelper>
 
         Debug.Log($"<color={LogColours.Unity}>[UNITY]</color> <color={color}>[{privilege.ToUpper()}]</color> Shutting down {privilege}...");
         networkManager.Shutdown();
-        _eventManager.OnUnityClientDisconnected?.Invoke();
+        _eventManager.OnUnityClientDisconnected?.Invoke(); // INFO: Client stopped let other scripts know
 
     }
 
     #endregion
 
-    #region Host
+    #region Unity Host
     // INFO: Start host connection
     protected virtual void OnStartUnityHost()
     {
         // GUARD: Ensure server started
         if (!networkManager.StartHost()) return;
         Debug.Log($"{CheckPrivilege()} Unity Server has started");
-        _eventManager.OnStartUnityClient?.Invoke();
+        _eventManager.OnStartUnityClient?.Invoke(); // INFO: Host started let other scripts know
 
     }
 
     protected virtual void OnStopUnityHost()
     {
-        if (!networkManager.IsHost) return;
-        StopUnityClient();
+        if (!networkManager.IsServer) return;
+        StopUnityClient(); // INFO: Stop host client
 
     }
 

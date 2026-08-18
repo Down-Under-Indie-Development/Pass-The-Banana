@@ -7,22 +7,27 @@ using UnityEngine.SceneManagement;
 using PTB.Networking;
 using Unity.VisualScripting;
 using UnityEngine.InputSystem;
+using TMPro;
 
 public class GameManager : NetworkedSingleton<GameManager>
 {
 
 
+    [Space()]
     [Header("Game Settings")]
     [SerializeField] private List<CategorySO> _categories;
 
 
+    [Space()]
     [Header("Player Tracking")]
     [SerializeField] private PlayerNetworkedController _playerWithBanana;
 
+    [Space()]
     [Header("Player Settings")]
     [SerializeField] private GameObject _playerPrefab;
     [SerializeField] private List<Transform> _spawnPositions = new();
-    [SerializeField] private GameObject _pauseMenuGO;
+
+
 
     #region Networking Components
     // INFO: Network Components
@@ -46,42 +51,25 @@ public class GameManager : NetworkedSingleton<GameManager>
     }
     #endregion
 
-    private void Start()
-    {
-        _pauseMenuGO?.SetActive(false);
 
-    }
 
-    private void Update()
-    {
-        if (Keyboard.current.escapeKey.wasPressedThisFrame) TogglePauseMenu(); // INFO: Check for pause menu
-    }
 
-    #region Menus
-    private void TogglePauseMenu()
+
+
+    #region Networking
+    public override void OnNetworkSpawn()
     {
-        if (_pauseMenuGO == null) { Debug.LogWarning($"Pause menu is null!"); return; }
-        _pauseMenuGO?.SetActive(!_pauseMenuGO.activeSelf);
+        RequestStartGameRPC();
 
     }
     #endregion
 
-
-    #region Networking
-    // INFO: Players spawned in (Get the host to start it)
-    public override void OnNetworkSpawn()
-    {
-
-        if (!IsServer) return;
-        RequestStartGameRPC();
-
-    }
-
-    [Rpc(SendTo.ClientsAndHost)]
+    #region Spawn Players
+    // INFO: Spawn all the players on the host and client
+    [Rpc(SendTo.Server)]
     private void RequestStartGameRPC()
     {
         SpawnPlayers();
-
 
     }
 
@@ -89,7 +77,7 @@ public class GameManager : NetworkedSingleton<GameManager>
     private void SpawnPlayers()
     {
         if (!IsServer) return;
-        if (_playerPrefab == null) return;
+        if (_playerPrefab == null) { Debug.LogError($"Player prefab is null, cannot spawn!"); return; }
 
         List<ulong> clientIds = new List<ulong>(_networkHelper.networkManager.ConnectedClientsIds);
         for (int i = 0; i < clientIds.Count; i++)
@@ -112,6 +100,7 @@ public class GameManager : NetworkedSingleton<GameManager>
     private void StartGameRPC()
     {
         _networkHelper.sessionStateManager.UpdateSessionState(GameState.Playing);
+        if (_networkHelper.sessionStateManager.currentSessionState.Value != GameState.Playing) return;
         Debug.Log($"{_networkHelper.CheckPrivilege()} All players spawned ready to start!");
 
     }

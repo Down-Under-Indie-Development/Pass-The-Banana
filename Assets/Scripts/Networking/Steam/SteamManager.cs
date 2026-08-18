@@ -146,7 +146,7 @@ namespace PTB.Networking
             try
             {
                 SteamClient.Shutdown();
-                if (!connectedToSteam) Debug.Log($"<color=orange>[CLIENT]</color> Connection terminated successfully!");
+                if (!connectedToSteam) Debug.Log($"<color={LogColours.Steamworks}>[STEAM]</color> <color={LogColours.Client}>[CLIENT]</color> Connection terminated successfully!");
 
             }
             catch (System.Exception e)
@@ -159,8 +159,8 @@ namespace PTB.Networking
         // INFO: Ensure correct termination
         protected void OnApplicationQuit()
         {
-            TerminateSteamConnection();
             OnSteamClientLeave();
+            TerminateSteamConnection();
         }
 
         #endregion
@@ -186,7 +186,6 @@ namespace PTB.Networking
 
             if (playerCount <= 0) playerCount = minimumPlayers;
             Debug.Log($"<color={LogColours.Steamworks}>[STEAM]</color> Lobby request received creating lobby!");
-            // if (myLobby != null) { Debug.LogWarning($"Lobby already exists!"); return; }
             await SteamMatchmaking.CreateLobbyAsync(playerCount);
 
         }
@@ -195,7 +194,6 @@ namespace PTB.Networking
         {
             try
             {
-                // if (myLobby.Value.Id.IsValid) { Debug.LogError($"Failed to create lobby!"); return; }
                 lobby.SetGameServer(lobby.Owner.Id);
                 lobby.SetPrivate();
                 lobby.SetJoinable(true);
@@ -326,7 +324,7 @@ namespace PTB.Networking
         #endregion
 
         #region Utility
-        protected string CheckPrivilege()
+        protected virtual string CheckPrivilege()
         {
             if (!connectedToSteam) return $"<color={LogColours.Steamworks}>[STEAM]</color>";
 

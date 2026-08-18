@@ -2,6 +2,7 @@ using Utility;
 using UnityEngine;
 using Unity.VisualScripting;
 using PTB.Networking;
+using UnityEngine.SceneManagement;
 
 namespace PTB.Client.Menus
 {
@@ -20,6 +21,7 @@ namespace PTB.Client.Menus
         public void ReturnToMainMenu()
         {
             _eventManager.OnSteamClientDisconnect?.Invoke();
+            SceneManager.LoadScene(0);
 
         }
 
