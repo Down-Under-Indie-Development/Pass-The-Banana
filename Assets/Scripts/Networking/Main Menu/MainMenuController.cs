@@ -126,6 +126,7 @@ namespace PTB.Menus
             _hostGameMenu?.SetActive(false);
             _lobbyScreen?.SetActive(true);
             if (_unityNetworkHelper.networkManager.IsServer) _unityNetworkHelper.sessionStateManager.UpdateSessionState(GameState.Lobby);
+            _localCurrentGameSate = _unityNetworkHelper.sessionStateManager.currentSessionState.Value;
 
 
         }
@@ -146,10 +147,12 @@ namespace PTB.Menus
             {
                 case GameState.HostGame:
                     HandleMenuSwitching(_hostGameMenu, GameState.MainMenu);
+                    HandleMenuSwitching(_lobbyScreen, GameState.MainMenu);
                     break;
                 case GameState.Lobby:
+
                     _eventManager.OnSteamClientDisconnect?.Invoke();
-                    HandleMenuSwitching(_lobbyScreen, GameState.MainMenu);
+                    _lobbyScreen.SetActive(false);
                     break;
                 case GameState.JoinGame:
                     HandleMenuSwitching(_joinGameMenu, GameState.MainMenu);

@@ -1,5 +1,5 @@
+using System;
 using Unity.Netcode;
-using Unity.VisualScripting;
 using UnityEngine;
 using Utility;
 
@@ -7,14 +7,14 @@ namespace PTB.Networking
 {
     public class SessionStateManager : NetworkedSingleton<SessionStateManager>
     {
+        [field: SerializeField]
         public NetworkVariable<GameState> currentSessionState { get; private set; } = new NetworkVariable<GameState>
         (
-            GameState.MainMenu,
+            GameState.Lobby,
 
-NetworkVariableReadPermission.Everyone,
+NetworkVariableReadPermission.Owner,
 NetworkVariableWritePermission.Server
         );
-
 
         #region Events
         private void OnEnable()

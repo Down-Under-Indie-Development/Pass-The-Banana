@@ -8,13 +8,9 @@ using PTB.Networking;
 using Unity.VisualScripting;
 using UnityEngine.InputSystem;
 
-public class GameManager : NetworkBehaviour
+public class GameManager : NetworkedSingleton<GameManager>
 {
 
-    #region Singleton
-    public static GameManager Instance;
-    private EventManager _eventManager => EventManager.Instance;
-    #endregion
 
     [Header("Game Settings")]
     [SerializeField] private List<CategorySO> _categories;
@@ -22,9 +18,6 @@ public class GameManager : NetworkBehaviour
 
     [Header("Player Tracking")]
     [SerializeField] private PlayerNetworkedController _playerWithBanana;
-
-    [Header("Game State")]
-    [field: SerializeField] public GameState currentGameState { get; set; }
 
     [Header("Player Settings")]
     [SerializeField] private GameObject _playerPrefab;
@@ -37,18 +30,8 @@ public class GameManager : NetworkBehaviour
     private SteamManager _steamManager => SteamManager.Instance;
     #endregion
 
-    private void Awake()
-    {
-        // GUARD: Destroy duplicate
-        if (Instance != null && Instance != this)
-        {
-            Destroy(gameObject);
-            return;
-        }
-
-        Instance = this;
-
-    }
+    // INFO: Sync game state
+    public GameState currentGameState => _networkHelper.sessionStateManager.currentSessionState.Value;
 
     #region Events
     private void OnEnable()
@@ -99,7 +82,6 @@ public class GameManager : NetworkBehaviour
     [Rpc(SendTo.ClientsAndHost)]
     private void RequestStartGameRPC()
     {
-        currentGameState = GameState.Playing;
         SpawnPlayers();
 
 
@@ -131,6 +113,7 @@ public class GameManager : NetworkBehaviour
     [Rpc(SendTo.Server)]
     private void StartGameRPC()
     {
+        _networkHelper.sessionStateManager.UpdateSessionState(GameState.Playing);
         Debug.Log($"{_networkHelper.CheckPrivilege()} All players spawned ready to start!");
 
     }

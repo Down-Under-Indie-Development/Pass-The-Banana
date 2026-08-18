@@ -57,7 +57,7 @@ public class UnityNetworkHelper : NetworkedSingleton<UnityNetworkHelper>
     {
         if (networkManager == null) return;
 
-        string privilege = IsServer ? "server" : "client";
+        string privilege = IsServer ? "host" : "client";
         string color = IsServer ? LogColours.Host : LogColours.Client;
 
         Debug.Log($"<color={LogColours.Unity}>[UNITY]</color> <color={color}>[{privilege.ToUpper()}]</color> Shutting down {privilege}...");
@@ -72,9 +72,6 @@ public class UnityNetworkHelper : NetworkedSingleton<UnityNetworkHelper>
     // INFO: Start host connection
     protected virtual void OnStartUnityHost()
     {
-        // GUARD: Ensure host isn't already running
-        if (networkManager.IsHost) return;
-
         // GUARD: Ensure server started
         if (!networkManager.StartHost()) return;
         Debug.Log($"{CheckPrivilege()} Unity Server has started");

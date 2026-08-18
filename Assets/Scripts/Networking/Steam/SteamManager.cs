@@ -125,6 +125,8 @@ namespace PTB.Networking
         // INFO: Establish connection to steam servers
         protected virtual bool EstablishSteamConnection()
         {
+            if (connectedToSteam) return false;
+
             try
             {
                 SteamClient.Init(appID);
@@ -188,7 +190,9 @@ namespace PTB.Networking
         #region Create Server
         private async void StartSteamServer(int playerCount)
         {
-            EstablishSteamConnection();
+
+            if (!connectedToSteam) EstablishSteamConnection();
+
             if (playerCount <= 0) playerCount = minimumPlayers;
             Debug.Log($"<color={LogColours.Steamworks}>[STEAM]</color> Lobby request received creating lobby!");
             // if (myLobby != null) { Debug.LogWarning($"Lobby already exists!"); return; }
@@ -305,8 +309,8 @@ namespace PTB.Networking
 
         protected virtual async void OnSteamClientLeave()
         {
-            // if (!connectedToSteam) return;
-            // if (myLobby == null) { Debug.LogError($"Current lobby was null when leaving!"); return; }
+            if (!connectedToSteam) return;
+            if (myLobby == null) { Debug.LogError($"Current lobby was null when leaving!"); return; }
             _networkTransport.targetSteamId = 0;
 
             // INFO: Leave the lobby
