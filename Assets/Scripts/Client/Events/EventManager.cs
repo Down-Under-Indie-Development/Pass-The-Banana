@@ -43,7 +43,7 @@ public class EventManager : PersistentSingleton<EventManager>
     #region Unity
     #region Host
     public NoArgs OnStopUnityHost;
-    public NoArgs OnStartUnityHost;
+    // public NoArgs OnStartUnityHost;
     #endregion
 
     #region Client

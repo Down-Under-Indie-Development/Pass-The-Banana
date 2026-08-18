@@ -51,6 +51,8 @@ public class LobbyUIManager : CustomMonoBehaviour
     private void Start()
     {
         if (_networkHelper.networkManager != null && !_networkHelper.networkManager.IsHost && _startGameBTN != null) _startGameBTN.interactable = false;
+        UpdateLobbyCodeText();
+
 
     }
 
@@ -61,9 +63,9 @@ public class LobbyUIManager : CustomMonoBehaviour
 
     }
 
-    private void LateUpdate()
+    private void FixedUpdate()
     {
-        // if (_steamManager.myLobby != null) RefreshUI(_steamManager.myLobby);
+        if (_steamManager.myLobby != null) RefreshUI(_steamManager.myLobby);
     }
 
 
@@ -71,8 +73,14 @@ public class LobbyUIManager : CustomMonoBehaviour
 
     private void OnLobbyEntered(Lobby lobby)
     {
-        if (_lobbyCodeTxt != null) _lobbyCodeTxt.text = $"Code: {lobby.Id}";
+        UpdateLobbyCodeText();
         RefreshUI(lobby);
+
+    }
+
+    private void UpdateLobbyCodeText()
+    {
+        if (_lobbyCodeTxt != null) _lobbyCodeTxt.text = $"Code: {SteamManager.Instance.myLobby.Value.Id}";
 
     }
 
@@ -94,6 +102,7 @@ public class LobbyUIManager : CustomMonoBehaviour
         if (playerInfoPanel == null) { Debug.LogError($"Player info panel is null, cannot display player"); return; }
         if (lobby == null) return;
         ClearPlayerPanel();
+        if (_lobbyCodeTxt != null && _lobbyCodeTxt.text == "") UpdateLobbyCodeText();
 
         foreach (Friend member in lobby.Value.Members)
         {
@@ -103,7 +112,7 @@ public class LobbyUIManager : CustomMonoBehaviour
             // INFO: Set Display
             PlayerUIInfo playerInfo = playerInfoGO.GetComponent<PlayerUIInfo>();
             bool isHost = lobby.Value.Owner.Id == member.Id;
-            playerInfo.playerName = $"{member.Name} {(isHost ? "[HOST]" : "")}";
+            playerInfo.playerName = $"{member.Name} {(isHost ? "[HOST]" : "     ")}";
             playerInfo.playerPing = $"{-1}ms";
 
 

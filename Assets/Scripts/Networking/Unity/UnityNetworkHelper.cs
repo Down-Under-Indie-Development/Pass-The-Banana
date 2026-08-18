@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using PTB.Networking;
 using Unity.Netcode;
 using Unity.VectorGraphics;
@@ -60,9 +61,7 @@ public class UnityNetworkHelper : NetworkedSingleton<UnityNetworkHelper>
         string color = IsServer ? LogColours.Host : LogColours.Client;
 
         Debug.Log($"<color={LogColours.Unity}>[UNITY]</color> <color={color}>[{privilege.ToUpper()}]</color> Shutting down {privilege}...");
-        networkManager.Shutdown(true);
-
-        await System.Threading.Tasks.Task.Delay(100);
+        networkManager.Shutdown();
         _eventManager.OnUnityClientDisconnected?.Invoke();
 
     }

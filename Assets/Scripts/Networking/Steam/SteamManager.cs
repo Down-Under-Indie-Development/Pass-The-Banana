@@ -29,8 +29,7 @@ namespace PTB.Networking
 
 
         #region Networking
-        // public Lobby? myLobby { get; protected set; }
-        // private EventManager _eventManager => EventManager.Instance;
+        public Lobby? myLobby { get; protected set; }
         protected FacepunchTransport _networkTransport;
         #endregion
 
@@ -126,8 +125,6 @@ namespace PTB.Networking
         // INFO: Establish connection to steam servers
         protected virtual bool EstablishSteamConnection()
         {
-            if (connectedToSteam) return true; // INFO: Prevent calling more than once
-
             try
             {
                 SteamClient.Init(appID);
@@ -297,6 +294,7 @@ namespace PTB.Networking
         protected virtual void OnSteamClientEntered(Lobby lobby)
         {
             // INFO: Client
+            myLobby = lobby;
             SteamFriends.SetRichPresence("connect", lobby.Id.ToString());
 
             if (SteamClient.SteamId == lobby.Owner.Id) { OnSteamHostEntered(); return; }
@@ -305,16 +303,17 @@ namespace PTB.Networking
 
         }
 
-        protected virtual void OnSteamClientLeave()
+        protected virtual async void OnSteamClientLeave()
         {
-            if (!connectedToSteam) return;
+            // if (!connectedToSteam) return;
             // if (myLobby == null) { Debug.LogError($"Current lobby was null when leaving!"); return; }
             _networkTransport.targetSteamId = 0;
 
             // INFO: Leave the lobby
             SteamFriends.SetRichPresence("connect", null);
+            myLobby?.Leave();
 
-            if (NetworkManager.Singleton.IsHost)
+            if (SteamClient.SteamId == myLobby.Value.Owner.Id)
             {
                 OnSteamHostLeave();
             }
@@ -324,10 +323,7 @@ namespace PTB.Networking
                 _eventManager.OnStopUnityClient?.Invoke();
 
             }
-
-            _networkTransport.DisconnectLocalClient();
-            _networkTransport.DisconnectRemoteClient(SteamClient.SteamId);
-            // await System.Threading.Tasks.Task.Delay(500);
+            myLobby = null;
 
         }
 
