@@ -138,7 +138,7 @@ public class LobbyUIManager : CustomMonoBehaviour
     public void StartGame()
     {
         MainMenuController _mainMenuController = MainMenuController.Instance;
-        if (_connectedMembers.Count < _mainMenuController.minimumPlayers && !_debug) { Debug.LogWarning($"Need {_mainMenuController.minimumPlayers} players to start"); return; }
+        if (_connectedMembers.Count < SteamManager.Instance.minimumPlayers && !_debug) { Debug.LogWarning($"Need {SteamManager.Instance.minimumPlayers} players to start"); return; }
         Debug.Log($"{_networkHelper.CheckPrivilege()} Started the game!");
         _networkHelper.networkManager.SceneManager.LoadScene("Test Scene", LoadSceneMode.Single);
 

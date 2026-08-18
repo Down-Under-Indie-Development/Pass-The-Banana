@@ -28,10 +28,8 @@ public class GameManager : NetworkedSingleton<GameManager>
     // INFO: Network Components
     private UnityNetworkHelper _networkHelper => UnityNetworkHelper.Instance;
     private SteamManager _steamManager => SteamManager.Instance;
-    #endregion
-
-    // INFO: Sync game state
     public GameState currentGameState => _networkHelper.sessionStateManager.currentSessionState.Value;
+    #endregion
 
     #region Events
     private void OnEnable()

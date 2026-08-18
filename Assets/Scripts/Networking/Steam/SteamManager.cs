@@ -1,16 +1,7 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Reflection.Metadata.Ecma335;
-using System.Threading.Tasks;
 using Netcode.Transports.Facepunch;
-using PTB.Menus;
 using Steamworks;
 using Steamworks.Data;
 using Unity.Netcode;
-using Unity.Properties;
-using Unity.VisualScripting;
-using UnityEditor;
 using UnityEngine;
 using Utility;
 
@@ -307,7 +298,7 @@ namespace PTB.Networking
 
         }
 
-        protected virtual async void OnSteamClientLeave()
+        protected virtual void OnSteamClientLeave()
         {
             if (!connectedToSteam) return;
             if (myLobby == null) { Debug.LogError($"Current lobby was null when leaving!"); return; }

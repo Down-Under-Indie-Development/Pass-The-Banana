@@ -1,9 +1,6 @@
-using System.Threading.Tasks;
 using PTB.Networking;
 using Unity.Netcode;
-using Unity.VectorGraphics;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using Utility;
 
 /// <summary>
@@ -53,7 +50,7 @@ public class UnityNetworkHelper : NetworkedSingleton<UnityNetworkHelper>
 
     }
 
-    protected virtual async void StopUnityClient()
+    protected virtual void StopUnityClient()
     {
         if (networkManager == null) return;
 

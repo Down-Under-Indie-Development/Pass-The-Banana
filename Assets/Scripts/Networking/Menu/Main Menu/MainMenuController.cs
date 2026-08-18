@@ -29,9 +29,6 @@ namespace PTB.Menus
         [Header("Options Menu")]
         [SerializeField] private GameObject _optionsMenu;
 
-        // INFO: Steam lobby settings
-        public int minimumPlayers => SteamManager.Instance.minimumPlayers;
-
         private GameState _localCurrentGameSate = GameState.MainMenu;
 
         [Header("Debugging")]
