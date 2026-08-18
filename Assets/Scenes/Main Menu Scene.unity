@@ -119,6 +119,37 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &46441085
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 46441086}
+  m_Layer: 0
+  m_Name: -- [ Networking Components ] --
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &46441086
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 46441085}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &138638569 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 9194437289876115337, guid: 8ffe32fa6d84bad42ad85114695e5378, type: 3}
@@ -1113,7 +1144,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8692775828640273155, guid: 801cae11b428acb4daf7e320d25f0223, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
-      value: 2
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8692775828640273155, guid: 801cae11b428acb4daf7e320d25f0223, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
@@ -1530,7 +1561,7 @@ MonoBehaviour:
   m_InScenePlaced: 1
   ActiveSceneSynchronization: 1
   SceneMigrationSynchronization: 0
-  SpawnWithObservers: 0
+  SpawnWithObservers: 1
   DontDestroyWithOwner: 0
   AutoObjectParentSync: 1
   SyncOwnerTransformWhenParented: 0
@@ -1576,7 +1607,7 @@ GameObject:
   - component: {fileID: 1148045444}
   - component: {fileID: 1148045439}
   m_Layer: 0
-  m_Name: Steam Lobby Manager
+  m_Name: Steam Network Manager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3577,6 +3608,7 @@ SceneRoots:
   - {fileID: 261404885}
   - {fileID: 2024759053}
   - {fileID: 256912224}
+  - {fileID: 46441086}
   - {fileID: 1148045442}
   - {fileID: 1129322613}
   - {fileID: 1578065692}

@@ -33,7 +33,7 @@ NetworkVariableWritePermission.Server
 
         private void SessionStateChanged(GameState previousValue, GameState newValue)
         {
-            if (IsServer) Debug.Log($"{UnityNetworkHelper.Instance.CheckPrivilege()} Game state has been changed to {newValue}");
+            if (IsServer) { Debug.Log($"{UnityNetworkHelper.Instance.CheckPrivilege()} Game state has been changed to {newValue}"); return; }
             if (IsClient) Debug.Log($"{UnityNetworkHelper.Instance.CheckPrivilege()} Syncing game state from host ({newValue})");
 
         }
@@ -42,7 +42,7 @@ NetworkVariableWritePermission.Server
         {
             if (!IsServer)
             {
-                Debug.Log($"You aint the hsot!");
+                Debug.Log($"You aint the host!");
                 return;
             }
 

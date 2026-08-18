@@ -30,35 +30,40 @@ public class LobbyUIManager : CustomMonoBehaviour
 
     private Queue<SteamId> _connectedMembers = new();
 
-    // TODO: Make this a network behaviour
-
     #region Events
     private void OnEnable()
     {
         // _networkHelper.networkManager.OnClientConnectedCallback += UpdateLobbyCodeText;
         SteamMatchmaking.OnLobbyEntered += OnLobbyEntered;
-
-        SteamMatchmaking.OnLobbyEntered += OnLobbyEntered;
+        _eventManager.OnUnityClientDisconnected += ResetMenu;
     }
 
     private void OnDisable()
     {
         // _networkHelper.networkManager.OnClientConnectedCallback += UpdateLobbyCodeText;
         SteamMatchmaking.OnLobbyEntered -= OnLobbyEntered;
-        SteamMatchmaking.OnLobbyEntered -= OnLobbyEntered;
+        _eventManager.OnUnityClientDisconnected -= ResetMenu;
+
 
     }
     #endregion
 
     private void Start()
     {
-        if (!_networkHelper.networkManager.IsHost && _startGameBTN != null) _startGameBTN.interactable = false;
+        if (_networkHelper.networkManager != null && !_networkHelper.networkManager.IsHost && _startGameBTN != null) _startGameBTN.interactable = false;
+
+    }
+
+    private void ResetMenu()
+    {
+        _lobbyCodeTxt.text = "";
+        ClearPlayerPanel();
 
     }
 
     private void LateUpdate()
     {
-        if (_steamManager.currentLobby != null) RefreshUI(_steamManager.currentLobby);
+        // if (_steamManager.myLobby != null) RefreshUI(_steamManager.myLobby);
     }
 
 
@@ -66,16 +71,20 @@ public class LobbyUIManager : CustomMonoBehaviour
 
     private void OnLobbyEntered(Lobby lobby)
     {
-        UpdateLobbyCodeText();
+        if (_lobbyCodeTxt != null) _lobbyCodeTxt.text = $"Code: {lobby.Id}";
         RefreshUI(lobby);
 
     }
 
     #endregion
 
-    private void UpdateLobbyCodeText()
+    private void ClearPlayerPanel()
     {
-        if (_lobbyCodeTxt != null) _lobbyCodeTxt.text = $"Code: {SteamManager.Instance.currentLobby.Value.Id}";
+        for (int i = 0; i < playerPanelContent.transform.childCount; i++)
+        {
+            Destroy(playerPanelContent.transform.GetChild(i).gameObject);
+
+        }
 
     }
 
@@ -84,12 +93,7 @@ public class LobbyUIManager : CustomMonoBehaviour
         if (playerPanelContent == null) { Debug.LogError($"Player panel content is null!"); return; }
         if (playerInfoPanel == null) { Debug.LogError($"Player info panel is null, cannot display player"); return; }
         if (lobby == null) return;
-
-        for (int i = 0; i < playerPanelContent.transform.childCount; i++)
-        {
-            Destroy(playerPanelContent.transform.GetChild(i).gameObject);
-
-        }
+        ClearPlayerPanel();
 
         foreach (Friend member in lobby.Value.Members)
         {

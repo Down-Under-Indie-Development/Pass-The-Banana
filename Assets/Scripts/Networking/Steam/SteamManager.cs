@@ -2,10 +2,14 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection.Metadata.Ecma335;
+using System.Threading.Tasks;
 using Netcode.Transports.Facepunch;
 using PTB.Menus;
 using Steamworks;
 using Steamworks.Data;
+using Unity.Netcode;
+using Unity.Properties;
+using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
 using Utility;
@@ -17,7 +21,7 @@ namespace PTB.Networking
 
         [Header("Steam Settings")]
         [field: SerializeField] public uint appID { get; protected set; } = 480;
-        public bool connectedToSteam { get; protected set; }
+        public bool connectedToSteam => SteamClient.IsValid;
 
         [Header("Lobby Settings")]
         [field: SerializeField] public int minimumPlayers { get; protected set; } = 2;
@@ -25,16 +29,15 @@ namespace PTB.Networking
 
 
         #region Networking
-        public Lobby? currentLobby { get; protected set; } = null;
+        // public Lobby? myLobby { get; protected set; }
+        // private EventManager _eventManager => EventManager.Instance;
         protected FacepunchTransport _networkTransport;
-        protected bool IsHost => SteamClient.SteamId == currentLobby.Value.Owner.Id;
         #endregion
 
         protected override void Awake()
         {
-            base.Awake();
             _networkTransport = GetComponent<FacepunchTransport>();
-            EstablishSteamConnection();
+
 
 
         }
@@ -64,17 +67,17 @@ namespace PTB.Networking
             SteamMatchmaking.OnLobbyCreated += OnLobbyCreated;
             SteamMatchmaking.OnLobbyMemberJoined += OnLobbyMemberJoined;
             SteamMatchmaking.OnLobbyEntered += OnLobbyEntered;
-            SteamMatchmaking.OnLobbyMemberLeave += OnLobbyMemberLeave;
-            SteamMatchmaking.OnLobbyMemberDisconnected += OnLobbyMemberDisconnected;
             #endregion
             #endregion
 
             #region Client
             // INFO: Client
-            _eventManager.OnSteamClientDisconnect += DisconnectPlayer;
+            _eventManager.OnSteamClientDisconnect += OnSteamClientLeave;
 
             #region Steamworks
             SteamMatchmaking.OnLobbyInvite += OnLobbyInvite;
+            SteamMatchmaking.OnLobbyMemberLeave += OnLobbyMemberLeave;
+            SteamMatchmaking.OnLobbyMemberDisconnected += OnLobbyMemberDisconnected;
             SteamFriends.OnGameLobbyJoinRequested += OnGameLobbyJoinRequested;
             SteamFriends.OnGameRichPresenceJoinRequested += OnGameRichPresenceJoinRequested;
             #endregion
@@ -92,15 +95,16 @@ namespace PTB.Networking
             SteamMatchmaking.OnLobbyCreated -= OnLobbyCreated;
             SteamMatchmaking.OnLobbyMemberJoined -= OnLobbyMemberJoined;
             SteamMatchmaking.OnLobbyEntered -= OnLobbyEntered;
-            SteamMatchmaking.OnLobbyMemberLeave -= OnLobbyMemberLeave;
-            SteamMatchmaking.OnLobbyMemberDisconnected -= OnLobbyMemberDisconnected;
             #endregion
             #endregion
 
             #region Client
             // INFO: Client
-            _eventManager.OnSteamClientDisconnect -= DisconnectPlayer;
+            _eventManager.OnSteamClientDisconnect -= OnSteamClientLeave;
+
             #region Steamworks
+            SteamMatchmaking.OnLobbyMemberLeave -= OnLobbyMemberLeave;
+            SteamMatchmaking.OnLobbyMemberDisconnected -= OnLobbyMemberDisconnected;
             SteamMatchmaking.OnLobbyInvite -= OnLobbyInvite;
             SteamFriends.OnGameLobbyJoinRequested -= OnGameLobbyJoinRequested;
             SteamFriends.OnGameRichPresenceJoinRequested -= OnGameRichPresenceJoinRequested;
@@ -112,6 +116,7 @@ namespace PTB.Networking
 
         private void Start()
         {
+            EstablishSteamConnection();
             CheckSteamConnection();
         }
 
@@ -126,8 +131,7 @@ namespace PTB.Networking
             try
             {
                 SteamClient.Init(appID);
-                connectedToSteam = true;
-                Debug.Log($"{CheckPrivilege()} Successfully Connected to steam! | {SteamClient.Name} ({SteamClient.AppId})</color>");
+                Debug.Log($"<color={LogColours.Steamworks}>[STEAM]</color> Successfully Connected to steam! | {SteamClient.Name} ({SteamClient.AppId})</color>");
                 _networkTransport.steamAppId = appID;
                 _eventManager.OnConnectedToSteam?.Invoke();
 
@@ -163,8 +167,12 @@ namespace PTB.Networking
         }
 
         // INFO: Ensure correct termination
-        private void OnDestroy() => TerminateSteamConnection();
-        protected void OnApplicationQuit() => TerminateSteamConnection();
+        protected void OnApplicationQuit()
+        {
+            TerminateSteamConnection();
+            OnSteamClientLeave();
+        }
+
         #endregion
 
         protected void CheckSteamConnection()
@@ -183,23 +191,31 @@ namespace PTB.Networking
         #region Create Server
         private async void StartSteamServer(int playerCount)
         {
-            if (currentLobby != null) { Debug.LogWarning($"Lobby is already created!"); return; }
-
-            Debug.Log($"{CheckPrivilege()} Lobby request received creating lobby!");
+            EstablishSteamConnection();
+            if (playerCount <= 0) playerCount = minimumPlayers;
+            Debug.Log($"<color={LogColours.Steamworks}>[STEAM]</color> Lobby request received creating lobby!");
+            // if (myLobby != null) { Debug.LogWarning($"Lobby already exists!"); return; }
             await SteamMatchmaking.CreateLobbyAsync(playerCount);
 
         }
 
         private void OnLobbyCreated(Result result, Lobby lobby)
         {
-            if (result != Result.OK) { Debug.LogWarning($"Error creating lobby!"); return; }
+            try
+            {
+                // if (myLobby.Value.Id.IsValid) { Debug.LogError($"Failed to create lobby!"); return; }
+                lobby.SetGameServer(lobby.Owner.Id);
+                lobby.SetPrivate();
+                lobby.SetJoinable(true);
 
-            lobby.SetJoinable(true);
-            lobby.SetPrivate();
-            lobby.SetGameServer(lobby.Owner.Id);
-            Debug.Log($"{CheckPrivilege()} Lobby created! | {lobby.Owner.Name} ({lobby.Id}) | {lobby.MemberCount}/{lobby.MaxMembers}");
-            GUIUtility.systemCopyBuffer = lobby.Id.ToString(); // INFO: Copies lobby code to peoples keyboard
+                Debug.Log($"<color={LogColours.Steamworks}>[STEAM]</color> Lobby created! | {lobby.Owner.Name} ({lobby.Id}) | {lobby.MemberCount}/{lobby.MaxMembers}");
+                GUIUtility.systemCopyBuffer = lobby.Id.ToString(); // INFO: Copies lobby code to peoples keyboard
 
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"{e.Message}");
+            }
         }
 
         #endregion
@@ -223,7 +239,7 @@ namespace PTB.Networking
             if (!ulong.TryParse(s, out ulong seshID)) return;
             Lobby? joinedLobby = await SteamMatchmaking.JoinLobbyAsync(seshID);
             if (joinedLobby == null) { Debug.LogError($"Failed to join lobby!"); return; }
-            currentLobby = joinedLobby;
+            // myLobby = joinedLobby;
 
         }
         #endregion
@@ -231,14 +247,14 @@ namespace PTB.Networking
         #region Player Joining/Joined
         private void OnLobbyMemberJoined(Lobby lobby, Friend friend)
         {
-            Debug.Log($"{CheckPrivilege()} {friend.Name} is joining!");
+            Debug.Log($"{friend.Name} is joining!");
 
         }
 
 
         private void OnLobbyEntered(Lobby lobby)
         {
-            Debug.Log($"{CheckPrivilege()} You entered {lobby.Owner.Name}'s lobby!");
+            if (SteamClient.SteamId != lobby.Owner.Id) Debug.Log($"<color={LogColours.Steamworks}>[STEAM]</color> <color={LogColours.Client}>[CLIENT]</color> You entered {lobby.Owner.Name}'s lobby!");
             OnSteamClientEntered(lobby);
 
 
@@ -249,14 +265,12 @@ namespace PTB.Networking
         private void OnLobbyMemberLeave(Lobby lobby, Friend friend)
         {
             Debug.Log($"{friend.Name} left!");
-            OnSteamClientLeave();
 
         }
 
         private void OnLobbyMemberDisconnected(Lobby lobby, Friend friend)
         {
             Debug.Log($"{friend.Name} disconnected!");
-            OnSteamClientLeave();
 
         }
         #endregion
@@ -272,6 +286,7 @@ namespace PTB.Networking
 
         protected virtual void OnSteamHostLeave()
         {
+            Debug.Log($"{CheckPrivilege()} Goodbye mister Host!");
             _eventManager.OnStopUnityHost?.Invoke();
 
         }
@@ -282,40 +297,49 @@ namespace PTB.Networking
         protected virtual void OnSteamClientEntered(Lobby lobby)
         {
             // INFO: Client
-            currentLobby = lobby;
-            _networkTransport.targetSteamId = currentLobby.Value.Owner.Id;
-            SteamFriends.SetRichPresence("connect", currentLobby.Value.Id.ToString());
+            SteamFriends.SetRichPresence("connect", lobby.Id.ToString());
 
-            if (IsHost) { OnSteamHostEntered(); return; }
+            if (SteamClient.SteamId == lobby.Owner.Id) { OnSteamHostEntered(); return; }
+            _networkTransport.targetSteamId = lobby.Owner.Id;
             _eventManager.OnSteamClientConnect?.Invoke();
 
         }
 
         protected virtual void OnSteamClientLeave()
         {
-            currentLobby = null;
-            if (IsHost) { OnSteamHostLeave(); return; }
-            _eventManager.OnStopUnityClient?.Invoke();
-
-        }
-
-        protected virtual void DisconnectPlayer()
-        {
             if (!connectedToSteam) return;
-            if (currentLobby == null) return;
+            // if (myLobby == null) { Debug.LogError($"Current lobby was null when leaving!"); return; }
+            _networkTransport.targetSteamId = 0;
 
+            // INFO: Leave the lobby
             SteamFriends.SetRichPresence("connect", null);
-            currentLobby?.Leave();
+
+            if (NetworkManager.Singleton.IsHost)
+            {
+                OnSteamHostLeave();
+            }
+            else
+            {
+                _networkTransport.DisconnectRemoteClient(SteamClient.SteamId);
+                _eventManager.OnStopUnityClient?.Invoke();
+
+            }
+
+            _networkTransport.DisconnectLocalClient();
+            _networkTransport.DisconnectRemoteClient(SteamClient.SteamId);
+            // await System.Threading.Tasks.Task.Delay(500);
 
         }
+
+
         #endregion
 
         #region Utility
         protected string CheckPrivilege()
         {
-            if (!connectedToSteam || currentLobby == null) return $"<color={LogColours.Steamworks}>[STEAM]</color>";
+            if (!connectedToSteam) return $"<color={LogColours.Steamworks}>[STEAM]</color>";
 
-            switch (SteamClient.SteamId == currentLobby.Value.Owner.Id)
+            switch (NetworkManager.Singleton.IsHost)
             {
                 case true:
                     return $"<color={LogColours.Steamworks}>[STEAM]</color> <color={LogColours.Host}>[HOST]</color>";

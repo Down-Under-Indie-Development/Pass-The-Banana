@@ -49,6 +49,7 @@ public class EventManager : PersistentSingleton<EventManager>
     #region Client
     public NoArgs OnStopUnityClient;
     public NoArgs OnStartUnityClient;
+    public NoArgs OnUnityClientDisconnected;
     #endregion
     #endregion
 

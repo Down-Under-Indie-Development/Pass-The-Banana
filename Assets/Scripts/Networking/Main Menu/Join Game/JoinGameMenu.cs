@@ -5,16 +5,35 @@ using Steamworks.Data;
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.UI;
+using Utility;
 
-public class JoinGameMenu : MonoBehaviour
+public class JoinGameMenu : CustomMonoBehaviour
 {
     [SerializeField] private TMP_InputField _joinCodeInputField;
     [SerializeField] private TextMeshProUGUI _errorTXT;
 
+    #region Events
+    private void OnEnable()
+    {
+        _eventManager.OnUnityClientDisconnected += ResetMenu;
+    }
+
+    private void OnDisable()
+    {
+        _eventManager.OnUnityClientDisconnected -= ResetMenu;
+
+    }
+    #endregion
+
     private void Start()
     {
         _errorTXT?.gameObject.SetActive(false);
+
+    }
+
+    private void ResetMenu()
+    {
+        _joinCodeInputField.text = "";
 
     }
 

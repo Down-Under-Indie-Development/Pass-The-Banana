@@ -10,7 +10,7 @@ using Utility;
 /// </summary>
 public class UnityNetworkHelper : NetworkedSingleton<UnityNetworkHelper>
 {
-    private EventManager _eventManager => EventManager.Instance;
+    // private EventManager _eventManager => EventManager.Instance;
     public virtual NetworkManager networkManager => NetworkManager.Singleton;
     public virtual SessionStateManager sessionStateManager => SessionStateManager.Instance;
 
@@ -52,10 +52,18 @@ public class UnityNetworkHelper : NetworkedSingleton<UnityNetworkHelper>
 
     }
 
-    protected virtual void StopUnityClient()
+    protected virtual async void StopUnityClient()
     {
-        if (networkManager != null) networkManager.Shutdown();
-        SceneManager.LoadScene(0);
+        if (networkManager == null) return;
+
+        string privilege = IsServer ? "server" : "client";
+        string color = IsServer ? LogColours.Host : LogColours.Client;
+
+        Debug.Log($"<color={LogColours.Unity}>[UNITY]</color> <color={color}>[{privilege.ToUpper()}]</color> Shutting down {privilege}...");
+        networkManager.Shutdown(true);
+
+        await System.Threading.Tasks.Task.Delay(100);
+        _eventManager.OnUnityClientDisconnected?.Invoke();
 
     }
 
@@ -75,11 +83,9 @@ public class UnityNetworkHelper : NetworkedSingleton<UnityNetworkHelper>
 
     }
 
-    // [Rpc(SendTo.ClientsAndHost)]
     protected virtual void OnStopUnityHost()
     {
         if (!networkManager.IsHost) return;
-        if (!IsHost) Debug.Log($"{CheckPrivilege()} Host has disconnected closing server");
         StopUnityClient();
 
     }

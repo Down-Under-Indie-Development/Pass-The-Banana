@@ -88,8 +88,9 @@ namespace Utility
 
     #region Networked Singleton
     [RequireComponent(typeof(NetworkObject))]
-    public abstract class NetworkedSingleton<T> : NetworkBehaviour where T : NetworkBehaviour
+    public abstract class NetworkedSingleton<T> : NetworkBehaviour where T : MonoBehaviour
     {
+        protected virtual EventManager _eventManager => EventManager.Instance;
         private static T instance;
 
         public static T Instance
@@ -105,6 +106,7 @@ namespace Utility
         private static T FindInstance()
         {
             instance = FindAnyObjectByType<T>();
+            if (instance != null) return instance;
             if (!Application.isPlaying) return instance;
             if (instance == null) Debug.LogError($"Networked Singletons cannot be created at run time! ({typeof(T).Name})");
 
@@ -121,7 +123,6 @@ namespace Utility
                 return;
             }
 
-            instance = this as T;
             NetworkObject.DestroyWithScene = false;
             NetworkObject.ActiveSceneSynchronization = true;
             NetworkObject.SceneMigrationSynchronization = true;
@@ -135,11 +136,7 @@ namespace Utility
                 instance = null;
         }
 
-        protected virtual new void OnDestroy()
-        {
-            if (instance == this)
-                instance = null;
-        }
+
     }
 
     #endregion
