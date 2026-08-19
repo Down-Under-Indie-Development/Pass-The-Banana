@@ -5,7 +5,7 @@ using Utility;
 
 namespace PTB.Networking
 {
-    public class SessionStateManager : PersistentNetworkSingleton<SessionStateManager>
+    public class SessionStateManager : NetworkedSingleton<SessionStateManager>
     {
         [field: SerializeField]
         public NetworkVariable<GameState> currentSessionState { get; private set; } = new NetworkVariable<GameState>

@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using PTB.Networking;
 using Unity.Netcode;
@@ -8,11 +9,10 @@ using Utility;
 /// <summary>
 /// Handles Unity Netcode side for connecting and disconnecting clients
 /// </summary>
-public class UnityNetworkHelper : PersistentSingleton<UnityNetworkHelper>
+public class UnityNetworkHelper : Singleton<UnityNetworkHelper>
 {
-    // private EventManager _eventManager => EventManager.Instance;
-    public virtual NetworkManager networkManager => NetworkManager.Singleton;
     public virtual SessionStateManager sessionStateManager => SessionStateManager.Instance;
+    public virtual NetworkManager networkManager => NetworkManager.Singleton;
 
     #region Events
     protected virtual void OnEnable()

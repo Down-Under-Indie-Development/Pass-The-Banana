@@ -3,11 +3,12 @@ using Steamworks;
 using Steamworks.Data;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.Events;
 using Utility;
 
 namespace PTB.Networking
 {
-    public class SteamManager : PersistentNetworkSingleton<SteamManager>
+    public class SteamManager : Singleton<SteamManager>
     {
 
         [Header("Steam Settings")]
@@ -17,16 +18,20 @@ namespace PTB.Networking
         [Header("Lobby Settings")]
         [field: SerializeField] public int minimumPlayers { get; protected set; } = 2;
 
+        [Header("Events")]
+        public UnityEvent EvtSteamInitialised = new UnityEvent();
+        public UnityEvent EvtSteamInitialisedError = new UnityEvent();
 
 
         #region Networking
         public Lobby? myLobby { get; protected set; }
-        protected FacepunchTransport _networkTransport;
+        [field: SerializeField] protected FacepunchTransport _networkTransport;
         #endregion
 
-        private void Awake()
+        protected override void Awake()
         {
-            _networkTransport = GetComponent<FacepunchTransport>();
+            base.Awake();
+            // _networkTransport = GetComponent<FacepunchTransport>();
 
         }
 
@@ -121,12 +126,15 @@ namespace PTB.Networking
                 SteamClient.Init(appID);
                 Debug.Log($"<color={LogColours.Steamworks}>[STEAM]</color> Successfully Connected to steam! | {SteamClient.Name} ({SteamClient.AppId})</color>");
                 _networkTransport.steamAppId = appID;
-                _eventManager.OnConnectedToSteam?.Invoke();
+                // _eventManager.OnConnectedToSteam?.Invoke();
+                EvtSteamInitialised?.Invoke();
 
             }
             catch (System.Exception e)
             {
                 Debug.LogError($"{e.Message}");
+                EvtSteamInitialisedError?.Invoke();
+
                 return false;
             }
 
@@ -144,7 +152,7 @@ namespace PTB.Networking
             try
             {
                 SteamClient.Shutdown();
-                if (!connectedToSteam) Debug.Log($"<color={LogColours.Steamworks}>[STEAM]</color> <color={LogColours.Client}>[CLIENT]</color> Connection terminated successfully!");
+                if (!connectedToSteam) Debug.Log($"<color={LogColours.Steamworks}>[STEAM]</color> Connection terminated successfully!");
 
             }
             catch (System.Exception e)
@@ -297,7 +305,7 @@ namespace PTB.Networking
         protected virtual void OnSteamClientLeave()
         {
             if (!connectedToSteam) return;
-            if (myLobby == null) { Debug.LogError($"Current lobby was null when leaving!"); return; }
+            if (myLobby == null) return;
             _networkTransport.targetSteamId = 0;
 
             // INFO: Leave the lobby

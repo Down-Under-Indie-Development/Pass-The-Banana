@@ -3,11 +3,7 @@ using UnityEngine;
 using Steamworks.Data;
 using Steamworks;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine.SceneManagement;
-using PTB.Menus;
-using System.Threading.Tasks;
-using Unity.Netcode;
 using PTB.Networking;
 using UnityEngine.UI;
 using TMPro;
@@ -33,28 +29,22 @@ public class LobbyMenu : CustomMonoBehaviour
     #region Events
     private void OnEnable()
     {
-        // _networkHelper.networkManager.OnClientConnectedCallback += UpdateLobbyCodeText;
         SteamMatchmaking.OnLobbyEntered += OnLobbyEntered;
         _eventManager.OnUnityClientDisconnected += ResetMenu;
+
+        if (_networkHelper.networkManager != null && !_networkHelper.networkManager.IsHost && _startGameBTN != null) _startGameBTN.interactable = false;
+        UpdateLobbyCodeText();
+
     }
 
     private void OnDisable()
     {
-        // _networkHelper.networkManager.OnClientConnectedCallback += UpdateLobbyCodeText;
         SteamMatchmaking.OnLobbyEntered -= OnLobbyEntered;
         _eventManager.OnUnityClientDisconnected -= ResetMenu;
 
 
     }
     #endregion
-
-    private void Start()
-    {
-        if (_networkHelper.networkManager != null && !_networkHelper.networkManager.IsHost && _startGameBTN != null) _startGameBTN.interactable = false;
-        UpdateLobbyCodeText();
-
-
-    }
 
     private void ResetMenu()
     {
@@ -140,7 +130,8 @@ public class LobbyMenu : CustomMonoBehaviour
         // MainMenuController _mainMenuController = MainMenuController.Instance;
         if (_connectedMembers.Count < SteamManager.Instance.minimumPlayers && !_debug) { Debug.LogWarning($"Need {SteamManager.Instance.minimumPlayers} players to start"); return; }
         Debug.Log($"{_networkHelper.CheckPrivilege()} Started the game!");
-        NetworkManager.Singleton.SceneManager.LoadScene("Test Scene", LoadSceneMode.Single);
+        BootstrapNetworkManager.ChangeNetworkScene("TestScene", "MainMenuScene");
+
 
     }
     #endregion

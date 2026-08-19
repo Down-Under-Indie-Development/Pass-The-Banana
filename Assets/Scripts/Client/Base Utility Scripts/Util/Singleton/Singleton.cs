@@ -119,18 +119,16 @@ namespace Utility
         public override void OnNetworkSpawn()
         {
             base.OnNetworkSpawn();
-            Debug.Log($"{instance}");
 
             if (instance != null && instance != this)
             {
-                NetworkObject.Despawn(true);
+                Destroy(gameObject);
                 return;
             }
 
             instance = this as T;
             OnInstanceCreated();
 
-            NetworkObject.DestroyWithScene = false;
             NetworkObject.ActiveSceneSynchronization = true;
             NetworkObject.SceneMigrationSynchronization = true;
             NetworkObject.AlwaysReplicateAsRoot = true;
@@ -150,7 +148,7 @@ namespace Utility
         protected override void OnInstanceCreated()
         {
             gameObject.transform.SetParent(null);
-            DontDestroyOnLoad(gameObject);
+            // DontDestroyOnLoad(gameObject);
         }
     }
     #endregion
