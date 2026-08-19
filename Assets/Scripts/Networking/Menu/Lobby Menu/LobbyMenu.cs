@@ -1,0 +1,137 @@
+using Utility;
+using UnityEngine;
+using Steamworks.Data;
+using Steamworks;
+using System.Collections.Generic;
+using UnityEngine.UI;
+using TMPro;
+using PTB.Networking.Menus.Interfaces;
+
+namespace PTB.Networking.Menus
+{
+    public class LobbyMenu : CustomMonoBehaviour, IMenu
+    {
+
+        [Header("Player Panel")]
+        [SerializeField] private GameObject playerPanelContent;
+        [SerializeField] private GameObject playerInfoPanel;
+
+        [Header("Buttons")]
+        [SerializeField] private Button _startGameBTN;
+
+        [SerializeField] private TextMeshProUGUI _lobbyCodeTxt;
+
+        private UnityNetworkHelper _networkHelper => UnityNetworkHelper.Instance;
+        private SteamManager _steamManager => SteamManager.Instance;
+
+
+        private Queue<SteamId> _connectedMembers = new();
+
+        #region Events
+        private void OnEnable()
+        {
+            SteamMatchmaking.OnLobbyEntered += OnLobbyEntered;
+            _eventManager.OnUnityClientDisconnected += ResetMenu;
+
+            if (_networkHelper.networkManager != null && !_networkHelper.networkManager.IsHost && _startGameBTN != null) _startGameBTN.interactable = false;
+            UpdateLobbyCodeText();
+
+        }
+
+        private void OnDisable()
+        {
+            SteamMatchmaking.OnLobbyEntered -= OnLobbyEntered;
+            _eventManager.OnUnityClientDisconnected -= ResetMenu;
+            CloseMenu();
+
+
+        }
+        #endregion
+
+        private void FixedUpdate()
+        {
+            Refresh();
+        }
+
+
+        #region Steamworks
+
+        private void OnLobbyEntered(Lobby lobby)
+        {
+            UpdateLobbyCodeText();
+            RefreshUI(lobby);
+
+        }
+
+        private void UpdateLobbyCodeText()
+        {
+            if (_lobbyCodeTxt != null && _steamManager.myLobby.HasValue) _lobbyCodeTxt.text = $"Code: {_steamManager.myLobby.Value.Id}";
+
+        }
+
+        #endregion
+
+        public void OpenMenu() { ResetMenu(); }
+        public void CloseMenu()
+        {
+            ResetMenu();
+        }
+
+        public void ResetMenu()
+        {
+            _lobbyCodeTxt.text = "";
+            ClearPlayerPanel();
+
+        }
+
+        public void Refresh()
+        {
+            if (_steamManager.myLobby.HasValue) RefreshUI(_steamManager.myLobby);
+
+        }
+
+        private void ClearPlayerPanel()
+        {
+            for (int i = 0; i < playerPanelContent.transform.childCount; i++)
+                Destroy(playerPanelContent.transform.GetChild(i).gameObject);
+
+        }
+
+        private void RefreshUI(Lobby? lobby)
+        {
+            if (playerPanelContent == null) { Debug.LogError($"Player panel content is null!"); return; }
+            if (playerInfoPanel == null) { Debug.LogError($"Player info panel is null, cannot display player"); return; }
+            if (!lobby.HasValue) return;
+
+            ClearPlayerPanel();
+            if (_lobbyCodeTxt != null && _lobbyCodeTxt.text == "") UpdateLobbyCodeText();
+
+            foreach (Friend member in lobby.Value.Members)
+            {
+                GameObject playerInfoGO = Instantiate(playerInfoPanel);
+                playerInfoGO.transform.SetParent(playerPanelContent.transform, false);
+
+                // INFO: Set Display
+                PlayerUIInfo playerInfo = playerInfoGO.GetComponent<PlayerUIInfo>();
+                bool isHost = lobby.Value.Owner.Id == member.Id;
+                playerInfo.playerName = $"{member.Name} {(isHost ? "[HOST]" : "     ")}";
+                playerInfo.playerPing = $"{-1}ms";
+
+
+            }
+        }
+
+        #region Buttons
+        public void StartGame()
+        {
+            // MainMenuController _mainMenuController = MainMenuController.Instance;
+            if (_connectedMembers.Count < SteamManager.Instance.minimumPlayers && !_debug) { Debug.LogWarning($"Need {SteamManager.Instance.minimumPlayers} players to start"); return; }
+            Debug.Log($"{_networkHelper.CheckPrivilege()} Started the game!");
+            BootstrapNetworkManager.ChangeNetworkScene("TestScene", "MainMenuScene");
+
+
+        }
+        #endregion
+
+    }
+}

@@ -13,12 +13,15 @@ namespace PTB.Networking
     public class SteamManager : Singleton<SteamManager>
     {
 
-        [Header("Steam Settings")]
+        [field: Header("Steam Settings")]
         [field: SerializeField] public uint appID { get; protected set; } = 480;
         public bool connectedToSteam => SteamClient.IsValid;
 
-        [Header("Lobby Settings")]
+        [field: Header("Lobby Settings")]
         [field: SerializeField] public int minimumPlayers { get; protected set; } = 2;
+        [field: SerializeField] public int maximumPlayers { get; protected set; } = 4;
+        public Lobby? myLobby { get; protected set; }
+
 
         [Header("Events")]
         public UnityEvent EvtSteamInitialised = new UnityEvent();
@@ -26,16 +29,9 @@ namespace PTB.Networking
 
 
         #region Networking
-        public Lobby? myLobby { get; protected set; }
-        protected FacepunchTransport _networkTransport;
+        protected FacepunchTransport _networkTransport => GetComponent<FacepunchTransport>();
+        protected NetworkManager _networkManager => NetworkManager.Singleton;
         #endregion
-
-        protected override void Awake()
-        {
-            base.Awake();
-            _networkTransport = GetComponent<FacepunchTransport>();
-
-        }
 
         #region Events
         private void OnEnable()
@@ -184,6 +180,8 @@ namespace PTB.Networking
         }
         #endregion
 
+
+        #region Lobbies
         // INFO: DO NOT EDIT!
         #region Steamworks
         #region Create Server
@@ -336,7 +334,7 @@ namespace PTB.Networking
         {
             if (!connectedToSteam) return $"<color={LogColours.Steamworks}>[STEAM]</color>";
 
-            switch (NetworkManager.Singleton.IsHost)
+            switch (_networkManager.IsHost)
             {
                 case true:
                     return $"<color={LogColours.Steamworks}>[STEAM]</color> <color={LogColours.Host}>[HOST]</color>";
@@ -344,6 +342,7 @@ namespace PTB.Networking
                     return $"<color={LogColours.Steamworks}>[STEAM]</color> <color={LogColours.Client}>[CLIENT]</color>";
             }
         }
+        #endregion
         #endregion
 
 

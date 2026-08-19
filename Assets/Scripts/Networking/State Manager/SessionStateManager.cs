@@ -40,12 +40,7 @@ NetworkVariableWritePermission.Server
 
         public void UpdateSessionState(GameState newValue)
         {
-            if (!IsServer)
-            {
-                Debug.Log($"You aint the host!");
-                return;
-            }
-
+            if (!IsServer) return;
             currentSessionState.Value = newValue;
 
 

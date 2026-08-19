@@ -6,7 +6,7 @@ internal static class LogColours
     public const string Client = "#FF8A65";
     public const string Steamworks = "#AED581";
     public const string Unity = "#90A4AE";
-    public const string Networking = "#B39DDB";
+    public const string Debug = "#7d45ed";
     public const string UI = "#FFD54F";
     public const string Lobby = "#4DB6AC";
     public const string Scene = "#7986CB";

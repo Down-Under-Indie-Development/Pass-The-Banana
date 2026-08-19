@@ -323,7 +323,7 @@ MonoBehaviour:
     m_Bottom: 0
   m_ChildAlignment: 4
   m_StartCorner: 0
-  m_StartAxis: 1
+  m_StartAxis: 0
   m_CellSize: {x: 450, y: 125}
   m_Spacing: {x: 0, y: 65}
   m_Constraint: 1
@@ -337,15 +337,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 232336508}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4dfebae62b3e6e64e96ba3b92112ef08, type: 3}
+  m_Script: {fileID: 11500000, guid: a7ede295891d64f41b90578cf735c7f2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MainMenuController
   _debug: 0
   _hostGameMenu: {fileID: 442635454}
-  _hostGamePlayerCountSlider: {fileID: 1665168484}
-  _lobbyScreen: {fileID: 846610329}
   _joinGameMenu: {fileID: 138638569}
   _optionsMenu: {fileID: 0}
+  _lobbyScreen: {fileID: 846610329}
   _debugTXT: {fileID: 234890251}
 --- !u!1 &234890249
 GameObject:
@@ -2502,17 +2501,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1471293005}
   m_CullTransparentMesh: 1
---- !u!114 &1665168484 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 8650382362865121752, guid: 801cae11b428acb4daf7e320d25f0223, type: 3}
-  m_PrefabInstance: {fileID: 442635452}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 67db9e8f0e2ae9c40bc1e2b64352a6b4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Slider
 --- !u!1 &1674280216
 GameObject:
   m_ObjectHideFlags: 0

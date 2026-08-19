@@ -1,33 +1,26 @@
 using Utility;
 using UnityEngine;
-using UnityEngine.SceneManagement;
-using Steamworks;
 using UnityEngine.UI;
-using PTB.Networking;
 using Unity.Netcode;
 using TMPro;
-// using Unity.VisualScripting;
+using PTB.Networking.Menus.Interfaces;
+using System.Collections.Generic;
+using Unity.Netcode.Transports.UTP;
+using Steamworks.Data;
 
-namespace PTB.Menus
+namespace PTB.Networking.Menus
 {
-    public class MainMenuController : Singleton<MainMenuController>
+    public class MainMenu : Singleton<MainMenu>, IMenu
     {
 
         // INFO: Networking Components
         private UnityNetworkHelper _unityNetworkHelper => UnityNetworkHelper.Instance;
 
-        [Header("Host Game Menu")]
+        [Header("Sub Menus")]
         [SerializeField] private GameObject _hostGameMenu;
-        [SerializeField] private Slider _hostGamePlayerCountSlider; // TODO: Find a better way to do this
-
-        [Header("Lobby Menu")]
-        [SerializeField] private GameObject _lobbyScreen;
-
-        [Header("Join Game Menu")]
         [SerializeField] private GameObject _joinGameMenu;
-
-        [Header("Options Menu")]
         [SerializeField] private GameObject _optionsMenu;
+        [SerializeField] private GameObject _lobbyScreen;
 
         private GameState _localCurrentGameSate = GameState.MainMenu;
 
@@ -37,24 +30,24 @@ namespace PTB.Menus
         #region Events
         private void OnEnable()
         {
-            _eventManager.OnStartUnityClient += OnStartUnityClient;
+            _eventManager.OnStartUnityClient += ClientConnected;
             _unityNetworkHelper.sessionStateManager.currentSessionState.OnValueChanged += HandleSessionStateChange;
-            _eventManager.OnUnityClientDisconnected += ResetMenu;
 
         }
 
         private void OnDisable()
         {
-            _eventManager.OnStartUnityClient -= OnStartUnityClient;
+            _eventManager.OnStartUnityClient -= ClientConnected;
             _unityNetworkHelper.sessionStateManager.currentSessionState.OnValueChanged -= HandleSessionStateChange;
-            _eventManager.OnUnityClientDisconnected -= ResetMenu;
+            CloseMenu();
+
 
         }
 
         private void HandleSessionStateChange(GameState previousValue, GameState newValue)
         {
             _localCurrentGameSate = newValue;
-            Debug.Log($"{_localCurrentGameSate}");
+            // Debug.Log($"{_localCurrentGameSate}");
 
         }
         #endregion
@@ -68,21 +61,13 @@ namespace PTB.Menus
 
         }
 
-        private void ResetMenu()
-        {
-            Start();
-            _localCurrentGameSate = GameState.MainMenu;
-
-
-        }
-
-        private void LateUpdate()
+        private void Update()
         {
             if (_debugTXT != null) _debugTXT.text = $"{_unityNetworkHelper.sessionStateManager.currentSessionState.Value}";
 
         }
 
-        #region Menus
+        #region Sub Menus
         public void HostGame()
         {
             if (_hostGameMenu == null) { Debug.LogWarning($"Host game menu is null!"); return; }
@@ -94,9 +79,17 @@ namespace PTB.Menus
 
         public void CreateLobby()
         {
-            if (_hostGamePlayerCountSlider == null) { Debug.LogError($"Slider is null!"); return; }
-            _eventManager.OnCreateLobbyRequest?.Invoke((int)_hostGamePlayerCountSlider.value);
+            Slider playerCountSlider = _hostGameMenu.gameObject.GetComponentInChildren<Slider>();
+            if (playerCountSlider == null) { Debug.LogError($"Host game menu needs a slider for player count!"); return; }
+            if (_unityNetworkHelper.networkManager.NetworkConfig.NetworkTransport is UnityTransport)
+            {
+                Debug.Log($"<color={LogColours.Debug}>[DEBUG]</color> Bypassing Facepunch transport, starting host!");
+                _eventManager.OnSteamHostConnect?.Invoke();
+                return;
 
+            }
+
+            _eventManager.OnCreateLobbyRequest?.Invoke((int)playerCountSlider.value);
 
         }
 
@@ -104,29 +97,39 @@ namespace PTB.Menus
         {
             if (_joinGameMenu == null) { Debug.LogWarning($"Join game menu is null!"); return; }
             _joinGameMenu.SetActive(true);
-            _localCurrentGameSate = GameState.JoinGame;
-
 
         }
 
         public void Options()
         {
-            _localCurrentGameSate = GameState.Options;
             Debug.LogWarning($"Not implemented!");
 
         }
         #endregion
 
-        private void OnStartUnityClient()
+        private void ClientConnected()
         {
-            _joinGameMenu?.SetActive(false);
-            _hostGameMenu?.SetActive(false);
+            ResetMenu();
             _lobbyScreen?.SetActive(true);
-            if (NetworkManager.Singleton.IsServer) _unityNetworkHelper.sessionStateManager.UpdateSessionState(GameState.Lobby);
-            _localCurrentGameSate = _unityNetworkHelper.sessionStateManager.currentSessionState.Value;
+            _unityNetworkHelper.sessionStateManager.UpdateSessionState(GameState.Lobby);
 
 
         }
+
+        public void OpenMenu() { ResetMenu(); }
+        public void CloseMenu()
+        {
+            ResetMenu();
+        }
+
+        public void ResetMenu()
+        {
+            _lobbyScreen?.SetActive(false);
+            _joinGameMenu?.SetActive(false);
+            _hostGameMenu?.SetActive(false);
+        }
+
+        public void Refresh() => ResetMenu();
 
         #region Utility
         // INFO: Prevent switching to null UI
@@ -137,6 +140,7 @@ namespace PTB.Menus
             _localCurrentGameSate = menuStateToSwitchTo;
 
         }
+
 
         public void BackButton()
         {
