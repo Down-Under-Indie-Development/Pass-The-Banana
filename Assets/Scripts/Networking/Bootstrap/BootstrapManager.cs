@@ -7,8 +7,6 @@ using UnityEngine.SceneManagement;
 public class BootstrapManager : MonoBehaviour
 {
     [SerializeField] private string menuName = "MainMenuScene";
-    private NetworkManager _networkManager => NetworkManager.Singleton;
-    private SteamManager _steamManager => SteamManager.Instance;
 
     public void GoToMenu()
     {

@@ -31,8 +31,7 @@ public class GameManager : NetworkedSingleton<GameManager>
     #region Networking Components
     // INFO: Network Components
     private UnityNetworkHelper _networkHelper => UnityNetworkHelper.Instance;
-    private SteamManager _steamManager => SteamManager.Instance;
-    public GameState currentGameState => _networkHelper.sessionStateManager.currentSessionState.Value;
+    public GameState currentGameState => SessionStateManager.Instance.currentSessionState.Value;
     #endregion
 
     #region Events

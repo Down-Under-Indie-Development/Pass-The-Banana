@@ -8,6 +8,8 @@ using Utility;
 
 namespace PTB.Networking
 {
+    [RequireComponent(typeof(FacepunchTransport))]
+    [RequireComponent(typeof(NetworkManager))]
     public class SteamManager : Singleton<SteamManager>
     {
 
@@ -25,13 +27,13 @@ namespace PTB.Networking
 
         #region Networking
         public Lobby? myLobby { get; protected set; }
-        [field: SerializeField] protected FacepunchTransport _networkTransport;
+        protected FacepunchTransport _networkTransport;
         #endregion
 
         protected override void Awake()
         {
             base.Awake();
-            // _networkTransport = GetComponent<FacepunchTransport>();
+            _networkTransport = GetComponent<FacepunchTransport>();
 
         }
 
