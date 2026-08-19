@@ -17,43 +17,37 @@ namespace PTB.Client.Player
 
         private void Start()
         {
-            // if (!IsOwner) return;
+            if (!IsOwner) return;
             _pauseMenuGO?.SetActive(false);
-
         }
 
         private void Update()
         {
-            // if (Keyboard.current.escapeKey.wasPressedThisFrame && Time.timeScale != 0) TogglePauseMenu(); // INFO: Check for pause menu
+            if (!IsOwner) return;
+
             if (Keyboard.current.escapeKey.wasPressedThisFrame)
             {
                 // Don't allow unpause if host forced it
                 if (_hostForcedPause) return;
-                TogglePauseMenu();
+                RequestTogglePauseRPC();
             }
-
         }
 
-        #region Menus
-        private void TogglePauseMenu()
+        #region Pause Handling
+        [Rpc(SendTo.Server)]
+        private void RequestTogglePauseRPC()
         {
-            if (_pauseMenuGO == null) { Debug.LogWarning($"Pause menu is null!"); return; }
-            GameManager.Instance.NotifyServerOfHostPauseRPC();
-            _pauseMenuGO?.SetActive(!_pauseMenuGO.activeSelf);
-
+            // Tell the server to broadcast pause state to all clients (including itself)
+            GameManager.Instance.BroadcastPauseStateRPC();
         }
 
-        // INFO: Pause when host pauses
-        public void PausePlayer()
+        // Called from GameManager via RPC - applies pause state to this player
+        public void ApplyPauseState(bool isPaused)
         {
-            Time.timeScale = _pauseMenuGO.activeSelf ? 0f : 1f;
-            if (NetworkManager.Singleton.IsServer) return;
-            _hostForcedPause = _pauseMenuGO.activeSelf;
-            TogglePauseMenu();
-
+            _pauseMenuGO?.SetActive(isPaused);
+            Time.timeScale = isPaused ? 0f : 1f;
+            if (!IsServer) _hostForcedPause = isPaused;
         }
         #endregion
-
-
     }
 }

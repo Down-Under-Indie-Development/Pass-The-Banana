@@ -122,7 +122,7 @@ namespace PTB.Menus
             _joinGameMenu?.SetActive(false);
             _hostGameMenu?.SetActive(false);
             _lobbyScreen?.SetActive(true);
-            if (_unityNetworkHelper.networkManager.IsServer) _unityNetworkHelper.sessionStateManager.UpdateSessionState(GameState.Lobby);
+            if (NetworkManager.Singleton.IsServer) _unityNetworkHelper.sessionStateManager.UpdateSessionState(GameState.Lobby);
             _localCurrentGameSate = _unityNetworkHelper.sessionStateManager.currentSessionState.Value;
 
 

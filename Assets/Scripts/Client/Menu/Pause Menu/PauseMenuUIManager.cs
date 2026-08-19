@@ -21,7 +21,6 @@ namespace PTB.Client.Menus
         public void ReturnToMainMenu()
         {
             _eventManager.OnSteamClientDisconnect?.Invoke();
-            SceneManager.LoadScene(0);
 
         }
 

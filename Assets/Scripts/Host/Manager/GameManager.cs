@@ -3,12 +3,10 @@ using UnityEngine;
 using System.Collections.Generic;
 using PTB.Client.Player;
 using Unity.Netcode;
-using UnityEngine.SceneManagement;
 using PTB.Networking;
-using Unity.VisualScripting;
-using UnityEngine.InputSystem;
-using TMPro;
-using Unity.Services.Lobbies.Models;
+using System.Collections;
+using System;
+using System.Data;
 
 public class GameManager : NetworkedSingleton<GameManager>
 {
@@ -29,8 +27,6 @@ public class GameManager : NetworkedSingleton<GameManager>
     [Header("Player Settings")]
     [SerializeField] private GameObject _playerPrefab;
     [SerializeField] private List<Transform> _spawnPositions = new();
-
-
 
     #region Networking Components
     // INFO: Network Components
@@ -57,8 +53,15 @@ public class GameManager : NetworkedSingleton<GameManager>
     #region Networking
     public override void OnNetworkSpawn()
     {
-        RequestStartGameRPC();
+        if (!IsServer) return;
+        StartCoroutine(SpawnPlayersDelayed());
 
+    }
+
+    private IEnumerator SpawnPlayersDelayed()
+    {
+        yield return new WaitForSeconds(0.5f);
+        RequestStartGameRPC();
     }
     #endregion
 
@@ -77,15 +80,20 @@ public class GameManager : NetworkedSingleton<GameManager>
         if (!IsServer) return;
         if (_playerPrefab == null) { Debug.LogError($"Player prefab is null, cannot spawn!"); return; }
 
+        Debug.Log($"[SERVER] Spawning {_connectedClientIds.Count} players");
 
         for (int i = 0; i < _connectedClientIds.Count; i++)
         {
             ulong currentClient = _connectedClientIds[i];
             GameObject instance = Instantiate(_playerPrefab);
             instance.transform.position = _spawnPositions[i].position;
-            instance.GetComponent<NetworkObject>().SpawnAsPlayerObject(currentClient, true);
 
+            NetworkObject netObj = instance.GetComponent<NetworkObject>();
+            Debug.Log($"[SERVER] Spawning player for client {currentClient}, IsOwner will be: {currentClient == NetworkManager.Singleton.LocalClientId}");
 
+            netObj.SpawnAsPlayerObject(currentClient, true);
+
+            Debug.Log($"[SERVER] Player spawned for {currentClient}");
         }
 
         StartGameRPC();
@@ -105,23 +113,31 @@ public class GameManager : NetworkedSingleton<GameManager>
     #endregion
 
     #region Host Pausing
-    [Rpc(SendTo.NotServer)] // INFO: Notify the clients the host has paused!
-    public void NotifyServerOfHostPauseRPC()
+    private bool _gamePaused = false;
+
+    [Rpc(SendTo.ClientsAndHost)]  // INFO: Send to all clients AND the host
+    public void BroadcastPauseStateRPC()
     {
-        if (!NetworkManager.Singleton.IsServer) return;
+        // INFO: Toggle the pause state
+        _gamePaused = !_gamePaused;
 
-        Debug.Log($"{_networkHelper.CheckPrivilege()} OMG the host has paused!");
+        Debug.Log($"{_networkHelper.CheckPrivilege()} Game paused: {_gamePaused}");
 
+        // INFO: Apply pause state to all connected players (including host)
+        ForEachPlayer(player => player.ApplyPauseState(_gamePaused));
+
+    }
+    #endregion
+
+    public void ForEachPlayer(Action<PlayerNetworkedController> action)
+    {
         foreach (NetworkClient netObj in _connectedClients.Values)
         {
             PlayerNetworkedController playerController = netObj.PlayerObject.GetComponent<PlayerNetworkedController>();
             if (playerController == null) continue;
-            playerController.PausePlayer();
-
+            action?.Invoke(playerController);
         }
     }
-    #endregion
-
 
 }
 

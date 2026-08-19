@@ -12,7 +12,7 @@ using PTB.Networking;
 using UnityEngine.UI;
 using TMPro;
 
-public class LobbyUIManager : CustomMonoBehaviour
+public class LobbyMenu : CustomMonoBehaviour
 {
 
     [Header("Player Panel")]
@@ -137,10 +137,10 @@ public class LobbyUIManager : CustomMonoBehaviour
     #region Buttons
     public void StartGame()
     {
-        MainMenuController _mainMenuController = MainMenuController.Instance;
+        // MainMenuController _mainMenuController = MainMenuController.Instance;
         if (_connectedMembers.Count < SteamManager.Instance.minimumPlayers && !_debug) { Debug.LogWarning($"Need {SteamManager.Instance.minimumPlayers} players to start"); return; }
         Debug.Log($"{_networkHelper.CheckPrivilege()} Started the game!");
-        _networkHelper.networkManager.SceneManager.LoadScene("Test Scene", LoadSceneMode.Single);
+        NetworkManager.Singleton.SceneManager.LoadScene("Test Scene", LoadSceneMode.Single);
 
     }
     #endregion

@@ -87,11 +87,13 @@ namespace Utility
     #endregion
 
     #region Networked Singleton
+    #region Networked Singleton
     [RequireComponent(typeof(NetworkObject))]
     public abstract class NetworkedSingleton<T> : NetworkBehaviour where T : MonoBehaviour
     {
         protected virtual EventManager _eventManager => EventManager.Instance;
         private static T instance;
+        public static bool hasInstance => instance != null;
 
         public static T Instance
         {
@@ -106,7 +108,6 @@ namespace Utility
         private static T FindInstance()
         {
             instance = FindAnyObjectByType<T>();
-            DontDestroyOnLoad(instance?.transform?.root);
 
             if (instance != null) return instance;
             if (!Application.isPlaying) return instance;
@@ -118,6 +119,7 @@ namespace Utility
         public override void OnNetworkSpawn()
         {
             base.OnNetworkSpawn();
+            Debug.Log($"{instance}");
 
             if (instance != null && instance != this)
             {
@@ -125,11 +127,13 @@ namespace Utility
                 return;
             }
 
+            instance = this as T;
+            OnInstanceCreated();
+
             NetworkObject.DestroyWithScene = false;
             NetworkObject.ActiveSceneSynchronization = true;
             NetworkObject.SceneMigrationSynchronization = true;
             NetworkObject.AlwaysReplicateAsRoot = true;
-
         }
 
         public override void OnNetworkDespawn()
@@ -138,8 +142,18 @@ namespace Utility
                 instance = null;
         }
 
-
+        protected virtual void OnInstanceCreated() { }
     }
+
+    public class PersistentNetworkSingleton<T> : NetworkedSingleton<T> where T : NetworkBehaviour
+    {
+        protected override void OnInstanceCreated()
+        {
+            gameObject.transform.SetParent(null);
+            DontDestroyOnLoad(gameObject);
+        }
+    }
+    #endregion
 
     #endregion
 

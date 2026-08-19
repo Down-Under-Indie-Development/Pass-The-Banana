@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using PTB.Networking;
 using Unity.Netcode;
 using UnityEngine;
@@ -51,7 +52,7 @@ public class UnityNetworkHelper : PersistentSingleton<UnityNetworkHelper>
 
     }
 
-    protected virtual void StopUnityClient()
+    protected virtual async void StopUnityClient()
     {
         if (networkManager == null) return;
 
@@ -59,8 +60,20 @@ public class UnityNetworkHelper : PersistentSingleton<UnityNetworkHelper>
         string color = networkManager.IsServer ? LogColours.Host : LogColours.Client;
 
         Debug.Log($"<color={LogColours.Unity}>[UNITY]</color> <color={color}>[{privilege.ToUpper()}]</color> Shutting down {privilege}...");
-        networkManager.Shutdown();
-        _eventManager.OnUnityClientDisconnected?.Invoke(); // INFO: Client stopped let other scripts know
+
+        try
+        {
+            networkManager.Shutdown();
+            await Task.Delay(100);
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogError($"Shutdown error: {ex.Message}");
+        }
+
+        SceneManager.LoadScene(0, LoadSceneMode.Single);
+        // _eventManager.OnUnityClientDisconnected?.Invoke(); // INFO: Client stopped let other scripts know
+
 
     }
 

@@ -7,7 +7,7 @@ using Utility;
 
 namespace PTB.Networking
 {
-    public class SteamManager : PersistentSingleton<SteamManager>
+    public class SteamManager : PersistentNetworkSingleton<SteamManager>
     {
 
         [Header("Steam Settings")]
@@ -24,11 +24,9 @@ namespace PTB.Networking
         protected FacepunchTransport _networkTransport;
         #endregion
 
-        protected override void Awake()
+        private void Awake()
         {
             _networkTransport = GetComponent<FacepunchTransport>();
-
-
 
         }
 
