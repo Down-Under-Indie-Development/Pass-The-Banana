@@ -10,16 +10,16 @@ namespace PTB.Networking
         [field: SerializeField]
         public NetworkVariable<GameState> currentSessionState { get; private set; } = new NetworkVariable<GameState>
         (
-            GameState.Lobby,
+            GameState.MainMenu,
 
-NetworkVariableReadPermission.Owner,
+NetworkVariableReadPermission.Everyone,
 NetworkVariableWritePermission.Server
+
         );
 
         #region Events
         private void OnEnable()
         {
-
             currentSessionState.OnValueChanged += SessionStateChanged;
 
         }
@@ -34,7 +34,7 @@ NetworkVariableWritePermission.Server
         private void SessionStateChanged(GameState previousValue, GameState newValue)
         {
             if (IsServer) { Debug.Log($"{UnityNetworkHelper.Instance.CheckPrivilege()} Game state has been changed to {newValue}"); return; }
-            if (IsClient) Debug.Log($"{UnityNetworkHelper.Instance.CheckPrivilege()} Syncing game state from host ({newValue})");
+            Debug.Log($"{UnityNetworkHelper.Instance.CheckPrivilege()} Syncing game state from host ({newValue})");
 
         }
 
@@ -43,8 +43,21 @@ NetworkVariableWritePermission.Server
             if (!IsServer) return;
             currentSessionState.Value = newValue;
 
-
         }
 
+        // public override void OnNetworkSpawn()
+        // {
+        //     base.OnNetworkSpawn();
+
+        //     Debug.Log($"SessionStateManager OnNetworkSpawn | IsServer: {IsServer} | Value: {currentSessionState.Value}");
+
+        //     // Force callback to fire
+        //     currentSessionState.OnValueChanged += SessionStateChanged;
+
+        //     if (!IsServer)
+        //     {
+        //         Debug.Log($"Client: explicitly re-registered OnValueChanged callback");
+        //     }
+        // }
     }
 }

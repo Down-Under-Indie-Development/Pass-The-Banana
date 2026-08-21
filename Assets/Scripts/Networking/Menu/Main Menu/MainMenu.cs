@@ -31,23 +31,14 @@ namespace PTB.Networking.Menus
         private void OnEnable()
         {
             _eventManager.OnStartUnityClient += ClientConnected;
-            _unityNetworkHelper.sessionStateManager.currentSessionState.OnValueChanged += HandleSessionStateChange;
 
         }
 
         private void OnDisable()
         {
             _eventManager.OnStartUnityClient -= ClientConnected;
-            _unityNetworkHelper.sessionStateManager.currentSessionState.OnValueChanged -= HandleSessionStateChange;
             CloseMenu();
 
-
-        }
-
-        private void HandleSessionStateChange(GameState previousValue, GameState newValue)
-        {
-            _localCurrentGameSate = newValue;
-            // Debug.Log($"{_localCurrentGameSate}");
 
         }
         #endregion
@@ -63,7 +54,8 @@ namespace PTB.Networking.Menus
 
         private void Update()
         {
-            if (_debugTXT != null) _debugTXT.text = $"{_unityNetworkHelper.sessionStateManager.currentSessionState.Value}";
+            if (_debugTXT != null && _unityNetworkHelper.sessionStateManager)
+                _debugTXT.text = $"{_unityNetworkHelper.sessionStateManager.currentSessionState.Value}";
 
         }
 
@@ -89,6 +81,7 @@ namespace PTB.Networking.Menus
 
             }
 
+            _localCurrentGameSate = _unityNetworkHelper.sessionStateManager.currentSessionState.Value;
             _eventManager.OnCreateLobbyRequest?.Invoke((int)playerCountSlider.value);
 
         }
@@ -111,7 +104,7 @@ namespace PTB.Networking.Menus
         {
             ResetMenu();
             _lobbyScreen?.SetActive(true);
-            _unityNetworkHelper.sessionStateManager.UpdateSessionState(GameState.Lobby);
+            if (_unityNetworkHelper.networkManager.IsServer) _unityNetworkHelper.sessionStateManager.UpdateSessionState(GameState.Lobby);
 
 
         }

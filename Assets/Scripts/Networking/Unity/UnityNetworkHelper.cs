@@ -16,7 +16,7 @@ public class UnityNetworkHelper : Singleton<UnityNetworkHelper>
     public virtual NetworkManager networkManager => NetworkManager.Singleton;
 
     [Header("Network Prefabs")]
-    [SerializeField] private List<GameObject> _networkPrefabsToSpawn;
+    [SerializeField] private List<GameObject> _networkPrefabsToSpawn = new();
 
     #region Events
     protected virtual void OnEnable()
@@ -90,20 +90,13 @@ public class UnityNetworkHelper : Singleton<UnityNetworkHelper>
         // GUARD: Ensure server started
         if (!networkManager.StartHost()) return;
         Debug.Log($"{CheckPrivilege()} Unity Server has started");
-        // RegisterNetworkPrefabs();
+        RegisterNetworkPrefabs();
         _eventManager.OnStartUnityClient?.Invoke(); // INFO: Host started let other scripts know
 
     }
 
     private void RegisterNetworkPrefabs()
     {
-        foreach (GameObject prefab in _networkPrefabsToSpawn)
-        {
-
-            NetworkManager.Singleton.AddNetworkPrefab(prefab);
-
-        }
-
         foreach (GameObject prefab in _networkPrefabsToSpawn)
         {
             Instantiate(prefab).GetComponent<NetworkObject>().Spawn();
