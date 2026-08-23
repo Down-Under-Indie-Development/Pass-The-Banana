@@ -58,7 +58,7 @@ namespace PTB.Networking.Menus
             // DEBUG: For Testing
             if (NetworkManager.Singleton.NetworkConfig.NetworkTransport is UnityTransport)
             {
-                Debug.Log($"<color={LogColours.Debug}>[DEBUG]</color> Bypassing Facepunch transport, starting client!");
+                Debug.Log($"<color={LogColours.Debug}>[DEBUG]</color> <color={LogColours.Unity}>[UNITY]</color> Bypassing Facepunch transport, starting client!");
                 _eventManager.OnSteamClientConnect?.Invoke();
                 // await SceneManager.UnloadSceneAsync("MainMenuScene");
                 return;

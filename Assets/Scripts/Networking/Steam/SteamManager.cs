@@ -8,8 +8,7 @@ using Utility;
 
 namespace PTB.Networking
 {
-    [RequireComponent(typeof(FacepunchTransport))]
-    [RequireComponent(typeof(NetworkManager))]
+
     public class SteamManager : Singleton<SteamManager>
     {
 
@@ -29,8 +28,8 @@ namespace PTB.Networking
 
 
         #region Networking
-        protected FacepunchTransport _networkTransport => GetComponent<FacepunchTransport>();
         protected NetworkManager _networkManager => NetworkManager.Singleton;
+        protected FacepunchTransport _networkTransport => _networkManager.GetComponent<FacepunchTransport>();
         #endregion
 
         #region Events
@@ -105,13 +104,6 @@ namespace PTB.Networking
         }
         #endregion
 
-        private void Start()
-        {
-            EstablishSteamConnection();
-            CheckSteamConnection();
-        }
-
-
         #region Steam Connection
         #region Establish Connection
         // INFO: Establish connection to steam servers
@@ -179,7 +171,6 @@ namespace PTB.Networking
 
         }
         #endregion
-
 
         #region Lobbies
         // INFO: DO NOT EDIT!
