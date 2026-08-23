@@ -12,7 +12,6 @@ using Utility;
 /// </summary>
 public class UnityNetworkHelper : Singleton<UnityNetworkHelper>
 {
-    public virtual SessionStateManager sessionStateManager => SessionStateManager.Instance;
     public virtual NetworkManager networkManager => NetworkManager.Singleton;
 
     [Header("Network Prefabs")]
@@ -87,8 +86,15 @@ public class UnityNetworkHelper : Singleton<UnityNetworkHelper>
     // INFO: Start host connection
     protected virtual void OnStartUnityHost()
     {
+
         // GUARD: Ensure server started
         if (!networkManager.StartHost()) return;
+
+        // INFO: Configure Network Manager
+        networkManager.SceneManager.ActiveSceneSynchronizationEnabled = true;
+        networkManager.SceneManager.PostSynchronizationSceneUnloading = true;
+        networkManager.SceneManager.SetClientSynchronizationMode(LoadSceneMode.Additive);
+
         Debug.Log($"{CheckPrivilege()} Unity Server has started");
         RegisterNetworkPrefabs();
         _eventManager.OnStartUnityClient?.Invoke(); // INFO: Host started let other scripts know

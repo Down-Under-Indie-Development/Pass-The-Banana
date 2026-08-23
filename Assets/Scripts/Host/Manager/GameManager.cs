@@ -104,8 +104,8 @@ public class GameManager : NetworkedSingleton<GameManager>
     [Rpc(SendTo.Server)]
     private void StartGameRPC()
     {
-        _networkHelper.sessionStateManager.UpdateSessionState(GameState.Playing);
-        if (_networkHelper.sessionStateManager.currentSessionState.Value != GameState.Playing) return;
+        BootstrapManager.Instance.sessionStateManager.UpdateSessionState(GameState.Playing);
+        if (BootstrapManager.Instance.sessionStateManager.currentSessionState.Value != GameState.Playing) return;
         Debug.Log($"{_networkHelper.CheckPrivilege()} All players spawned ready to start!");
 
     }

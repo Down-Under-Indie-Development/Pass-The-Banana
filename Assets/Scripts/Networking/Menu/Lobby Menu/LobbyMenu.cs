@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using UnityEngine.UI;
 using TMPro;
 using PTB.Networking.Menus.Interfaces;
+using UnityEngine.SceneManagement;
 
 namespace PTB.Networking.Menus
 {
@@ -128,7 +129,6 @@ namespace PTB.Networking.Menus
             if (_connectedMembers.Count < SteamManager.Instance.minimumPlayers && !_debug) { Debug.LogWarning($"Need {SteamManager.Instance.minimumPlayers} players to start"); return; }
             Debug.Log($"{_networkHelper.CheckPrivilege()} Started the game!");
             BootstrapNetworkManager.ChangeNetworkScene("TestScene", "MainMenuScene");
-
 
         }
         #endregion

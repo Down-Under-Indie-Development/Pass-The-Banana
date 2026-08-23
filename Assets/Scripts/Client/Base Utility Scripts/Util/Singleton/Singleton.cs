@@ -108,7 +108,7 @@ namespace Utility
         private static T FindInstance()
         {
             instance = FindAnyObjectByType<T>();
-            // if (instance == null) Debug.LogError($"Networked Singletons cannot be created at run time! ({typeof(T).Name})");
+            if (instance == null) Debug.LogError($"Networked Singletons cannot be created at run time! ({typeof(T).Name})");
 
             return instance;
         }

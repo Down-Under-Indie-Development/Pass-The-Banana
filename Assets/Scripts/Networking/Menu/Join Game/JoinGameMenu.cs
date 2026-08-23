@@ -59,8 +59,8 @@ namespace PTB.Networking.Menus
             if (NetworkManager.Singleton.NetworkConfig.NetworkTransport is UnityTransport)
             {
                 Debug.Log($"<color={LogColours.Debug}>[DEBUG]</color> <color={LogColours.Unity}>[UNITY]</color> Bypassing Facepunch transport, starting client!");
+                string sceneName = SceneManager.GetActiveScene().name;
                 _eventManager.OnSteamClientConnect?.Invoke();
-                // await SceneManager.UnloadSceneAsync("MainMenuScene");
                 return;
 
             }
@@ -75,6 +75,7 @@ namespace PTB.Networking.Menus
             }
 
             _errorTXT?.gameObject.SetActive(false);
+
             Lobby? lobby = await SteamMatchmaking.JoinLobbyAsync(lobbyId);
 
         }

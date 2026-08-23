@@ -14,7 +14,8 @@ namespace PTB.Networking.Menus
     {
 
         // INFO: Networking Components
-        private UnityNetworkHelper _unityNetworkHelper => UnityNetworkHelper.Instance;
+        // private UnityNetworkHelper _unityNetworkHelper => UnityNetworkHelper.Instance;
+        private BootstrapManager _bootstrapManager => BootstrapManager.Instance;
 
         [Header("Sub Menus")]
         [SerializeField] private GameObject _hostGameMenu;
@@ -54,8 +55,8 @@ namespace PTB.Networking.Menus
 
         private void Update()
         {
-            if (_debugTXT != null && _unityNetworkHelper.sessionStateManager)
-                _debugTXT.text = $"{_unityNetworkHelper.sessionStateManager.currentSessionState.Value}";
+            if (_debugTXT != null && _bootstrapManager.sessionStateManager)
+                _debugTXT.text = $"{_bootstrapManager.sessionStateManager.currentSessionState.Value}";
 
         }
 
@@ -73,7 +74,8 @@ namespace PTB.Networking.Menus
         {
             Slider playerCountSlider = _hostGameMenu.gameObject.GetComponentInChildren<Slider>();
             if (playerCountSlider == null) { Debug.LogError($"Host game menu needs a slider for player count!"); return; }
-            if (_unityNetworkHelper.networkManager.NetworkConfig.NetworkTransport is UnityTransport)
+
+            if (_bootstrapManager.networkManager.NetworkConfig.NetworkTransport is UnityTransport)
             {
                 Debug.Log($"<color={LogColours.Debug}>[DEBUG]</color> Bypassing Facepunch transport, starting host!");
                 _eventManager.OnSteamHostConnect?.Invoke();
@@ -81,7 +83,7 @@ namespace PTB.Networking.Menus
 
             }
 
-            _localCurrentGameSate = _unityNetworkHelper.sessionStateManager.currentSessionState.Value;
+            _localCurrentGameSate = _bootstrapManager.sessionStateManager.currentSessionState.Value;
             _eventManager.OnCreateLobbyRequest?.Invoke((int)playerCountSlider.value);
 
         }
@@ -104,7 +106,7 @@ namespace PTB.Networking.Menus
         {
             ResetMenu();
             _lobbyScreen?.SetActive(true);
-            if (_unityNetworkHelper.networkManager.IsServer) _unityNetworkHelper.sessionStateManager.UpdateSessionState(GameState.Lobby);
+            _bootstrapManager.sessionStateManager.UpdateSessionState(GameState.Lobby);
 
 
         }
