@@ -77,7 +77,7 @@ namespace PTB.Networking.Menus
 
             if (_bootstrapManager.networkManager.NetworkConfig.NetworkTransport is UnityTransport)
             {
-                Debug.Log($"<color={LogColours.Debug}>[DEBUG]</color> Bypassing Facepunch transport, starting host!");
+                Debug.Log($"<color={LogColours.Debug}>[DEBUG]</color> <color={LogColours.Unity}>[UNITY]</color> Bypassing Facepunch transport, starting host!");
                 _eventManager.OnSteamHostConnect?.Invoke();
                 return;
 

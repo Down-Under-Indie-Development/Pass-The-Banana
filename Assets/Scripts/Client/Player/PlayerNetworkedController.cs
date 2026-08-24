@@ -11,7 +11,7 @@ namespace PTB.Client.Player
         [Space()]
         [Header("Menus")]
         [SerializeField] public GameObject _pauseMenuGO;
-        private bool _hostForcedPause = false;
+        public bool hostForcedPause { get; private set; } = false;
 
         [SerializeField] private int _correctAnswers;
 
@@ -27,15 +27,24 @@ namespace PTB.Client.Player
 
             if (Keyboard.current.escapeKey.wasPressedThisFrame)
             {
-                // Don't allow unpause if host forced it
-                if (_hostForcedPause) return;
+                if (!IsServer && !hostForcedPause)
+                {
+                    TogglePauseMenu(); return;
+
+                }
                 RequestTogglePauseRPC();
+
             }
+        }
+
+        private void TogglePauseMenu()
+        {
+            _pauseMenuGO.SetActive(!_pauseMenuGO.activeSelf);
         }
 
         #region Pause Handling
         [Rpc(SendTo.Server)]
-        private void RequestTogglePauseRPC()
+        public void RequestTogglePauseRPC()
         {
             // Tell the server to broadcast pause state to all clients (including itself)
             GameManager.Instance.BroadcastPauseStateRPC();
@@ -46,7 +55,7 @@ namespace PTB.Client.Player
         {
             _pauseMenuGO?.SetActive(isPaused);
             Time.timeScale = isPaused ? 0f : 1f;
-            if (!IsServer) _hostForcedPause = isPaused;
+            if (!IsServer) hostForcedPause = isPaused;
         }
         #endregion
     }

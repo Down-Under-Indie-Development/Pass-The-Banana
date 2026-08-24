@@ -5,9 +5,14 @@ using UnityEngine.SceneManagement;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System;
+using PTB.Client.Player;
 
 public class BootstrapNetworkManager : NetworkedSingleton<BootstrapNetworkManager>
 {
+
+    public IReadOnlyDictionary<ulong, NetworkClient> connectedClients => NetworkManager.Singleton.ConnectedClients;
+    public IReadOnlyList<ulong> connectedClientIds => NetworkManager.Singleton.ConnectedClientsIds;
 
     #region Change Scene
     public static void ChangeNetworkScene(string sceneToLoad, string sceneToClose)
@@ -33,7 +38,6 @@ public class BootstrapNetworkManager : NetworkedSingleton<BootstrapNetworkManage
         Debug.Log($"Scene transition complete: {sceneToLoad}");
 
     }
-    #endregion
 
     [Rpc(SendTo.Authority)]
     private void ClosesScenesRPC(string scenesToClose)
@@ -46,6 +50,23 @@ public class BootstrapNetworkManager : NetworkedSingleton<BootstrapNetworkManage
     {
         SceneManager.UnloadSceneAsync(scenesToClose);
 
+    }
+    #endregion
+
+    public void ForEachPlayer(Action<PlayerNetworkedController> action, bool includeHost = true)
+    {
+        foreach (NetworkClient netObj in connectedClients.Values)
+        {
+            PlayerNetworkedController playerController = netObj.PlayerObject.GetComponent<PlayerNetworkedController>();
+            if (playerController == null) continue;
+
+            bool isHost = netObj.ClientId == NetworkManager.Singleton.LocalClientId;
+
+            // GUARD: Skip host if not included
+            if (isHost && !includeHost) continue;
+
+            action?.Invoke(playerController);
+        }
     }
 
 }

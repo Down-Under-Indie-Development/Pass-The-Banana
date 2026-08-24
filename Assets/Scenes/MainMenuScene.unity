@@ -1732,6 +1732,14 @@ PrefabInstance:
       propertyPath: playerPanelContent
       value: 
       objectReference: {fileID: 867937751}
+    - target: {fileID: 1484427009199260316, guid: b82df9b7ea2603442b128b58d538d377, type: 3}
+      propertyPath: _playerPanelContentGO
+      value: 
+      objectReference: {fileID: 867937751}
+    - target: {fileID: 1484427009199260316, guid: b82df9b7ea2603442b128b58d538d377, type: 3}
+      propertyPath: _playerInfoPanelPrefab
+      value: 
+      objectReference: {fileID: 5007616894640670429, guid: 6b25faf223707b5478bbd8483bf2a549, type: 3}
     - target: {fileID: 1565407613371965321, guid: b82df9b7ea2603442b128b58d538d377, type: 3}
       propertyPath: m_AnchorMax.x
       value: 1

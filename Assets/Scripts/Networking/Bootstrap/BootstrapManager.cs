@@ -22,15 +22,15 @@ namespace PTB.Networking
         public SessionStateManager sessionStateManager => SessionStateManager.Instance;
 
         [Header("Transports")]
-        [SerializeField] private Transport _selectedTransport = Transport.Facepunch;
+        [field: SerializeField] public Transport selectedTransport { get; private set; } = Transport.Facepunch;
 
         // INFO: Debugging
         private UnityTransport _unityTransport = null;
 
         private void Start()
         {
-            // _networkManager = NetworkManager.Singleton;
-            if (_selectedTransport == Transport.Unity) { EnableUnityTransport(); return; }
+
+            if (selectedTransport == Transport.Unity) { EnableUnityTransport(); return; }
 
         }
 
@@ -44,7 +44,7 @@ namespace PTB.Networking
         // DEBUG: Use Unity Transport (For Testing)
         private void EnableUnityTransport()
         {
-            if (_selectedTransport != Transport.Unity) return;
+            if (selectedTransport != Transport.Unity) return;
             Destroy(steamManager.gameObject);
 
             #region Create Unity Transport Object
@@ -61,9 +61,10 @@ namespace PTB.Networking
             GoToMenu();
 
         }
+
         #endregion
 
-        private enum Transport
+        public enum Transport
         {
             Facepunch,
             Unity

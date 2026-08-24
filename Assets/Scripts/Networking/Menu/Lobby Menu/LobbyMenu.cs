@@ -7,6 +7,8 @@ using UnityEngine.UI;
 using TMPro;
 using PTB.Networking.Menus.Interfaces;
 using UnityEngine.SceneManagement;
+using Unity.Netcode;
+using Unity.Netcode.Transports.UTP;
 
 namespace PTB.Networking.Menus
 {
@@ -14,8 +16,8 @@ namespace PTB.Networking.Menus
     {
 
         [Header("Player Panel")]
-        [SerializeField] private GameObject playerPanelContent;
-        [SerializeField] private GameObject playerInfoPanel;
+        [SerializeField] private GameObject _playerPanelContentGO;
+        [SerializeField] private GameObject _playerInfoPanelPrefab;
 
         [Header("Buttons")]
         [SerializeField] private Button _startGameBTN;
@@ -49,7 +51,12 @@ namespace PTB.Networking.Menus
         }
         #endregion
 
-        private void FixedUpdate()
+        private void Start()
+        {
+            Refresh();
+        }
+
+        private void LateUpdate()
         {
             Refresh();
         }
@@ -87,40 +94,72 @@ namespace PTB.Networking.Menus
 
         public void Refresh()
         {
-            if (_steamManager.myLobby.HasValue) RefreshUI(_steamManager.myLobby);
+            if (_steamManager.myLobby.HasValue || BootstrapManager.Instance.selectedTransport == BootstrapManager.Transport.Unity) RefreshUI(_steamManager.myLobby);
 
         }
 
         private void ClearPlayerPanel()
         {
-            for (int i = 0; i < playerPanelContent.transform.childCount; i++)
-                Destroy(playerPanelContent.transform.GetChild(i).gameObject);
+            for (int i = 0; i < _playerPanelContentGO.transform.childCount; i++)
+                Destroy(_playerPanelContentGO.transform.GetChild(i).gameObject);
 
         }
 
         private void RefreshUI(Lobby? lobby)
         {
-            if (playerPanelContent == null) { Debug.LogError($"Player panel content is null!"); return; }
-            if (playerInfoPanel == null) { Debug.LogError($"Player info panel is null, cannot display player"); return; }
+            // GUARD: Prevent Nulls
+            if (_playerPanelContentGO == null) { Debug.LogError($"Player panel content is null!"); return; }
+            if (_playerInfoPanelPrefab == null) { Debug.LogError($"Player info panel is null, cannot display player"); return; }
+
+            // DEBUG: Check for Unity Transport
+            if (BootstrapManager.Instance.selectedTransport == BootstrapManager.Transport.Unity) { GetUnityPlayerList(); return; }
+
             if (!lobby.HasValue) return;
-
             ClearPlayerPanel();
-            if (_lobbyCodeTxt != null && _lobbyCodeTxt.text == "") UpdateLobbyCodeText();
 
+            if (_lobbyCodeTxt != null && _lobbyCodeTxt.text == "") UpdateLobbyCodeText();
             foreach (Friend member in lobby.Value.Members)
             {
-                GameObject playerInfoGO = Instantiate(playerInfoPanel);
-                playerInfoGO.transform.SetParent(playerPanelContent.transform, false);
-
                 // INFO: Set Display
-                PlayerUIInfo playerInfo = playerInfoGO.GetComponent<PlayerUIInfo>();
+                PlayerUIInfo playerInfo = CreatePlayerInfo();
                 bool isHost = lobby.Value.Owner.Id == member.Id;
+
                 playerInfo.playerName = $"{member.Name} {(isHost ? "[HOST]" : "     ")}";
                 playerInfo.playerPing = $"{-1}ms";
 
 
             }
         }
+
+        private PlayerUIInfo CreatePlayerInfo()
+        {
+            GameObject playerInfoGO = Instantiate(_playerInfoPanelPrefab);
+            playerInfoGO.transform.SetParent(_playerPanelContentGO.transform, false);
+
+            // INFO: Set Display
+            PlayerUIInfo playerInfo = playerInfoGO.GetComponent<PlayerUIInfo>();
+
+            return playerInfo;
+        }
+
+        #region Debugging
+        private void GetUnityPlayerList()
+        {
+            ClearPlayerPanel();
+
+            foreach (NetworkClient client in NetworkManager.Singleton.ConnectedClientsList)
+            {
+                bool isHost = client.ClientId == NetworkManager.Singleton.LocalClientId
+                              && NetworkManager.Singleton.IsHost;
+
+                // INFO: Set Display
+                PlayerUIInfo playerInfo = CreatePlayerInfo();
+                playerInfo.playerName = $"{client.ClientId} {(isHost ? "[HOST]" : "     ")}";
+                playerInfo.playerPing = $"{0}ms";
+
+            }
+        }
+        #endregion
 
         #region Buttons
         public void StartGame()

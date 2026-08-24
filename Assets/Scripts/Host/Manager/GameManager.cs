@@ -7,6 +7,8 @@ using PTB.Networking;
 using System.Collections;
 using System;
 using System.Data;
+using Unity.VisualScripting;
+using Unity.Services.Lobbies.Models;
 
 public class GameManager : NetworkedSingleton<GameManager>
 {
@@ -20,8 +22,6 @@ public class GameManager : NetworkedSingleton<GameManager>
     [Space()]
     [Header("Player Tracking")]
     [SerializeField] private PlayerNetworkedController _playerWithBanana;
-    private IReadOnlyDictionary<ulong, NetworkClient> _connectedClients => NetworkManager.Singleton.ConnectedClients;
-    private IReadOnlyList<ulong> _connectedClientIds => NetworkManager.Singleton.ConnectedClientsIds;
 
     [Space()]
     [Header("Player Settings")]
@@ -32,6 +32,7 @@ public class GameManager : NetworkedSingleton<GameManager>
     // INFO: Network Components
     private UnityNetworkHelper _networkHelper => UnityNetworkHelper.Instance;
     public GameState currentGameState => SessionStateManager.Instance.currentSessionState.Value;
+    private BootstrapNetworkManager _bootstrapNetworkManager => BootstrapNetworkManager.Instance;
     #endregion
 
     #region Events
@@ -79,11 +80,11 @@ public class GameManager : NetworkedSingleton<GameManager>
         if (!IsServer) return;
         if (_playerPrefab == null) { Debug.LogError($"Player prefab is null, cannot spawn!"); return; }
 
-        Debug.Log($"[SERVER] Spawning {_connectedClientIds.Count} players");
+        Debug.Log($"[SERVER] Spawning {_bootstrapNetworkManager.connectedClientIds.Count} players");
 
-        for (int i = 0; i < _connectedClientIds.Count; i++)
+        for (int i = 0; i < _bootstrapNetworkManager.connectedClientIds.Count; i++)
         {
-            ulong currentClient = _connectedClientIds[i];
+            ulong currentClient = _bootstrapNetworkManager.connectedClientIds[i];
             GameObject instance = Instantiate(_playerPrefab);
             instance.transform.position = _spawnPositions[i].position;
 
@@ -123,20 +124,14 @@ public class GameManager : NetworkedSingleton<GameManager>
         Debug.Log($"{_networkHelper.CheckPrivilege()} Game paused: {_gamePaused}");
 
         // INFO: Apply pause state to all connected players (including host)
-        ForEachPlayer(player => player.ApplyPauseState(_gamePaused));
+        BootstrapNetworkManager.Instance.ForEachPlayer(player => player._pauseMenuGO.SetActive(false));
+        BootstrapNetworkManager.Instance.ForEachPlayer(player => player.ApplyPauseState(_gamePaused), false);
+
 
     }
     #endregion
 
-    public void ForEachPlayer(Action<PlayerNetworkedController> action)
-    {
-        foreach (NetworkClient netObj in _connectedClients.Values)
-        {
-            PlayerNetworkedController playerController = netObj.PlayerObject.GetComponent<PlayerNetworkedController>();
-            if (playerController == null) continue;
-            action?.Invoke(playerController);
-        }
-    }
+
 
 }
 
