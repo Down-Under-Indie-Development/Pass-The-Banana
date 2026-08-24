@@ -107,7 +107,7 @@ namespace PTB.Networking
         #region Steam Connection
         #region Establish Connection
         // INFO: Establish connection to steam servers
-        protected virtual bool EstablishSteamConnection()
+        public virtual bool EstablishSteamConnection()
         {
             if (connectedToSteam) return false;
 
@@ -142,6 +142,7 @@ namespace PTB.Networking
             try
             {
                 SteamClient.Shutdown();
+                SteamFriends.SetRichPresence("connect", null);
                 if (!connectedToSteam) Debug.Log($"<color={LogColours.Steamworks}>[STEAM]</color> Connection terminated successfully!");
 
             }

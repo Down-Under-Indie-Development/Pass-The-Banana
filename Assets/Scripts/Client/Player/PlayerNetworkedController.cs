@@ -17,21 +17,24 @@ namespace PTB.Client.Player
 
         private void Start()
         {
-            if (!IsOwner) return;
+            if (!IsOwner) { GetComponent<PlayerNetworkedController>().enabled = false; return; }
             _pauseMenuGO?.SetActive(false);
+
         }
 
         private void Update()
         {
-            if (!IsOwner) return;
+            // if (!IsOwner) return;
 
             if (Keyboard.current.escapeKey.wasPressedThisFrame)
             {
+
                 if (!IsServer && !hostForcedPause)
                 {
+                    Debug.Log($"Test");
                     TogglePauseMenu(); return;
-
                 }
+
                 RequestTogglePauseRPC();
 
             }
@@ -53,9 +56,10 @@ namespace PTB.Client.Player
         // Called from GameManager via RPC - applies pause state to this player
         public void ApplyPauseState(bool isPaused)
         {
-            _pauseMenuGO?.SetActive(isPaused);
+            _pauseMenuGO.SetActive(isPaused);
             Time.timeScale = isPaused ? 0f : 1f;
             if (!IsServer) hostForcedPause = isPaused;
+
         }
         #endregion
     }

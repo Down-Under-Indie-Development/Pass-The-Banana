@@ -31,6 +31,7 @@ namespace PTB.Networking
         {
 
             if (selectedTransport == Transport.Unity) { EnableUnityTransport(); return; }
+            SteamManager.Instance.EstablishSteamConnection();
 
         }
 

@@ -121,11 +121,11 @@ public class GameManager : NetworkedSingleton<GameManager>
         // INFO: Toggle the pause state
         _gamePaused = !_gamePaused;
 
-        Debug.Log($"{_networkHelper.CheckPrivilege()} Game paused: {_gamePaused}");
+        Debug.Log($"{(_gamePaused ? "Host paused the game!" : "Host has unpaused the game!")}");
 
         // INFO: Apply pause state to all connected players (including host)
-        BootstrapNetworkManager.Instance.ForEachPlayer(player => player._pauseMenuGO.SetActive(false));
-        BootstrapNetworkManager.Instance.ForEachPlayer(player => player.ApplyPauseState(_gamePaused), false);
+        BootstrapNetworkManager.Instance.ForEachPlayer(player => player._pauseMenuGO.SetActive(false), false);
+        BootstrapNetworkManager.Instance.ForEachPlayer(player => player.ApplyPauseState(_gamePaused));
 
 
     }
