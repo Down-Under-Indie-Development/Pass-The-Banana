@@ -9,6 +9,10 @@ using System;
 using System.Data;
 using Unity.VisualScripting;
 using Unity.Services.Lobbies.Models;
+using UnityEngine.UI;
+using Steamworks;
+using UnityEngine.SceneManagement;
+using System.Linq;
 
 public class GameManager : NetworkedSingleton<GameManager>
 {
@@ -17,6 +21,10 @@ public class GameManager : NetworkedSingleton<GameManager>
     [Space()]
     [Header("Game Settings")]
     [SerializeField] private List<CategorySO> _categories;
+    [SerializeField] private GameObject _answerGridGO;
+    [SerializeField] private GameObject _answerTilePrefab;
+    [HideInInspector] private CategorySO _currentCategory;
+    [HideInInspector] private QuestionSO _currentQuestions;
 
 
     [Space()]
@@ -40,6 +48,7 @@ public class GameManager : NetworkedSingleton<GameManager>
     {
         // _eventManager.OnQuestionFinished += DisplayAnswers;
         _eventManager.OnGameStart += RequestStartGameRPC;
+
     }
 
     private void OnDisable()
@@ -60,7 +69,7 @@ public class GameManager : NetworkedSingleton<GameManager>
 
     private IEnumerator SpawnPlayersDelayed()
     {
-        yield return new WaitForSeconds(0.5f);
+        yield return new WaitForSeconds(0.1f);
         RequestStartGameRPC();
     }
     #endregion
@@ -108,6 +117,7 @@ public class GameManager : NetworkedSingleton<GameManager>
         BootstrapManager.Instance.sessionStateManager.UpdateSessionState(GameState.Playing);
         if (BootstrapManager.Instance.sessionStateManager.currentSessionState.Value != GameState.Playing) return;
         Debug.Log($"{_networkHelper.CheckPrivilege()} All players spawned ready to start!");
+        GameStarted();
 
     }
     #endregion
@@ -131,7 +141,79 @@ public class GameManager : NetworkedSingleton<GameManager>
     }
     #endregion
 
+    private void GameStarted()
+    {
+        _playerWithBanana = BootstrapNetworkManager.Instance.connectedClients[0].PlayerObject.GetComponent<PlayerNetworkedController>();
+        SpawnAnswersGO();
 
+    }
+
+    #region Spawn Answers
+    private void SpawnAnswersGO()
+    {
+        if (_answerTilePrefab == null) { Debug.LogWarning($"Answer prefab is null"); return; }
+        if (_answerGridGO == null) { Debug.LogWarning($"Answer grid game object is null"); return; }
+
+        _currentCategory = _categories[0];
+        _currentQuestions = _currentCategory.questions[0];
+        foreach (AnswerData answerData in _currentCategory.questions[0].answers)
+        {
+            NetworkObject answerNetworkObject = NetworkManager.Singleton.SpawnManager.InstantiateAndSpawn(
+    UnityNetworkHelper.Instance.networkPrefabsToSpawn[2].GetComponent<NetworkObject>(),
+    NetworkManager.Singleton.LocalClientId
+);
+            // Tell clients to parent this
+            ParentTileClientRPC(answerNetworkObject.NetworkObjectId, answerData.answer);
+
+        }
+    }
+
+    [Rpc(SendTo.ClientsAndHost)]
+    private void ParentTileClientRPC(ulong tileNetworkObjectId, string answer)
+    {
+        if (!NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(tileNetworkObjectId, out NetworkObject tileNetObj))
+        {
+            Debug.LogWarning($"Could not find tile with ID {tileNetworkObjectId}");
+            return;
+        }
+
+        // Move to same scene as grid
+        if (!NetworkManager.Singleton.IsServer) SceneManager.MoveGameObjectToScene(tileNetObj.gameObject, _answerGridGO.scene);
+        tileNetObj.name = $"{answer}";
+
+        // AnswerTile answerTile = answerNetworkObject.GetComponent<AnswerTile>();
+        tileNetObj.GetComponent<AnswerTile>().SetAnswer(answer);
+
+        // Now parent it
+        tileNetObj.transform.SetParent(_answerGridGO.transform);
+        tileNetObj.transform.localPosition = Vector3.zero;
+        tileNetObj.transform.localScale = Vector3.one;
+
+    }
+    #endregion
+
+    #region Selecte Question
+    public void OnQuestionSelectedRPC(string answer, ulong clientId)
+    {
+        // GUARD: Ensure the correct player guesses
+        if (clientId != _playerWithBanana.OwnerClientId) return;
+
+        Debug.Log($"{_playerWithBanana.name} selected: {answer}");
+        HandleAnswerSelection(answer);
+
+    }
+
+    private void HandleAnswerSelection(string answer)
+    {
+        bool correct = _currentQuestions.answers.Any(a => a.correctAnswer && a.answer == answer);
+
+        if (correct)
+            Debug.Log($"You got it, bitch!");
+        else
+            Debug.Log($"You got it wrong, bitch!");
+
+    }
+    #endregion
 
 }
 

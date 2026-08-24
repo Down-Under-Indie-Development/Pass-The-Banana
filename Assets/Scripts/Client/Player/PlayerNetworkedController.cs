@@ -40,12 +40,12 @@ namespace PTB.Client.Player
             }
         }
 
+        #region Pause Handling
         private void TogglePauseMenu()
         {
             _pauseMenuGO.SetActive(!_pauseMenuGO.activeSelf);
         }
 
-        #region Pause Handling
         [Rpc(SendTo.Server)]
         public void RequestTogglePauseRPC()
         {

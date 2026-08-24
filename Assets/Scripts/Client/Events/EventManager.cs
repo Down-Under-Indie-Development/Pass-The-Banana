@@ -50,6 +50,7 @@ public class EventManager : PersistentSingleton<EventManager>
     public NoArgs OnStopUnityClient;
     public NoArgs OnStartUnityClient;
     public NoArgs OnUnityClientDisconnected;
+    public OneArg<string> OnQuestionSelected;
     #endregion
     #endregion
 

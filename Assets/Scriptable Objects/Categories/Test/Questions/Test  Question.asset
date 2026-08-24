@@ -14,6 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::QuestionSO
   <question>k__BackingField: Ooga or Booga?
   <answers>k__BackingField:
-  - Ooga
-  - Booga
-  - Pass
+  - answer: Ooga
+    correctAnswer: 1
+  - answer: Booga
+    correctAnswer: 0
+  - answer: Expresso Bitch!
+    correctAnswer: 0

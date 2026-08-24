@@ -15,7 +15,7 @@ public class UnityNetworkHelper : Singleton<UnityNetworkHelper>
     public virtual NetworkManager networkManager => NetworkManager.Singleton;
 
     [Header("Network Prefabs")]
-    [SerializeField] private List<GameObject> _networkPrefabsToSpawn = new();
+    [field: SerializeField] public List<GameObject> networkPrefabsToSpawn { get; private set; } = new();
 
     #region Events
     protected virtual void OnEnable()
@@ -103,7 +103,7 @@ public class UnityNetworkHelper : Singleton<UnityNetworkHelper>
 
     private void RegisterNetworkPrefabs()
     {
-        foreach (GameObject prefab in _networkPrefabsToSpawn)
+        foreach (GameObject prefab in networkPrefabsToSpawn)
         {
             Instantiate(prefab).GetComponent<NetworkObject>().Spawn();
         }
