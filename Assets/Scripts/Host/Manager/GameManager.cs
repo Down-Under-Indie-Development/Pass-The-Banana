@@ -25,19 +25,20 @@ public class GameManager : NetworkedSingleton<GameManager>
     [SerializeField] private GameObject _categorySelectionGO;
     [SerializeField] private GameObject _uiCanvasGO;
 
-    [Space()]
-    [Header("Answers")]
-    [SerializeField] private GameObject _answerGridGO;
-    [SerializeField] private GameObject _answerTilePrefab;
+    private AnswerMenuUIManger _answerUIManager => AnswerMenuUIManger.Instance;
+    // [SerializeField] private GameObject _answerGridGO;
+    // [SerializeField] private GameObject _answerTilePrefab;
 
     // INFO: Stuff
     [HideInInspector] private CategorySO _currentCategory;
     [HideInInspector] private QuestionData _currentQuestion;
+    [HideInInspector] private int _currentQuestionIndex = 0;
 
 
     [Space()]
     [Header("Player Tracking")]
     [SerializeField, ReadOnly] private PlayerNetworkedController _playerWithBanana;
+    [SerializeField, ReadOnly] private int _playersRemaining;
 
     [Space()]
     [Header("Player Settings")]
@@ -152,13 +153,14 @@ public class GameManager : NetworkedSingleton<GameManager>
     private void GameStarted()
     {
         _playerWithBanana = BootstrapNetworkManager.Instance.connectedClients[0].PlayerObject.GetComponent<PlayerNetworkedController>();
-        SelectCategory();
+        ChooseCategory();
+        _playersRemaining = _networkHelper.networkManager.ConnectedClients.Count;
 
     }
 
-    #region Select Category
+    #region Choose Category
     // INFO: Select the starting category
-    private void SelectCategory()
+    private void ChooseCategory()
     {
         NetworkObject selectionScreen = _networkHelper.networkManager.SpawnManager.InstantiateAndSpawn(
             _categorySelectionGO.GetComponent<NetworkObject>(),
@@ -166,59 +168,45 @@ public class GameManager : NetworkedSingleton<GameManager>
 
     }
 
-    public void OnCategorySelected(string selectedCategory)
+    public void OnCategoryChosen(string selectedCategory)
     {
         _currentCategory = categoryContainer.categories.FirstOrDefault(category => category.categoryName == selectedCategory);
-        _currentQuestion = _currentCategory.questions[0];
+        _currentQuestion = _currentCategory.questions[_currentQuestionIndex];
         _timeRemaining = _currentCategory.GetTimeLimit(); // TODO: Add Timer
         SpawnAnswers();
 
     }
     #endregion
 
+    #region Chose Question 
+    private void ChoseQuestion()
+    {
+        _currentQuestionIndex += 1;
+        _currentQuestion = _currentCategory.questions[_currentQuestionIndex];
+        Debug.Log($"{_currentQuestionIndex}");
+        SpawnAnswers();
+
+    }
+    #endregion
 
     #region Answers
     #region Spawn Answers
     private void SpawnAnswers()
     {
-        if (_answerTilePrefab == null) { Debug.LogWarning($"Answer prefab is null"); return; }
-        if (_answerGridGO == null) { Debug.LogWarning($"Answer grid game object is null"); return; }
+        _answerUIManager.ClearPreviousAnswersRPC();
+        _answerUIManager.SetQuestionTextRPC(_currentQuestion.question);
 
+        // INFO: RPC no like complex data structures 🥹
         foreach (AnswerData answerData in _currentQuestion.answers)
         {
-            NetworkObject answerNetworkObject = _networkHelper.networkManager.SpawnManager.InstantiateAndSpawn(
-    _answerTilePrefab.GetComponent<NetworkObject>(),
-    _networkHelper.networkManager.LocalClientId
-);
-            // Tell clients to parent this
-            ParentTileClientRPC(answerNetworkObject.NetworkObjectId, answerData.answer);
-
+            AnswerMenuUIManger.Instance.AddAnswerRPC(answerData.answer);
         }
     }
 
-    [Rpc(SendTo.ClientsAndHost)]
-    private void ParentTileClientRPC(ulong tileNetworkObjectId, string answer)
-    {
-        if (!NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(tileNetworkObjectId, out NetworkObject tileNetObj))
-        {
-            Debug.LogWarning($"Could not find tile with ID {tileNetworkObjectId}");
-            return;
-        }
-
-        // Move to same scene as grid
-        if (!NetworkManager.Singleton.IsServer) SceneManager.MoveGameObjectToScene(tileNetObj.gameObject, _answerGridGO.scene);
-        tileNetObj.name = $"{answer}";
-        tileNetObj.GetComponent<AnswerTile>().SetAnswer(answer);
-        tileNetObj.transform.SetParent(_answerGridGO.transform);
-
-        tileNetObj.transform.localPosition = Vector3.zero;
-        tileNetObj.transform.localScale = Vector3.one;
-
-    }
     #endregion
 
-    #region Select Answer
-    public void OnAnswerSelectedRPC(string answer, ulong clientId)
+    #region Choose Answer
+    public void OnAnswerChoosenRPC(string answer, ulong clientId)
     {
         // GUARD: Ensure the correct player guesses
         if (clientId != _playerWithBanana.OwnerClientId) return;
@@ -240,18 +228,28 @@ public class GameManager : NetworkedSingleton<GameManager>
     {
         Debug.Log($"You got it wrong, bitch!");
         _playerWithBanana.GetComponent<IDamageable>().Die();
-        // TODO: Create a list of remaining players (Just an int)
+        _playersRemaining -= 1;
+
+        ChoseQuestion();
 
     }
 
     private void PassTheBomb()
     {
         Debug.Log($"You got it, bitch!");
+        if (_playersRemaining <= 1) { GameWin(); return; }
         _playerWithBanana = _networkHelper.networkManager.ConnectedClients[1].PlayerObject.GetComponent<PlayerNetworkedController>();
+
+        ChoseQuestion();
 
     }
     #endregion
     #endregion
+
+    private void GameWin()
+    {
+        Debug.Log($"YOu win!");
+    }
 
 }
 

@@ -54,7 +54,7 @@ public class CategorySelection : NetworkBehaviour
     private void ConfirmedCategoryServerRPC()
     {
         Debug.Log($"Selected: {_categoryDropdown.options[_categoryDropdown.value].text}");
-        GameManager.Instance.OnCategorySelected(_categoryDropdown.options[_categoryDropdown.value].text);
+        GameManager.Instance.OnCategoryChosen(_categoryDropdown.options[_categoryDropdown.value].text);
         NetworkObject.Despawn(true);
 
     }

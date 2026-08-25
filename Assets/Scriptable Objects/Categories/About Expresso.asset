@@ -16,8 +16,14 @@ MonoBehaviour:
   <categoryDifficulty>k__BackingField: 120
   <questions>k__BackingField:
   - question: Why is expresso a bitch?
-    answerDatas:
+    answers:
     - answer: Born that way
       correctAnswer: 1
     - answer: Hangs out with Doc too much
       correctAnswer: 0
+  - question: Why does expresso like men?
+    answers:
+    - answer: Jesse
+      correctAnswer: 0
+    - answer: Born that way
+      correctAnswer: 1
