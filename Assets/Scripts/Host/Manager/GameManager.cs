@@ -26,8 +26,6 @@ public class GameManager : NetworkedSingleton<GameManager>
     [SerializeField] private GameObject _uiCanvasGO;
 
     private AnswerMenuUIManger _answerUIManager => AnswerMenuUIManger.Instance;
-    // [SerializeField] private GameObject _answerGridGO;
-    // [SerializeField] private GameObject _answerTilePrefab;
 
     // INFO: Stuff
     [HideInInspector] private CategorySO _currentCategory;
@@ -39,6 +37,7 @@ public class GameManager : NetworkedSingleton<GameManager>
     [Header("Player Tracking")]
     [SerializeField, ReadOnly] private PlayerNetworkedController _playerWithBanana;
     [SerializeField, ReadOnly] private int _playersRemaining;
+    [SerializeField] private List<GameObject> _podiums;
 
     [Space()]
     [Header("Player Settings")]
@@ -64,6 +63,8 @@ public class GameManager : NetworkedSingleton<GameManager>
     {
         if (_eventManager == null) return;
         _eventManager.OnGameStart -= RequestStartGameRPC;
+        _eventManager.OnCountdownFinished -= Explode;
+
 
     }
     #endregion
@@ -170,10 +171,17 @@ public class GameManager : NetworkedSingleton<GameManager>
 
     public void OnCategoryChosen(string selectedCategory)
     {
+        if (!IsServer) return;
+
         _currentCategory = categoryContainer.categories.FirstOrDefault(category => category.categoryName == selectedCategory);
         _currentQuestion = _currentCategory.questions[_currentQuestionIndex];
         _timeRemaining = _currentCategory.GetTimeLimit(); // TODO: Add Timer
         SpawnAnswers();
+
+        _eventManager.OnCountdownStarted?.Invoke(_timeRemaining);
+        _eventManager.OnCountdownFinished -= Explode;
+        _eventManager.OnCountdownFinished += Explode;
+
 
     }
     #endregion
@@ -182,6 +190,7 @@ public class GameManager : NetworkedSingleton<GameManager>
     private void ChoseQuestion()
     {
         _currentQuestionIndex += 1;
+        if (_currentQuestionIndex > _currentCategory.questions.Count - 1) { Debug.LogError($"This category doesn't have enough questions"); return; }
         _currentQuestion = _currentCategory.questions[_currentQuestionIndex];
         SpawnAnswers();
 
@@ -205,7 +214,7 @@ public class GameManager : NetworkedSingleton<GameManager>
     #endregion
 
     #region Choose Answer
-    public void OnAnswerChoosenRPC(string answer, ulong clientId)
+    public void OnAnswerChosen(string answer, ulong clientId)
     {
         // GUARD: Ensure the correct player guesses
         if (_playerWithBanana == null) return;
@@ -232,13 +241,14 @@ public class GameManager : NetworkedSingleton<GameManager>
     }
     private void InCorrectGuess()
     {
+        Debug.Log($"You got it wrong, bitch!");
         Explode();
     }
 
     #region Utility
     private void Explode()
     {
-        Debug.Log($"You got it wrong, bitch!");
+        if (_playerWithBanana == null) return;
         _playerWithBanana.GetComponent<IDamageable>().Die();
         _playersRemaining -= 1;
         PassTheBomb();

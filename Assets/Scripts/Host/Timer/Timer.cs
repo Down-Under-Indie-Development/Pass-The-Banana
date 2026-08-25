@@ -5,7 +5,7 @@ using UnityEngine;
 public class Timer : Singleton<Timer>
 {
 
-    [SerializeField] public float time = 10f;
+    // [SerializeField] public float time = 10f;
     private float _currentTime;
     private bool _counting;
 
@@ -23,19 +23,15 @@ public class Timer : Singleton<Timer>
     }
     #endregion
 
-    private void Start()
-    {
-        _currentTime = time;
-
-    }
-
     private void Update()
     {
         if (!_counting) return;
         if (_currentTime <= 0)
         {
-            _eventManager?.OnCountdownFinished?.Invoke();
+            Debug.Log($"Timer finished");
+            _eventManager.OnCountdownFinished?.Invoke();
             _counting = false;
+            return;
 
         }
 
@@ -49,17 +45,11 @@ public class Timer : Singleton<Timer>
     public float GetCurrentTime() => Mathf.Round(_currentTime);
 
     #region Timer
-    public void ResetCountdown()
+    public void StartCountdown(float time)
     {
         _currentTime = time;
-
-    }
-
-    public void StartCountdown()
-    {
-
         _counting = true;
-        if (_debug) Debug.Log($"Timer started");
+        Debug.Log($"[TIMER] Countdown started: {time}");
 
     }
 
@@ -67,7 +57,7 @@ public class Timer : Singleton<Timer>
     public void StopCountdown()
     {
         _counting = false;
-        if (_debug) Debug.Log($"Countdown paused at: {_currentTime}");
+        Debug.Log($"[TIMER] Countdown paused at: {_currentTime}");
 
     }
     #endregion

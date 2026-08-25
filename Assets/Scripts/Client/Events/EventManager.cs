@@ -13,7 +13,7 @@ public class EventManager : PersistentSingleton<EventManager>
     public NoArgs OnQuestionFinished;
 
     #region Countdown Events
-    public NoArgs OnCountdownStarted;
+    public OneArg<float> OnCountdownStarted;
     public NoArgs OnCountdownFinished;
 
     #endregion
