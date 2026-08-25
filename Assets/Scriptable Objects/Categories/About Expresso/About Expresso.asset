@@ -1,0 +1,17 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc631af8ca0cf3f48b6ef856b9f44570, type: 3}
+  m_Name: About Expresso
+  m_EditorClassIdentifier: Assembly-CSharp::CategorySO
+  <categoryName>k__BackingField: About Expresso
+  <questions>k__BackingField:
+  - {fileID: 11400000, guid: 9dbb37940c8876442ac9a83f86c2ca35, type: 2}

@@ -7,11 +7,12 @@ using UnityEngine.EventSystems;
 [RequireComponent(typeof(NetworkObject))]
 public class AnswerTile : NetworkBehaviour, IPointerClickHandler
 {
-    private EventManager _eventManager => EventManager.Instance;
     private TextMeshProUGUI txtAnswer;
 
-    void Awake()
+    public override void OnNetworkSpawn()
     {
+        base.OnNetworkSpawn();
+
         txtAnswer = GetComponentInChildren<TextMeshProUGUI>();
         if (txtAnswer == null) { Debug.LogError($"Can't find the text component!"); return; }
 

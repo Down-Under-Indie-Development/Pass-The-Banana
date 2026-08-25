@@ -119,11 +119,6 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1 &130157887 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 726853395166453402, guid: 1d70bf27c77b136479f28510069d92c9, type: 3}
-  m_PrefabInstance: {fileID: 623514394}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &262636584
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -219,10 +214,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UnityNetworkHelper
   _debug: 0
-  <networkPrefabsToSpawn>k__BackingField:
-  - {fileID: 1198395961}
-  - {fileID: 130157887}
-  - {fileID: 7954298550497436496, guid: e7f677a3992645140a9559502b857437, type: 3}
 --- !u!4 &463640316
 Transform:
   m_ObjectHideFlags: 0
@@ -350,11 +341,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 1d70bf27c77b136479f28510069d92c9, type: 3}
---- !u!1 &1198395961 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 942370656854892955, guid: 634b00840a22b5f44b8be11d5f9adf1e, type: 3}
-  m_PrefabInstance: {fileID: 262636584}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1747604134
 GameObject:
   m_ObjectHideFlags: 0

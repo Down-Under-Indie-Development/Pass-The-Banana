@@ -13,23 +13,29 @@ using UnityEngine.UI;
 using Steamworks;
 using UnityEngine.SceneManagement;
 using System.Linq;
+using Netcode.Transports.Facepunch;
 
 public class GameManager : NetworkedSingleton<GameManager>
 {
 
+    [field: Header("Game Settings")]
+    [field: SerializeField] public CategoriesContainerSO categoryContainer { get; private set; }
+    [SerializeField] private GameObject _categorySelectionGO;
+    [SerializeField] private GameObject _uiCanvasGO;
 
     [Space()]
-    [Header("Game Settings")]
-    [SerializeField] private List<CategorySO> _categories;
+    [Header("Answers")]
     [SerializeField] private GameObject _answerGridGO;
     [SerializeField] private GameObject _answerTilePrefab;
+
+    // INFO: Stuff
     [HideInInspector] private CategorySO _currentCategory;
     [HideInInspector] private QuestionSO _currentQuestions;
 
 
     [Space()]
     [Header("Player Tracking")]
-    [SerializeField] private PlayerNetworkedController _playerWithBanana;
+    [SerializeField, ReadOnly] private PlayerNetworkedController _playerWithBanana;
 
     [Space()]
     [Header("Player Settings")]
@@ -144,23 +150,41 @@ public class GameManager : NetworkedSingleton<GameManager>
     private void GameStarted()
     {
         _playerWithBanana = BootstrapNetworkManager.Instance.connectedClients[0].PlayerObject.GetComponent<PlayerNetworkedController>();
-        SpawnAnswersGO();
+        SelectCategory();
 
     }
 
+    #region Select Category
+    // INFO: Select the starting category
+    private void SelectCategory()
+    {
+        NetworkObject selectionScreen = _networkHelper.networkManager.SpawnManager.InstantiateAndSpawn(
+            _categorySelectionGO.GetComponent<NetworkObject>(),
+            _networkHelper.networkManager.LocalClientId);
+
+    }
+
+    public void OnCategorySelected(string selectedCategory)
+    {
+        _currentCategory = categoryContainer.categories.FirstOrDefault(category => category.categoryName == selectedCategory);
+        _currentQuestions = _currentCategory.questions[0];
+        SpawnAnswers();
+
+    }
+    #endregion
+
+
     #region Spawn Answers
-    private void SpawnAnswersGO()
+    private void SpawnAnswers()
     {
         if (_answerTilePrefab == null) { Debug.LogWarning($"Answer prefab is null"); return; }
         if (_answerGridGO == null) { Debug.LogWarning($"Answer grid game object is null"); return; }
 
-        _currentCategory = _categories[0];
-        _currentQuestions = _currentCategory.questions[0];
-        foreach (AnswerData answerData in _currentCategory.questions[0].answers)
+        foreach (AnswerData answerData in _currentQuestions.answers)
         {
-            NetworkObject answerNetworkObject = NetworkManager.Singleton.SpawnManager.InstantiateAndSpawn(
-    UnityNetworkHelper.Instance.networkPrefabsToSpawn[2].GetComponent<NetworkObject>(),
-    NetworkManager.Singleton.LocalClientId
+            NetworkObject answerNetworkObject = _networkHelper.networkManager.SpawnManager.InstantiateAndSpawn(
+    _answerTilePrefab.GetComponent<NetworkObject>(),
+    _networkHelper.networkManager.LocalClientId
 );
             // Tell clients to parent this
             ParentTileClientRPC(answerNetworkObject.NetworkObjectId, answerData.answer);
@@ -180,19 +204,16 @@ public class GameManager : NetworkedSingleton<GameManager>
         // Move to same scene as grid
         if (!NetworkManager.Singleton.IsServer) SceneManager.MoveGameObjectToScene(tileNetObj.gameObject, _answerGridGO.scene);
         tileNetObj.name = $"{answer}";
-
-        // AnswerTile answerTile = answerNetworkObject.GetComponent<AnswerTile>();
         tileNetObj.GetComponent<AnswerTile>().SetAnswer(answer);
-
-        // Now parent it
         tileNetObj.transform.SetParent(_answerGridGO.transform);
+
         tileNetObj.transform.localPosition = Vector3.zero;
         tileNetObj.transform.localScale = Vector3.one;
 
     }
     #endregion
 
-    #region Selecte Question
+    #region Select Question
     public void OnQuestionSelectedRPC(string answer, ulong clientId)
     {
         // GUARD: Ensure the correct player guesses
