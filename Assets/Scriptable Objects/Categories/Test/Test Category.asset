@@ -13,5 +13,15 @@ MonoBehaviour:
   m_Name: Test Category
   m_EditorClassIdentifier: Assembly-CSharp::CategorySO
   <categoryName>k__BackingField: Test
+  <categoryDifficulty>k__BackingField: 30
   <questions>k__BackingField:
-  - {fileID: 11400000, guid: 68f09cf2e484a874996f5f71ea46e13b, type: 2}
+  - question: Test?
+    answers:
+    - answer: Test!
+      correctAnswer: 0
+    - answer: Test?
+      correctAnswer: 0
+    - answer: Test
+      correctAnswer: 0
+    - answer: tEsT!?
+      correctAnswer: 1

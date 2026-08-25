@@ -1,12 +1,36 @@
 using System;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 [CreateAssetMenu(menuName = "Scriptable Objects/Category", fileName = "New Category")]
-[Serializable]
 public class CategorySO : ScriptableObject
 {
     [field: SerializeField] public string categoryName { get; private set; }
-    [field: SerializeField] public List<QuestionSO> questions { get; private set; }
+    [field: SerializeField] public Difficulty categoryDifficulty { get; private set; } = Difficulty.Easy;
+    [field: SerializeField] public List<QuestionData> questions { get; private set; }
+    public int GetTimeLimit() => (int)categoryDifficulty;
 
+    public enum Difficulty
+    {
+        Easy = 120,
+        Medium = 60,
+        Hard = 30,
+    }
+
+}
+
+[Serializable]
+public class QuestionData
+{
+    public string question;
+    public List<AnswerData> answers;
+
+}
+
+[Serializable]
+public class AnswerData
+{
+    public string answer;
+    public bool correctAnswer;
 }

@@ -14,11 +14,13 @@ using Steamworks;
 using UnityEngine.SceneManagement;
 using System.Linq;
 using Netcode.Transports.Facepunch;
+using HealthSystem;
 
 public class GameManager : NetworkedSingleton<GameManager>
 {
 
     [field: Header("Game Settings")]
+    [SerializeField, ReadOnly] private float _timeRemaining;
     [field: SerializeField] public CategoriesContainerSO categoryContainer { get; private set; }
     [SerializeField] private GameObject _categorySelectionGO;
     [SerializeField] private GameObject _uiCanvasGO;
@@ -30,7 +32,7 @@ public class GameManager : NetworkedSingleton<GameManager>
 
     // INFO: Stuff
     [HideInInspector] private CategorySO _currentCategory;
-    [HideInInspector] private QuestionSO _currentQuestions;
+    [HideInInspector] private QuestionData _currentQuestion;
 
 
     [Space()]
@@ -167,20 +169,22 @@ public class GameManager : NetworkedSingleton<GameManager>
     public void OnCategorySelected(string selectedCategory)
     {
         _currentCategory = categoryContainer.categories.FirstOrDefault(category => category.categoryName == selectedCategory);
-        _currentQuestions = _currentCategory.questions[0];
+        _currentQuestion = _currentCategory.questions[0];
+        _timeRemaining = _currentCategory.GetTimeLimit(); // TODO: Add Timer
         SpawnAnswers();
 
     }
     #endregion
 
 
+    #region Answers
     #region Spawn Answers
     private void SpawnAnswers()
     {
         if (_answerTilePrefab == null) { Debug.LogWarning($"Answer prefab is null"); return; }
         if (_answerGridGO == null) { Debug.LogWarning($"Answer grid game object is null"); return; }
 
-        foreach (AnswerData answerData in _currentQuestions.answers)
+        foreach (AnswerData answerData in _currentQuestion.answers)
         {
             NetworkObject answerNetworkObject = _networkHelper.networkManager.SpawnManager.InstantiateAndSpawn(
     _answerTilePrefab.GetComponent<NetworkObject>(),
@@ -213,8 +217,8 @@ public class GameManager : NetworkedSingleton<GameManager>
     }
     #endregion
 
-    #region Select Question
-    public void OnQuestionSelectedRPC(string answer, ulong clientId)
+    #region Select Answer
+    public void OnAnswerSelectedRPC(string answer, ulong clientId)
     {
         // GUARD: Ensure the correct player guesses
         if (clientId != _playerWithBanana.OwnerClientId) return;
@@ -226,14 +230,27 @@ public class GameManager : NetworkedSingleton<GameManager>
 
     private void HandleAnswerSelection(string answer)
     {
-        bool correct = _currentQuestions.answers.Any(a => a.correctAnswer && a.answer == answer);
-
-        if (correct)
-            Debug.Log($"You got it, bitch!");
-        else
-            Debug.Log($"You got it wrong, bitch!");
+        bool correct = _currentQuestion.answers.Any(a => a.correctAnswer && a.answer == answer);
+        if (!correct) { Explode(); return; }
+        PassTheBomb();
 
     }
+
+    private void Explode()
+    {
+        Debug.Log($"You got it wrong, bitch!");
+        _playerWithBanana.GetComponent<IDamageable>().Die();
+        // TODO: Create a list of remaining players (Just an int)
+
+    }
+
+    private void PassTheBomb()
+    {
+        Debug.Log($"You got it, bitch!");
+        _playerWithBanana = _networkHelper.networkManager.ConnectedClients[1].PlayerObject.GetComponent<PlayerNetworkedController>();
+
+    }
+    #endregion
     #endregion
 
 }

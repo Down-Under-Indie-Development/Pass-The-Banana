@@ -13,5 +13,11 @@ MonoBehaviour:
   m_Name: About Expresso
   m_EditorClassIdentifier: Assembly-CSharp::CategorySO
   <categoryName>k__BackingField: About Expresso
+  <categoryDifficulty>k__BackingField: 120
   <questions>k__BackingField:
-  - {fileID: 11400000, guid: 9dbb37940c8876442ac9a83f86c2ca35, type: 2}
+  - question: Why is expresso a bitch?
+    answerDatas:
+    - answer: Born that way
+      correctAnswer: 1
+    - answer: Hangs out with Doc too much
+      correctAnswer: 0
