@@ -183,7 +183,6 @@ public class GameManager : NetworkedSingleton<GameManager>
     {
         _currentQuestionIndex += 1;
         _currentQuestion = _currentCategory.questions[_currentQuestionIndex];
-        Debug.Log($"{_currentQuestionIndex}");
         SpawnAnswers();
 
     }
@@ -209,6 +208,7 @@ public class GameManager : NetworkedSingleton<GameManager>
     public void OnAnswerChoosenRPC(string answer, ulong clientId)
     {
         // GUARD: Ensure the correct player guesses
+        if (_playerWithBanana == null) return;
         if (clientId != _playerWithBanana.OwnerClientId) return;
 
         Debug.Log($"{_playerWithBanana.name} selected: {answer}");
@@ -219,30 +219,48 @@ public class GameManager : NetworkedSingleton<GameManager>
     private void HandleAnswerSelection(string answer)
     {
         bool correct = _currentQuestion.answers.Any(a => a.correctAnswer && a.answer == answer);
-        if (!correct) { Explode(); return; }
-        PassTheBomb();
+        if (!correct) { InCorrectGuess(); return; }
+        CorrectGuess();
 
     }
 
+    private void CorrectGuess()
+    {
+        Debug.Log($"You got it, bitch!");
+        if (_playersRemaining <= 1) { GameWin(); return; }
+
+    }
+    private void InCorrectGuess()
+    {
+        Explode();
+    }
+
+    #region Utility
     private void Explode()
     {
         Debug.Log($"You got it wrong, bitch!");
         _playerWithBanana.GetComponent<IDamageable>().Die();
         _playersRemaining -= 1;
-
-        ChoseQuestion();
+        PassTheBomb();
 
     }
 
     private void PassTheBomb()
     {
-        Debug.Log($"You got it, bitch!");
-        if (_playersRemaining <= 1) { GameWin(); return; }
-        _playerWithBanana = _networkHelper.networkManager.ConnectedClients[1].PlayerObject.GetComponent<PlayerNetworkedController>();
+        if (_networkHelper.networkManager.ConnectedClients.Count <= 1)
+        {
+            _playerWithBanana = null;
+        }
+        else
+        {
+            _playerWithBanana = _networkHelper.networkManager.ConnectedClients[1].PlayerObject.GetComponent<PlayerNetworkedController>();
+        }
 
         ChoseQuestion();
 
     }
+    #endregion
+
     #endregion
     #endregion
 

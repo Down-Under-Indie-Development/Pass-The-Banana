@@ -36,7 +36,7 @@ public class AnswerMenuUIManger : NetworkedSingleton<AnswerMenuUIManger>
         }
     }
 
-    [Rpc(SendTo.Server)]
+    [Rpc(SendTo.ClientsAndHost)]
     public void SetQuestionTextRPC(string question)
     {
         _questionTXT.text = question;

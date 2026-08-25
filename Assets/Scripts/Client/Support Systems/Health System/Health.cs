@@ -30,7 +30,7 @@ namespace HealthSystem
             // GUARD: Prevent negatives
             currentHealth = 0;
 
-            Destroy(gameObject);
+            // Destroy(gameObject);
 
 
         }
