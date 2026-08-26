@@ -3,9 +3,11 @@ using UnityEngine;
 using Unity.Netcode;
 using Unity.VisualScripting;
 using UnityEngine.InputSystem;
+using Netcode.Transports.Facepunch;
 
 namespace PTB.Client.Player
 {
+    [RequireComponent(typeof(NetworkObject))]
     public class PlayerNetworkedController : NetworkBehaviour
     {
         [Space()]
@@ -14,6 +16,7 @@ namespace PTB.Client.Player
         public bool hostForcedPause { get; private set; } = false;
 
         [SerializeField] private int _correctAnswers;
+        [field: SerializeField, ReadOnly] public GameObject podium { get; private set; }
 
         private void Start()
         {
@@ -24,20 +27,18 @@ namespace PTB.Client.Player
 
         private void Update()
         {
-            // if (!IsOwner) return;
 
-            if (Keyboard.current.escapeKey.wasPressedThisFrame)
+            // INFO: Pause Logic
+            if (!Keyboard.current.escapeKey.wasPressedThisFrame) return;
+            if (!IsServer && !hostForcedPause)
             {
-
-                if (!IsServer && !hostForcedPause)
-                {
-                    Debug.Log($"Test");
-                    TogglePauseMenu(); return;
-                }
-
-                RequestTogglePauseRPC();
-
+                Debug.Log($"Test");
+                TogglePauseMenu(); return;
             }
+
+            RequestTogglePauseRPC();
+
+
         }
 
         #region Pause Handling
@@ -62,5 +63,15 @@ namespace PTB.Client.Player
 
         }
         #endregion
+
+        // INFO: Get the podium
+        private void OnTriggerEnter(Collider other)
+        {
+
+            if (!other.transform.CompareTag("Podium")) return;
+            podium = other.gameObject;
+
+        }
+
     }
 }

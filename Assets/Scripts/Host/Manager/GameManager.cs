@@ -35,9 +35,14 @@ public class GameManager : NetworkedSingleton<GameManager>
 
     [Space()]
     [Header("Player Tracking")]
-    [SerializeField, ReadOnly] private PlayerNetworkedController _playerWithBanana;
+    [SerializeField, ReadOnly]
+    public NetworkVariable<ulong> _playerWithBanana = new NetworkVariable<ulong>(
+    0,
+    NetworkVariableReadPermission.Everyone,
+    NetworkVariableWritePermission.Server);
+
     [SerializeField, ReadOnly] private int _playersRemaining;
-    [SerializeField] private List<GameObject> _podiums;
+    private Dictionary<ulong, int> _playerScores = new();
 
     [Space()]
     [Header("Player Settings")]
@@ -56,6 +61,7 @@ public class GameManager : NetworkedSingleton<GameManager>
     {
         // _eventManager.OnQuestionFinished += DisplayAnswers;
         _eventManager.OnGameStart += RequestStartGameRPC;
+        _playerWithBanana.OnValueChanged += HandleValueChanged;
 
     }
 
@@ -63,6 +69,7 @@ public class GameManager : NetworkedSingleton<GameManager>
     {
         if (_eventManager == null) return;
         _eventManager.OnGameStart -= RequestStartGameRPC;
+        _playerWithBanana.OnValueChanged += HandleValueChanged;
         _eventManager.OnCountdownFinished -= Explode;
 
 
@@ -108,11 +115,8 @@ public class GameManager : NetworkedSingleton<GameManager>
             instance.transform.position = _spawnPositions[i].position;
 
             NetworkObject netObj = instance.GetComponent<NetworkObject>();
-            Debug.Log($"[SERVER] Spawning player for client {currentClient}, IsOwner will be: {currentClient == NetworkManager.Singleton.LocalClientId}");
-
             netObj.SpawnAsPlayerObject(currentClient, true);
 
-            Debug.Log($"[SERVER] Player spawned for {currentClient}");
         }
 
         StartGameRPC();
@@ -153,11 +157,12 @@ public class GameManager : NetworkedSingleton<GameManager>
 
     private void GameStarted()
     {
-        _playerWithBanana = BootstrapNetworkManager.Instance.connectedClients[0].PlayerObject.GetComponent<PlayerNetworkedController>();
-        ChooseCategory();
         _playersRemaining = _networkHelper.networkManager.ConnectedClients.Count;
+        _playerWithBanana.Value = BootstrapNetworkManager.Instance.connectedClients[0].ClientId;
+        ChooseCategory();
 
     }
+
 
     #region Choose Category
     // INFO: Select the starting category
@@ -176,12 +181,11 @@ public class GameManager : NetworkedSingleton<GameManager>
         _currentCategory = categoryContainer.categories.FirstOrDefault(category => category.categoryName == selectedCategory);
         _currentQuestion = _currentCategory.questions[_currentQuestionIndex];
         _timeRemaining = _currentCategory.GetTimeLimit(); // TODO: Add Timer
-        SpawnAnswers();
-
-        _eventManager.OnCountdownStarted?.Invoke(_timeRemaining);
         _eventManager.OnCountdownFinished -= Explode;
         _eventManager.OnCountdownFinished += Explode;
 
+        // INFO: Add a delay
+        StartCoroutine(DelayCoroutine(.5f, SpawnAnswers));
 
     }
     #endregion
@@ -193,6 +197,8 @@ public class GameManager : NetworkedSingleton<GameManager>
         if (_currentQuestionIndex > _currentCategory.questions.Count - 1) { Debug.LogError($"This category doesn't have enough questions"); return; }
         _currentQuestion = _currentCategory.questions[_currentQuestionIndex];
         SpawnAnswers();
+        _eventManager.OnCountdownStarted?.Invoke(_timeRemaining);
+
 
     }
     #endregion
@@ -209,6 +215,18 @@ public class GameManager : NetworkedSingleton<GameManager>
         {
             AnswerMenuUIManger.Instance.AddAnswerRPC(answerData.answer);
         }
+
+
+        ChangePodiumRPC();
+
+    }
+
+    [Rpc(SendTo.ClientsAndHost)]
+    private void ChangePodiumRPC()
+    {
+        // Debug.Log($"{_playerWithBanana.name}");
+        NetworkManager.Singleton.ConnectedClients[_playerWithBanana.Value].PlayerObject.GetComponent<PlayerNetworkedController>().podium.transform.GetChild(1).GetComponent<MeshRenderer>().material.color = Color.red;
+
     }
 
     #endregion
@@ -218,9 +236,10 @@ public class GameManager : NetworkedSingleton<GameManager>
     {
         // GUARD: Ensure the correct player guesses
         if (_playerWithBanana == null) return;
-        if (clientId != _playerWithBanana.OwnerClientId) return;
+        if (clientId != _playerWithBanana.Value) return;
+        _playerScores[clientId] = _playerScores.GetValueOrDefault(clientId) + 1;
 
-        Debug.Log($"{_playerWithBanana.name} selected: {answer}");
+        Debug.Log($"{_playerWithBanana.Value} selected: {answer}");
         HandleAnswerSelection(answer);
 
     }
@@ -237,6 +256,7 @@ public class GameManager : NetworkedSingleton<GameManager>
     {
         Debug.Log($"You got it, bitch!");
         if (_playersRemaining <= 1) { GameWin(); return; }
+        PassTheBomb();
 
     }
     private void InCorrectGuess()
@@ -249,9 +269,16 @@ public class GameManager : NetworkedSingleton<GameManager>
     private void Explode()
     {
         if (_playerWithBanana == null) return;
-        _playerWithBanana.GetComponent<IDamageable>().Die();
+        NetworkManager.Singleton.ConnectedClients[_playerWithBanana.Value].PlayerObject.GetComponent<PlayerNetworkedController>().GetComponent<IDamageable>().Die();
         _playersRemaining -= 1;
         PassTheBomb();
+
+    }
+
+    private void HandleValueChanged(ulong oldValue, ulong newValue)
+    {
+        if (IsServer) { Debug.Log($"{UnityNetworkHelper.Instance.CheckPrivilege()} Player with the banana has been changed to {newValue}"); return; }
+        Debug.Log($"{UnityNetworkHelper.Instance.CheckPrivilege()} Syncing player with the banana from host ({newValue})");
 
     }
 
@@ -259,14 +286,21 @@ public class GameManager : NetworkedSingleton<GameManager>
     {
         if (_networkHelper.networkManager.ConnectedClients.Count <= 1)
         {
-            _playerWithBanana = null;
+            _playerWithBanana.Value = _networkHelper.networkManager.ConnectedClients[0].ClientId;
         }
         else
         {
-            _playerWithBanana = _networkHelper.networkManager.ConnectedClients[1].PlayerObject.GetComponent<PlayerNetworkedController>();
+            _playerWithBanana.Value = _networkHelper.networkManager.ConnectedClients[1].ClientId;
         }
 
-        ChoseQuestion();
+        StartCoroutine(DelayCoroutine(0.1f, ChoseQuestion)); // INFO: Add delay for client update
+
+    }
+
+    private IEnumerator DelayCoroutine(float seconds, Action onCompleted = null)
+    {
+        yield return new WaitForSeconds(seconds);
+        onCompleted?.Invoke();
 
     }
     #endregion
@@ -278,6 +312,11 @@ public class GameManager : NetworkedSingleton<GameManager>
     {
         Debug.Log($"YOu win!");
     }
+
+
+    #region Utility
+
+    #endregion
 
 }
 

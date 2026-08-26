@@ -1,8 +1,10 @@
+using System;
 using System.Collections.Generic;
 using TMPro;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 using Utility;
 
 [RequireComponent(typeof(NetworkObject))]
@@ -23,7 +25,6 @@ public class AnswerMenuUIManger : NetworkedSingleton<AnswerMenuUIManger>
         //  Tell clients to parent this
         ParentTileClientRPC(answerNetworkObject.NetworkObjectId, answerValue);
 
-
     }
 
     [Rpc(SendTo.Server)]
@@ -34,6 +35,7 @@ public class AnswerMenuUIManger : NetworkedSingleton<AnswerMenuUIManger>
             Destroy(_answerGridGO.transform.GetChild(i).gameObject);
 
         }
+
     }
 
     [Rpc(SendTo.ClientsAndHost)]
@@ -59,6 +61,13 @@ public class AnswerMenuUIManger : NetworkedSingleton<AnswerMenuUIManger>
 
         tileNetObj.transform.localPosition = Vector3.zero;
         tileNetObj.transform.localScale = Vector3.one;
+
+        if (NetworkManager.Singleton.LocalClientId == GameManager.Instance._playerWithBanana.Value) return;
+        Image tileImage = tileNetObj.GetComponentInChildren<Image>();
+        Color color = tileImage.color;
+        color.a = 0.2f;
+        tileImage.color = color;
+
 
     }
 }
