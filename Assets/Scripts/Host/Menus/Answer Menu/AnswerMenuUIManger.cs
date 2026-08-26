@@ -62,7 +62,7 @@ public class AnswerMenuUIManger : NetworkedSingleton<AnswerMenuUIManger>
         tileNetObj.transform.localPosition = Vector3.zero;
         tileNetObj.transform.localScale = Vector3.one;
 
-        if (NetworkManager.Singleton.LocalClientId == GameManager.Instance._playerWithBanana.Value) return;
+        if (NetworkManager.Singleton.LocalClientId == GameManager.Instance.hotPotatoManager._playerWithBanana.Value) return;
         Image tileImage = tileNetObj.GetComponentInChildren<Image>();
         Color color = tileImage.color;
         color.a = 0.2f;

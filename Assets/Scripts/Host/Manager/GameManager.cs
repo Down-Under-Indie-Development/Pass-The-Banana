@@ -35,13 +35,9 @@ public class GameManager : NetworkedSingleton<GameManager>
 
     [Space()]
     [Header("Player Tracking")]
-    [SerializeField, ReadOnly]
-    public NetworkVariable<ulong> _playerWithBanana = new NetworkVariable<ulong>(
-    1,
-    NetworkVariableReadPermission.Everyone,
-    NetworkVariableWritePermission.Server);
+    public HotPotatoManager hotPotatoManager;
 
-    [SerializeField, ReadOnly] private int _playersRemaining;
+    [SerializeField, ReadOnly] public int playersRemaining;
     private Dictionary<ulong, int> _playerScores = new();
 
     [Space()]
@@ -64,7 +60,7 @@ public class GameManager : NetworkedSingleton<GameManager>
 
     private void OnDisable()
     {
-        _eventManager.OnCountdownFinished -= Explode;
+        _eventManager.OnCountdownFinished -= hotPotatoManager.ProcessExplode;
 
 
     }
@@ -118,7 +114,7 @@ public class GameManager : NetworkedSingleton<GameManager>
 
     private void GameStarted()
     {
-        _playersRemaining = _networkHelper.networkManager.ConnectedClients.Count;
+        playersRemaining = _networkHelper.networkManager.ConnectedClients.Count;
         HandleChooseCategory();
 
     }
@@ -162,8 +158,8 @@ public class GameManager : NetworkedSingleton<GameManager>
 
         // INFO: Intialise the timer
         _timeRemaining = _currentCategory.GetTimeLimit(); // TODO: Add Timer
-        _eventManager.OnCountdownFinished -= Explode;
-        _eventManager.OnCountdownFinished += Explode;
+        _eventManager.OnCountdownFinished -= hotPotatoManager.ProcessExplode;
+        _eventManager.OnCountdownFinished += hotPotatoManager.ProcessExplode;
 
         // INFO: Spawn the answers
         StartCoroutine(DelayCoroutine(.5f, HandleSpawnAnswers));
@@ -176,7 +172,7 @@ public class GameManager : NetworkedSingleton<GameManager>
     #region Chose Question 
 
     #region Server
-    private void ProcessNextQuestion()
+    public void ProcessNextQuestion()
     {
         _currentQuestionIndex += 1;
         if (_currentQuestionIndex > _currentCategory.questions.Count - 1) { Debug.LogError($"<color={LogColours.Host}>[HOST]</color> This category doesn't have enough questions"); return; }
@@ -210,7 +206,7 @@ public class GameManager : NetworkedSingleton<GameManager>
     private void NotifyChangePodiumRPC()
     {
         // Debug.Log($"{_playerWithBanana.name}");
-        NetworkManager.Singleton.ConnectedClients[_playerWithBanana.Value].PlayerObject.GetComponent<PlayerNetworkedController>().podium.transform.GetChild(1).GetComponent<MeshRenderer>().material.color = Color.red;
+        NetworkManager.Singleton.ConnectedClients[hotPotatoManager._playerWithBanana.Value].PlayerObject.GetComponent<PlayerNetworkedController>().podium.transform.GetChild(1).GetComponent<MeshRenderer>().material.color = Color.red;
 
     }
 
@@ -222,11 +218,11 @@ public class GameManager : NetworkedSingleton<GameManager>
     public void ProcessAnswerChosen(string answer, ulong clientId)
     {
         // GUARD: Ensure the correct player guesses
-        if (_playerWithBanana == null) return;
-        if (clientId != _playerWithBanana.Value) return;
+        if (hotPotatoManager._playerWithBanana == null) return;
+        if (clientId != hotPotatoManager._playerWithBanana.Value) return;
         _playerScores[clientId] = _playerScores.GetValueOrDefault(clientId) + 1;
 
-        Debug.Log($"<color={LogColours.Host}>[HOST]</color> {_playerWithBanana.Value} selected: {answer}");
+        Debug.Log($"<color={LogColours.Host}>[HOST]</color> {hotPotatoManager._playerWithBanana.Value} selected: {answer}");
 
         bool correct = _currentQuestion.answers.Any(a => a.correctAnswer && a.answer == answer);
 
@@ -243,9 +239,9 @@ public class GameManager : NetworkedSingleton<GameManager>
 
     private void ProcessCorrectGuess()
     {
-        if (_playersRemaining <= 1) { GameWin(); return; }
+        if (playersRemaining <= 1) { GameWin(); return; }
         NotifyAnswerResultRpc(true);
-        ProcessPassTheBomb();
+        hotPotatoManager.ProcessPassTheBomb();
 
 
     }
@@ -253,7 +249,7 @@ public class GameManager : NetworkedSingleton<GameManager>
     private void ProcessIncorrectGuess()
     {
         NotifyAnswerResultRpc(false);
-        Explode();
+        hotPotatoManager.ProcessExplode();
 
     }
 
@@ -262,7 +258,7 @@ public class GameManager : NetworkedSingleton<GameManager>
     private void NotifyAnswerResultRpc(bool wasCorrect)
     {
         string result = wasCorrect ? "got it!" : "was wrong!";
-        Debug.Log($"<color={LogColours.Client}>[CLIENT]</color> {_playerWithBanana.Value} {result}");
+        Debug.Log($"<color={LogColours.Client}>[CLIENT]</color> {hotPotatoManager._playerWithBanana.Value} {result}");
 
     }
 
@@ -270,31 +266,9 @@ public class GameManager : NetworkedSingleton<GameManager>
 
     #endregion
 
-    #region Utility
-    #region Server
-    private void Explode()
-    {
-        if (_playerWithBanana == null) return;
-        NetworkManager.Singleton.ConnectedClients[_playerWithBanana.Value].PlayerObject.GetComponent<PlayerNetworkedController>().GetComponent<IDamageable>().Die();
-        _playersRemaining -= 1;
-        ProcessPassTheBomb();
-
-    }
-
-    private void ProcessPassTheBomb()
-    {
-        ulong playerCount = (ulong)NetworkManager.ConnectedClients.Count;
-        _playerWithBanana.Value = (_playerWithBanana.Value + 1) % playerCount;
-        Debug.Log($"<color={LogColours.Host}>[HOST]</color> Bomb passed to player {_playerWithBanana.Value}");
-
-        StartCoroutine(DelayCoroutine(0.1f, ProcessNextQuestion));
-
-    }
 
 
-    #endregion
-
-    private IEnumerator DelayCoroutine(float seconds, Action onCompleted = null)
+    public IEnumerator DelayCoroutine(float seconds, Action onCompleted = null)
     {
         yield return new WaitForSeconds(seconds);
         onCompleted?.Invoke();
@@ -310,7 +284,6 @@ public class GameManager : NetworkedSingleton<GameManager>
         Debug.Log($"YOu win!");
     }
 
-    #endregion
 
 }
 

@@ -22,7 +22,7 @@ public class CategorySelection : NetworkBehaviour
         base.OnNetworkSpawn();
 
         #region Client Menu
-        if (NetworkManager.LocalClientId != GameManager.Instance._playerWithBanana.Value) return;
+        if (NetworkManager.LocalClientId != GameManager.Instance.hotPotatoManager._playerWithBanana.Value) return;
         #endregion
 
         _clientMenu?.SetActive(false);
