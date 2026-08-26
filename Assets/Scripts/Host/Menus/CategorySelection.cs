@@ -9,8 +9,8 @@ public class CategorySelection : NetworkBehaviour
 {
 
     [Space()]
-    [Header("Host")]
-    [SerializeField] private GameObject _hostMenu;
+    [Header("Selector")]
+    [SerializeField] private GameObject _selectorMenu;
     private TMP_Dropdown _categoryDropdown;
 
     [Space()]
@@ -20,18 +20,20 @@ public class CategorySelection : NetworkBehaviour
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
-        if (!IsServer)
-        {
-            _hostMenu?.SetActive(false);
-            _clientMenu?.SetActive(true);
-            return;
 
-        }
+        #region Client Menu
+        if (NetworkManager.LocalClientId != GameManager.Instance._playerWithBanana.Value) return;
+        #endregion
 
+        _clientMenu?.SetActive(false);
+        _selectorMenu?.SetActive(true);
+
+
+        // INFO: Server Setup the dropdown
         _categoryDropdown = GetComponentInChildren<TMP_Dropdown>();
         _categoryDropdown.ClearOptions();
 
-        AddOptionsRPC();
+        InitializeCategoryDropdown();
 
     }
 
@@ -43,29 +45,38 @@ public class CategorySelection : NetworkBehaviour
     }
 
 
-    public void ConfirmCategory()
-    {
-        if (!IsServer) return;
-        ConfirmedCategoryServerRPC();
+    // INFO: Client
+    #region CATEGORY SELECTION - CLIENT
 
+    public void HandleCategorySelected()
+    {
+        string selectedCategory = _categoryDropdown.options[_categoryDropdown.value].text;
+        RequestCategoryConfirmationRpc(selectedCategory);
     }
 
-    [Rpc(SendTo.Server)]
-    private void ConfirmedCategoryServerRPC()
-    {
-        Debug.Log($"Selected: {_categoryDropdown.options[_categoryDropdown.value].text}");
-        GameManager.Instance.OnCategoryChosen(_categoryDropdown.options[_categoryDropdown.value].text);
-        NetworkObject.Despawn(true);
-
-    }
-
-    [Rpc(SendTo.Server)]
-    private void AddOptionsRPC()
+    // INFO: Load dropdown options client
+    public void InitializeCategoryDropdown()
     {
         foreach (CategorySO category in GameManager.Instance.categoryContainer.categories)
         {
             AddItemToDropDown(category.categoryName);
-
         }
     }
+    #endregion
+
+    #region CATEGORY SELECTION - SERVER
+    [Rpc(SendTo.Server)]
+    public void RequestCategoryConfirmationRpc(string selectedCategory)
+    {
+        Debug.Log($"Selected: {selectedCategory}");
+
+        // INFO: Tell GameManager to process this
+        GameManager.Instance.ProcessCategorySelectionServer(selectedCategory);
+
+        // INFO: Despawn this UI
+        NetworkObject.Despawn(true);
+
+    }
+    #endregion
+
 }

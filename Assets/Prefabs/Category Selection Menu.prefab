@@ -813,7 +813,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CategorySelection
   ShowTopMostFoldoutHeaderGroup: 1
-  _hostMenu: {fileID: 4530718165773308840}
+  _selectorMenu: {fileID: 4530718165773308840}
   _clientMenu: {fileID: 8898578628826655218}
 --- !u!1 &3548420138072104484
 GameObject:
@@ -998,12 +998,12 @@ GameObject:
   m_Component:
   - component: {fileID: 7192044287583337680}
   m_Layer: 5
-  m_Name: Host Menu
+  m_Name: Selector Menu
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &7192044287583337680
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1832,7 +1832,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Host is selecting a category
+  m_text: Category is being selected...
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -2027,7 +2027,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 7755319226234312934}
         m_TargetAssemblyTypeName: CategorySelection, Assembly-CSharp
-        m_MethodName: ConfirmCategory
+        m_MethodName: HandleCategorySelected
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -2052,7 +2052,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &7876885033029455948
 RectTransform:
   m_ObjectHideFlags: 0
