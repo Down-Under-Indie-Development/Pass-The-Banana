@@ -141,8 +141,8 @@ namespace PTB.Networking
 
             try
             {
-                SteamClient.Shutdown();
                 SteamFriends.SetRichPresence("connect", null);
+                SteamClient.Shutdown();
                 if (!connectedToSteam) Debug.Log($"<color={LogColours.Steamworks}>[STEAM]</color> Connection terminated successfully!");
 
             }
@@ -217,6 +217,8 @@ namespace PTB.Networking
 
         private async void OnGameLobbyJoinRequested(Lobby lobby, SteamId steamId)
         {
+            if (myLobby.HasValue) { Debug.LogWarning("Already in a lobby"); return; }
+
             RoomEnter joinedLobby = await lobby.Join();
             if (joinedLobby != RoomEnter.Success) { Debug.LogError($"Failed to join {lobby}"); return; }
 
@@ -224,10 +226,11 @@ namespace PTB.Networking
 
         private async void OnGameRichPresenceJoinRequested(Friend friend, string s)
         {
+            if (myLobby.HasValue) { Debug.LogWarning("Already in a lobby"); return; }
+
             if (!ulong.TryParse(s, out ulong seshID)) return;
             Lobby? joinedLobby = await SteamMatchmaking.JoinLobbyAsync(seshID);
             if (joinedLobby == null) { Debug.LogError($"Failed to join lobby!"); return; }
-            // myLobby = joinedLobby;
 
         }
         #endregion
@@ -297,7 +300,6 @@ namespace PTB.Networking
         protected virtual void OnSteamClientLeave()
         {
             if (!connectedToSteam) return;
-            if (myLobby == null) return;
             _networkTransport.targetSteamId = 0;
 
             // INFO: Leave the lobby
@@ -310,7 +312,6 @@ namespace PTB.Networking
             }
             else
             {
-                _networkTransport.DisconnectRemoteClient(SteamClient.SteamId);
                 _eventManager.OnStopUnityClient?.Invoke();
 
             }

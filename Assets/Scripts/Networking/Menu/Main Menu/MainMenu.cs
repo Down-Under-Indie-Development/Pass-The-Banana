@@ -83,7 +83,6 @@ namespace PTB.Networking.Menus
 
             }
 
-            _localCurrentGameSate = _bootstrapManager.sessionStateManager.currentSessionState.Value;
             _eventManager.OnCreateLobbyRequest?.Invoke((int)playerCountSlider.value);
 
         }
@@ -92,6 +91,7 @@ namespace PTB.Networking.Menus
         {
             if (_joinGameMenu == null) { Debug.LogWarning($"Join game menu is null!"); return; }
             _joinGameMenu.SetActive(true);
+            _localCurrentGameSate = GameState.JoinGame;
 
         }
 
@@ -107,6 +107,7 @@ namespace PTB.Networking.Menus
             ResetMenu();
             _lobbyScreen?.SetActive(true);
             _bootstrapManager.sessionStateManager.UpdateSessionState(GameState.Lobby);
+            _localCurrentGameSate = _bootstrapManager.sessionStateManager.currentSessionState.Value;
 
 
         }
@@ -146,9 +147,8 @@ namespace PTB.Networking.Menus
                     HandleMenuSwitching(_lobbyScreen, GameState.MainMenu);
                     break;
                 case GameState.Lobby:
-
                     _eventManager.OnSteamClientDisconnect?.Invoke();
-                    _lobbyScreen.SetActive(false);
+                    HandleMenuSwitching(_lobbyScreen, GameState.MainMenu);
                     break;
                 case GameState.JoinGame:
                     HandleMenuSwitching(_joinGameMenu, GameState.MainMenu);

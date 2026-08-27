@@ -72,7 +72,7 @@ public class UnityNetworkHelper : Singleton<UnityNetworkHelper>
         }
 
         SceneManager.LoadScene(0, LoadSceneMode.Single);
-        // _eventManager.OnUnityClientDisconnected?.Invoke(); // INFO: Client stopped let other scripts know
+        _eventManager.OnUnityClientDisconnected?.Invoke(); // INFO: Client stopped let other scripts know
 
 
     }
