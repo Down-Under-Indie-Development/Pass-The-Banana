@@ -16,7 +16,7 @@ namespace PTB.Client.Player
         public bool hostForcedPause { get; private set; } = false;
 
         [SerializeField] private int _correctAnswers;
-        [field: SerializeField, ReadOnly] public GameObject podium { get; private set; }
+        [field: SerializeField] public GameObject podium { get; private set; }
 
         private void Start()
         {
@@ -65,13 +65,13 @@ namespace PTB.Client.Player
         #endregion
 
         // INFO: Get the podium
-        private void OnTriggerEnter(Collider other)
-        {
+        // private void OnTriggerEnter(Collider other)
+        // {
 
-            if (!other.transform.CompareTag("Podium")) return;
-            podium = other.gameObject;
+        //     if (!other.transform.CompareTag("Podium")) return;
+        //     podium = other.gameObject;
 
-        }
+        // }
 
     }
 }

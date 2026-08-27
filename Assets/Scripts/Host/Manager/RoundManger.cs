@@ -35,8 +35,7 @@ public class RoundManger : NetworkedSingleton<RoundManger>
         _eventManager.OnCountdownFinished -= _gameManager.bombManager.ProcessExplode;
         _eventManager.OnCountdownFinished += _gameManager.bombManager.ProcessExplode;
 
-        // INFO: Spawn the answers
-        StartCoroutine(_gameManager.DelayCoroutine(.5f, _gameManager.questionManager.HandleSpawnAnswers));
+        // INFO: Spawn the answers;
         _eventManager.OnCountdownStarted?.Invoke(_answerTime);
 
     }

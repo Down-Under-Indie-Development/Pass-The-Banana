@@ -52,7 +52,16 @@ public class BombManager : NetworkedSingleton<BombManager>
     public void NotifyChangePodiumRPC()
     {
         HandleChangePodiumColor(playerWithBanana.Value, Color.red);
-        if (playerWithBanana.Value != _previousPlayer && _previousPlayer != 420) HandleChangePodiumColor(_previousPlayer, Color.white);
+        if (playerWithBanana.Value != _previousPlayer && _previousPlayer != 420)
+        {
+            HandleChangePodiumColor(_previousPlayer, Color.white);
+            _gameManager.playerManager.MoveToHotSeat(_previousPlayer, true);
+
+        }
+
+        // INFO: Move the player to the hot seat
+        _gameManager.playerManager.MoveToHotSeat(playerWithBanana.Value);
+
         _previousPlayer = playerWithBanana.Value;
 
     }

@@ -1,4 +1,9 @@
+using System.Collections;
 using System.Linq;
+using System.Transactions;
+using PTB.Client.Player;
+using Unity.Services.Lobbies.Models;
+using UnityEditor.PackageManager;
 using UnityEngine;
 using Utility;
 
@@ -19,12 +24,13 @@ public class QuestionManager : NetworkedSingleton<QuestionManager>
         _currentCategory = categoryContainer.categories.FirstOrDefault(category => category.categoryName == selectedCategory);
         _currentQuestionIndex = 0;
         _currentQuestion = _currentCategory.questions[_currentQuestionIndex];
-        HandleSpawnAnswers();
+        StartCoroutine(HandleSpawnAnswers());
 
     }
 
     public void ProcessNextQuestion()
     {
+        Debug.Log($"Test!");
         _currentQuestionIndex += 1;
 
         if (_currentQuestionIndex > _currentCategory.questions.Count - 1)
@@ -34,7 +40,7 @@ public class QuestionManager : NetworkedSingleton<QuestionManager>
         }
         _currentQuestion = _currentCategory.questions[_currentQuestionIndex];
 
-        HandleSpawnAnswers();
+        StartCoroutine(HandleSpawnAnswers());
 
     }
 
@@ -43,8 +49,11 @@ public class QuestionManager : NetworkedSingleton<QuestionManager>
         _answerUIManager.ClearPreviousAnswersRPC();
     }
 
-    public void HandleSpawnAnswers()
+    public IEnumerator HandleSpawnAnswers()
     {
+        _gameManager.bombManager.NotifyChangePodiumRPC();
+        yield return new WaitForSeconds(.5f);
+
         ClearAnswers();
         _answerUIManager.SetQuestionTextRPC(GetCurrentQuestion().question);
 
@@ -54,7 +63,6 @@ public class QuestionManager : NetworkedSingleton<QuestionManager>
             AnswerMenuUIManger.Instance.AddAnswerRPC(answerData.answer);
         }
 
-        _gameManager.bombManager.NotifyChangePodiumRPC();
 
     }
 
