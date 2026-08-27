@@ -8,7 +8,7 @@ namespace Utility
     public class CustomMonoBehaviour : MonoBehaviour
     {
         protected EventManager _eventManager => EventManager.Instance;
-        protected GameManager _gameManager => GameManager.Instance;
+        protected GameNetworkManager _gameManager => GameNetworkManager.Instance;
 
         [Header("Debug Settings")]
         [SerializeField] protected bool _debug;

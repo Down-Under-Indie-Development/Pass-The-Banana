@@ -22,7 +22,8 @@ public class CategorySelection : NetworkBehaviour
         base.OnNetworkSpawn();
 
         #region Client Menu
-        if (NetworkManager.LocalClientId != GameManager.Instance.hotPotatoManager._playerWithBanana.Value) return;
+        if (!GameNetworkManager.Instance.bombManager.IsPlayerWithBomb(NetworkManager.LocalClientId)) return;
+
         #endregion
 
         _clientMenu?.SetActive(false);
@@ -57,10 +58,12 @@ public class CategorySelection : NetworkBehaviour
     // INFO: Load dropdown options client
     public void InitializeCategoryDropdown()
     {
-        foreach (CategorySO category in GameManager.Instance.categoryContainer.categories)
+        foreach (CategorySO category in GameNetworkManager.Instance.questionManager.categoryContainer.categories)
         {
             AddItemToDropDown(category.categoryName);
+
         }
+
     }
     #endregion
 
@@ -68,10 +71,10 @@ public class CategorySelection : NetworkBehaviour
     [Rpc(SendTo.Server)]
     public void RequestCategoryConfirmationRpc(string selectedCategory)
     {
-        Debug.Log($"Selected: {selectedCategory}");
+        Debug.Log($"<{LogColours.Unity}>[CATEGORY]</color> Selected: {selectedCategory}");
 
         // INFO: Tell GameManager to process this
-        GameManager.Instance.ProcessCategorySelectionServer(selectedCategory);
+        GameNetworkManager.Instance.roundManager.ProcessChosenCategory(selectedCategory);
 
         // INFO: Despawn this UI
         NetworkObject.Despawn(true);

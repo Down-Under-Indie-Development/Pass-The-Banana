@@ -36,7 +36,7 @@ public class AnswerTile : NetworkBehaviour, IPointerClickHandler
     private void SelectAnswerServerRpc(string answer, RpcParams rpcParams = default)
     {
         ulong clientId = rpcParams.Receive.SenderClientId;
-        GameManager.Instance.ProcessAnswerChosen(answer, clientId);
+        GameNetworkManager.Instance.roundManager.ProcessAnswerChosen(answer, clientId);
 
     }
 }

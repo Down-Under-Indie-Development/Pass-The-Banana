@@ -37,8 +37,6 @@ public class Timer : Singleton<Timer>
 
         _currentTime -= Time.deltaTime;
 
-
-
     }
 
     // INFO: Get current time
@@ -49,7 +47,7 @@ public class Timer : Singleton<Timer>
     {
         _currentTime = time;
         _counting = true;
-        Debug.Log($"[TIMER] Countdown started: {time}");
+        Debug.Log($"<color={LogColours.Unity}>[TIMER]</color> Countdown started: {time}");
 
     }
 
@@ -57,7 +55,8 @@ public class Timer : Singleton<Timer>
     public void StopCountdown()
     {
         _counting = false;
-        Debug.Log($"[TIMER] Countdown paused at: {_currentTime}");
+        Debug.Log($"<color={LogColours.Unity}>[TIMER]</color> Countdown manually stopped");
+        _currentTime = 0;
 
     }
     #endregion

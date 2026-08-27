@@ -51,7 +51,7 @@ namespace PTB.Client.Player
         public void RequestTogglePauseRPC()
         {
             // Tell the server to broadcast pause state to all clients (including itself)
-            GameManager.Instance.BroadcastPauseStateRPC();
+            GameNetworkManager.Instance.BroadcastPauseStateRPC();
         }
 
         // Called from GameManager via RPC - applies pause state to this player
