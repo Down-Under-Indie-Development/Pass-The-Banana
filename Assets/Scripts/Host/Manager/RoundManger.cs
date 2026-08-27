@@ -6,11 +6,14 @@ using Utility;
 public class RoundManger : NetworkedSingleton<RoundManger>
 {
     private GameNetworkManager _gameManager => GameNetworkManager.Instance;
-    private float _answerTime;
+    private float _fuseTime;
 
+    [Header("Category Selection")]
     [SerializeField] private GameObject _categorySelectionGO;
-    [SerializeField] private GameObject _uiCanvasGO;
 
+    [Header("Round End Screens")]
+    [SerializeField] private GameObject _winScreenGO;
+    [SerializeField] private GameObject _endOfRoundSummaryGO;
 
     public void StartRound()
     {
@@ -19,6 +22,7 @@ public class RoundManger : NetworkedSingleton<RoundManger>
 
     }
 
+    #region Category Selection
     private void ShowCategorySelection()
     {
         NetworkObject selectionScreen = NetworkManager.SpawnManager.InstantiateAndSpawn(
@@ -31,15 +35,17 @@ public class RoundManger : NetworkedSingleton<RoundManger>
         _gameManager.questionManager.SelectCategory(selectedCategory);
 
         // INFO: Intialise the timer
-        _answerTime = _gameManager.questionManager.GetCurrentCategory().GetTimeLimit();
+        _fuseTime = _gameManager.questionManager.GetCurrentCategory().GetTimeLimit();
         _eventManager.OnCountdownFinished -= _gameManager.bombManager.ProcessExplode;
         _eventManager.OnCountdownFinished += _gameManager.bombManager.ProcessExplode;
 
         // INFO: Spawn the answers;
-        _eventManager.OnCountdownStarted?.Invoke(_answerTime);
+        _eventManager.OnCountdownStarted?.Invoke(_fuseTime);
 
     }
+    #endregion
 
+    #region Answer Selection
     public void ProcessAnswerChosen(string answer, ulong clientId)
     {
         // GUARD: Ensure the correct player guesses
@@ -83,7 +89,10 @@ public class RoundManger : NetworkedSingleton<RoundManger>
         NotifyAnswerResultRpc(false);
         _gameManager.bombManager.ProcessExplode();
     }
+    #endregion
 
+
+    #region End Of Round
     private void EndRound(bool won)
     {
         if (won)
@@ -94,11 +103,17 @@ public class RoundManger : NetworkedSingleton<RoundManger>
     public void ProcessNextRound()
     {
         Timer.Instance.StopCountdown();
+        if (_endOfRoundSummaryGO != null) _endOfRoundSummaryGO.SetActive(true);
 
+        _gameManager.playerManager.MoveToHotSeat(_gameManager.bombManager.previousPlayerWithBanana, true);
+        _gameManager.playerManager.HandleChangePodiumColor(_gameManager.bombManager.previousPlayerWithBanana, Color.white);
         _gameManager.questionManager.ClearAnswers();
+
         StartRound();
         Debug.Log($"<color={LogColours.Unity}>[ROUND MANAGER]</color> Starting next round");
 
     }
+
+    #endregion
 
 }

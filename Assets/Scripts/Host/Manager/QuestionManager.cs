@@ -30,12 +30,11 @@ public class QuestionManager : NetworkedSingleton<QuestionManager>
 
     public void ProcessNextQuestion()
     {
-        Debug.Log($"Test!");
         _currentQuestionIndex += 1;
 
         if (_currentQuestionIndex > _currentCategory.questions.Count - 1)
         {
-            Debug.LogError($"<color={LogColours.Unity}>[QUESTION MANAGER]</color> This category doesn't have enough questions");
+            _gameManager.roundManager.ProcessNextRound();
             return;
         }
         _currentQuestion = _currentCategory.questions[_currentQuestionIndex];
@@ -51,10 +50,10 @@ public class QuestionManager : NetworkedSingleton<QuestionManager>
 
     public IEnumerator HandleSpawnAnswers()
     {
-        _gameManager.bombManager.NotifyChangePodiumRPC();
-        yield return new WaitForSeconds(.5f);
-
         ClearAnswers();
+        _gameManager.bombManager.NotifyChangePodiumRPC();
+        yield return new WaitForSeconds(.55f);
+
         _answerUIManager.SetQuestionTextRPC(GetCurrentQuestion().question);
 
         // INFO: RPC no like complex data structures 🥹

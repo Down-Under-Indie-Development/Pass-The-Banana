@@ -101,6 +101,11 @@ public class PlayerManager : NetworkedSingleton<PlayerManager>
 
     }
 
+    public void HandleChangePodiumColor(ulong client, Color colour)
+    {
+        NetworkManager.ConnectedClients[client].PlayerObject.GetComponent<PlayerNetworkedController>().podium.transform.GetChild(1).GetComponent<MeshRenderer>().material.color = colour;
+    }
+
     public void InitializePlayers(int playerCount)
     {
         PlayersRemaining = playerCount;

@@ -1,4 +1,5 @@
 using Netcode.Transports.Facepunch;
+using NUnit.Framework;
 using PTB.Client.Player;
 using Unity.Netcode;
 using Unity.VisualScripting;
@@ -42,27 +43,24 @@ public class BombManager : NetworkedSingleton<BombManager>
 
     }
 
-    private void HandleChangePodiumColor(ulong client, Color colour)
-    {
-        NetworkManager.ConnectedClients[client].PlayerObject.GetComponent<PlayerNetworkedController>().podium.transform.GetChild(1).GetComponent<MeshRenderer>().material.color = colour;
-    }
 
-    private ulong _previousPlayer = 420;
+
+    public ulong previousPlayerWithBanana { get; private set; } = 420;
     [Rpc(SendTo.ClientsAndHost)]
     public void NotifyChangePodiumRPC()
     {
-        HandleChangePodiumColor(playerWithBanana.Value, Color.red);
-        if (playerWithBanana.Value != _previousPlayer && _previousPlayer != 420)
+        _gameManager.playerManager.HandleChangePodiumColor(playerWithBanana.Value, Color.red);
+        if (playerWithBanana.Value != previousPlayerWithBanana && previousPlayerWithBanana != 420)
         {
-            HandleChangePodiumColor(_previousPlayer, Color.white);
-            _gameManager.playerManager.MoveToHotSeat(_previousPlayer, true);
+            _gameManager.playerManager.HandleChangePodiumColor(previousPlayerWithBanana, Color.white);
+            if (IsServer) _gameManager.playerManager.MoveToHotSeat(previousPlayerWithBanana, true);
 
         }
 
         // INFO: Move the player to the hot seat
         _gameManager.playerManager.MoveToHotSeat(playerWithBanana.Value);
 
-        _previousPlayer = playerWithBanana.Value;
+        previousPlayerWithBanana = playerWithBanana.Value;
 
     }
 
