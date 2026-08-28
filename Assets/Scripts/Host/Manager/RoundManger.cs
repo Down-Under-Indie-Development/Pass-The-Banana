@@ -159,9 +159,16 @@ public class RoundManger : NetworkedSingleton<RoundManger>
     private void HandleGameOver()
     {
         Debug.Log($"<color={LogColours.Unity}>[ROUND MANAGER]</color> All rounds finished!");
-        SpawnMatchSummary(_gameManager.scoreManager.GetAllPlayerScores());
-        // TODO: Implement game over logic
+        SpawnMatchSummary(_gameManager.scoreManager.GetAllPlayerScores(), ReturnToLobby);
+        _gameManager.bootstrapNetworkManager.ForEachPlayer(p => NetworkObject.Destroy(p.gameObject));
 
+    }
+
+
+    private void ReturnToLobby()
+    {
+
+        _gameManager.bootstrapNetworkManager.ChangeNetworkScene("MainMenuScene", "TestScene");
     }
 
     #endregion

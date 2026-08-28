@@ -14,14 +14,14 @@ public class BootstrapNetworkManager : NetworkedSingleton<BootstrapNetworkManage
     public LobbyData lobbyData { get; private set; }
 
     #region Change Scene
-    public static void ChangeNetworkScene(string sceneToLoad, string sceneToClose)
+    public void ChangeNetworkScene(string sceneToLoad, string sceneToClose)
     {
         List<string> sceneList = new List<string> { sceneToClose };
         ChangeNetworkScene(sceneToLoad, sceneList.ToList<string>());
 
     }
 
-    public static void ChangeNetworkScene(string sceneToLoad, List<string> scenesToClose)
+    public void ChangeNetworkScene(string sceneToLoad, List<string> scenesToClose)
     {
         // if (!NetworkManager.Singleton.IsServer) return;
         if (scenesToClose.Count == 0) return;
@@ -29,23 +29,23 @@ public class BootstrapNetworkManager : NetworkedSingleton<BootstrapNetworkManage
         foreach (string sceneName in scenesToClose)
         {
             if (string.IsNullOrEmpty(sceneToLoad)) continue;
-            Instance.ClosesScenesRPC(sceneName);
+            Instance.CloseSceneObserverRPC(sceneToLoad, sceneName);
 
         }
 
-        NetworkManager.Singleton.SceneManager.LoadScene(sceneToLoad, LoadSceneMode.Additive);
+        NetworkManager.SceneManager.LoadScene(sceneToLoad, LoadSceneMode.Additive);
         Debug.Log($"Scene transition complete: {sceneToLoad}");
 
     }
 
-    [Rpc(SendTo.Authority)]
-    private void ClosesScenesRPC(string scenesToClose)
-    {
-        CloseSceneObserverRPC(scenesToClose);
-    }
+    // [Rpc(SendTo.Authority)]
+    // private void ClosesScenesRPC(string scenesToClose)
+    // {
+    //     CloseSceneObserverRPC(scenesToClose);
+    // }
 
     [Rpc(SendTo.Everyone)]
-    private void CloseSceneObserverRPC(string scenesToClose)
+    private void CloseSceneObserverRPC(string sceneToLoad, string scenesToClose)
     {
         SceneManager.UnloadSceneAsync(scenesToClose);
 

@@ -89,6 +89,8 @@ public class PlayerManager : NetworkedSingleton<PlayerManager>
         float elapsed = 0f;
         while (elapsed < duration)
         {
+            if (playerTransform == null) yield break;
+
             elapsed += Time.deltaTime;
             float t = Mathf.Clamp01(elapsed / duration);
 
