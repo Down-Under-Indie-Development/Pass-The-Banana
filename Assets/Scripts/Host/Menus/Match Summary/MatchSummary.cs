@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -15,7 +16,7 @@ public class MatchSummary : NetworkBehaviour
     {
         base.OnNetworkSpawn();
 
-        if (IsServer) StartCoroutine(MatchSummaryCoroutine());
+        if (IsServer) StartCoroutine(MatchSummaryCoroutine(_gameManager.roundManager.ProgressToNextRound));
 
     }
 
@@ -26,41 +27,55 @@ public class MatchSummary : NetworkBehaviour
 
         Debug.Log($"We made it!");
 
+        Dictionary<ulong, ScoreData> dataSet = _gameManager.roundManager.currentRoundData;
+
         System.Collections.Generic.List<ulong> clientIds = new(NetworkManager.ConnectedClientsIds);
         clientIds.Sort((a, b) =>
-            _gameManager.scoreManager.GetPlayerPlace(a)
-                .CompareTo(_gameManager.scoreManager.GetPlayerPlace(b))
+            _gameManager.scoreManager.GetPlayerPlace(a, dataSet)
+                .CompareTo(_gameManager.scoreManager.GetPlayerPlace(b, dataSet))
         );
 
         foreach (ulong clientId in clientIds)
         {
-            yield return ShowPlayerStats(clientId);
+            yield return ShowPlayerStats(clientId, dataSet);
 
         }
+
+        yield return new WaitForSeconds(2f);
+
         onCompleted?.Invoke();
+        if (IsServer)
+        {
+            // Despawn all player card children first
+            foreach (Transform child in _playerContentGO.transform)
+            {
+                NetworkObject childNetworkObject = child.GetComponent<NetworkObject>();
+                if (childNetworkObject != null)
+                {
+                    childNetworkObject.Despawn(true);
+                }
+            }
+
+            // Then despawn the MatchSummary itself
+            NetworkObject.Despawn(true);
+        }
 
     }
 
-    private IEnumerator ShowPlayerStats(ulong clientId)
-    {
-        SpawnPlayerCardRPC(clientId);
-        yield return null;
-
-    }
-
-    [Rpc(SendTo.Server)]
-    private void SpawnPlayerCardRPC(ulong clientId)
+    // INFO: Animation per player card
+    private IEnumerator ShowPlayerStats(ulong clientId, Dictionary<ulong, ScoreData> dataSet)
     {
         NetworkObject playerCardNetObj = NetworkManager.SpawnManager.InstantiateAndSpawn(
             _playerCardPrefab.GetComponent<NetworkObject>(),
             NetworkManager.LocalClientId
         );
 
-        ScoreData playerScore = _gameManager.scoreManager.GetPlayerScore(clientId);
-        int playerPlace = _gameManager.scoreManager.GetPlayerPlace(clientId);
+        ScoreData playerScore = _gameManager.roundManager.currentRoundData[clientId];
+        int playerPlace = _gameManager.scoreManager.GetPlayerPlace(clientId, _gameManager.roundManager.currentRoundData);
 
         // Tell all clients to parent it
         ParentPlayerCardRPC(playerCardNetObj.NetworkObjectId, playerScore.points, playerScore.fails, playerScore.passes, clientId, playerPlace);
+        yield return new WaitForSeconds(.5f);
 
     }
 

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.SocialPlatforms.Impl;
 using Utility;
 
 /// <summary>
@@ -81,12 +82,12 @@ public class ScoreManager : NetworkedSingleton<ScoreManager>
         return true;
     }
 
-    public int GetPlayerPlace(ulong clientId)
+    public int GetPlayerPlace(ulong clientId, Dictionary<ulong, ScoreData> dataSet)
     {
-        if (!playerScores.ContainsKey(clientId))
+        if (!dataSet.ContainsKey(clientId))
             return -69;
 
-        return playerScores.Values.Count(s => s.points > playerScores[clientId].points) + 1;
+        return dataSet.Values.Count(s => s.points > dataSet[clientId].points) + 1;
     }
 
 }

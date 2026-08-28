@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
@@ -19,9 +20,15 @@ public class RoundManger : NetworkedSingleton<RoundManger>
     [SerializeField] private GameObject _endOfRoundSummaryGO;
 
     private int _currentRound = 1;
+    public Dictionary<ulong, ScoreData> currentRoundData { get; private set; } = new();
 
     public void StartRound()
     {
+        foreach (ulong clientId in NetworkManager.ConnectedClientsIds)
+        {
+            currentRoundData[clientId] = ScoreData.Empty();
+        }
+
         Debug.Log($"Starting Round {_currentRound}/{_gameManager.currentGameLobbyData.numberOfRounds}");
         _gameManager.bombManager.SelectStartingPlayer();
         StartCoroutine(_gameManager.DelayCoroutine(.1f, ShowCategorySelection)); // INFO: Allow time for syncing
@@ -86,6 +93,7 @@ public class RoundManger : NetworkedSingleton<RoundManger>
         // if (_gameManager.playerManager.PlayersRemaining <= 1) { HandleGameOver(); return; }
         NotifyAnswerResultRpc(true);
         _gameManager.scoreManager.AwardPoints(clientId); // INFO: Score
+        currentRoundData[clientId].points += 1;
         _gameManager.bombManager.ProcessPassTheBomb();
 
     }
@@ -94,6 +102,7 @@ public class RoundManger : NetworkedSingleton<RoundManger>
     {
         NotifyAnswerResultRpc(false);
         _gameManager.scoreManager.AwardFail(clientId);
+        currentRoundData[clientId].fails += 1;
         _gameManager.bombManager.ProcessExplode();
 
     }
@@ -107,10 +116,9 @@ public class RoundManger : NetworkedSingleton<RoundManger>
     {
 
         NetworkObject networkObject = NetworkManager.Singleton.SpawnManager.InstantiateAndSpawn(_endOfRoundSummaryGO.GetComponent<NetworkObject>(), NetworkManager.Singleton.LocalClientId);
-        _endOfRoundSummaryGO.SetActive(true);
+        // _endOfRoundSummaryGO.SetActive(true);
         HandleServerEndOfRound();
         ClientSideRPC(networkObject.NetworkObjectId);
-        if (IsServer) ProgressToNextRound();
 
     }
 
@@ -142,7 +150,7 @@ public class RoundManger : NetworkedSingleton<RoundManger>
 
     }
 
-    private void ProgressToNextRound()
+    public void ProgressToNextRound()
     {
         _currentRound++;
 
@@ -152,7 +160,9 @@ public class RoundManger : NetworkedSingleton<RoundManger>
             return;
         }
 
+        currentRoundData.Clear();
         StartRound();
+
     }
 
     private bool IsGameOver() => _currentRound >= _gameManager.currentGameLobbyData.numberOfRounds;
