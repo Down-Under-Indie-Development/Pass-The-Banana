@@ -32,11 +32,11 @@ public class PlayerManager : NetworkedSingleton<PlayerManager>
         if (!IsServer) return;
         if (_playerPrefab == null) { Debug.LogError($"Player prefab is null, cannot spawn!"); return; }
 
-        Debug.Log($"[SERVER] Spawning {_gameManager.bootstrapNetworkManager.connectedClientIds.Count} players");
+        Debug.Log($"[SERVER] Spawning {NetworkManager.ConnectedClientsIds.Count} players");
 
-        for (int i = 0; i < _gameManager.bootstrapNetworkManager.connectedClientIds.Count; i++)
+        for (int i = 0; i < NetworkManager.ConnectedClientsIds.Count; i++)
         {
-            ulong currentClient = _gameManager.bootstrapNetworkManager.connectedClientIds[i];
+            ulong currentClient = NetworkManager.ConnectedClientsIds[i];
             GameObject instance = Instantiate(_playerPrefab);
             instance.transform.position = _spawnPositions[i].position;
 

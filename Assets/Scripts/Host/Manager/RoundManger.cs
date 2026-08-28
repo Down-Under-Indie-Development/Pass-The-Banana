@@ -15,8 +15,11 @@ public class RoundManger : NetworkedSingleton<RoundManger>
     [SerializeField] private GameObject _winScreenGO;
     [SerializeField] private GameObject _endOfRoundSummaryGO;
 
+    private int _currentRound = 1;
+
     public void StartRound()
     {
+        Debug.Log($"Starting Round {_currentRound}/{_gameManager.currentGameLobbyData.numberOfRounds}");
         _gameManager.bombManager.SelectStartingPlayer();
         StartCoroutine(_gameManager.DelayCoroutine(.1f, ShowCategorySelection)); // INFO: Allow time for syncing
 
@@ -102,6 +105,9 @@ public class RoundManger : NetworkedSingleton<RoundManger>
     [ContextMenu("Start Next Round")]
     public void ProcessNextRound()
     {
+        if (_currentRound >= _gameManager.currentGameLobbyData.numberOfRounds) { Debug.Log($"All rounds finished!"); return; } // TODO: Game over logic
+        _currentRound++;
+
         Timer.Instance.StopCountdown();
         if (_endOfRoundSummaryGO != null) _endOfRoundSummaryGO.SetActive(true);
 

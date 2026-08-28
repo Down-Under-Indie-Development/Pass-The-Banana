@@ -11,8 +11,7 @@ using PTB.Client.Player;
 public class BootstrapNetworkManager : NetworkedSingleton<BootstrapNetworkManager>
 {
 
-    public IReadOnlyDictionary<ulong, NetworkClient> connectedClients => NetworkManager.Singleton.ConnectedClients;
-    public IReadOnlyList<ulong> connectedClientIds => NetworkManager.Singleton.ConnectedClientsIds;
+    public LobbyData lobbyData { get; private set; }
 
     #region Change Scene
     public static void ChangeNetworkScene(string sceneToLoad, string sceneToClose)
@@ -53,9 +52,11 @@ public class BootstrapNetworkManager : NetworkedSingleton<BootstrapNetworkManage
     }
     #endregion
 
+
+
     public void ForEachPlayer(Action<PlayerNetworkedController> action, bool includeHost = true)
     {
-        foreach (NetworkClient netObj in connectedClients.Values)
+        foreach (NetworkClient netObj in NetworkManager.ConnectedClients.Values)
         {
             PlayerNetworkedController playerController = netObj.PlayerObject.GetComponent<PlayerNetworkedController>();
             if (playerController == null) continue;
@@ -67,6 +68,12 @@ public class BootstrapNetworkManager : NetworkedSingleton<BootstrapNetworkManage
 
             action?.Invoke(playerController);
         }
+    }
+
+    public void SetLobbyData(LobbyData newLobbyData)
+    {
+        lobbyData = newLobbyData;
+
     }
 
 }

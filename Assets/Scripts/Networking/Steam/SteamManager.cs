@@ -177,14 +177,26 @@ namespace PTB.Networking
         // INFO: DO NOT EDIT!
         #region Steamworks
         #region Create Server
-        private async void StartSteamServer(int playerCount)
+        private async void StartSteamServer(LobbyData lobbyData)
         {
-
             if (!connectedToSteam) EstablishSteamConnection();
-
-            if (playerCount <= 0) playerCount = minimumPlayers;
+            if (lobbyData.maxPlayers <= 0) lobbyData.maxPlayers = minimumPlayers;
             Debug.Log($"<color={LogColours.Steamworks}>[STEAM]</color> Lobby request received creating lobby!");
-            await SteamMatchmaking.CreateLobbyAsync(playerCount);
+            Lobby? lobby = await SteamMatchmaking.CreateLobbyAsync(lobbyData.maxPlayers);
+            lobby.Value.SetGameServer(lobby.Value.Owner.Id);
+
+            if (lobbyData.friendsOnly)
+            {
+                lobby.Value.SetFriendsOnly();
+                lobby.Value.SetJoinable(true);
+            }
+            else
+            {
+                lobby.Value.SetPrivate();
+                lobby.Value.SetJoinable(false);
+
+            }
+
 
         }
 
@@ -192,10 +204,6 @@ namespace PTB.Networking
         {
             try
             {
-                lobby.SetGameServer(lobby.Owner.Id);
-                lobby.SetPrivate();
-                lobby.SetJoinable(true);
-
                 Debug.Log($"<color={LogColours.Steamworks}>[STEAM]</color> Lobby created! | {lobby.Owner.Name} ({lobby.Id}) | {lobby.MemberCount}/{lobby.MaxMembers}");
                 GUIUtility.systemCopyBuffer = lobby.Id.ToString(); // INFO: Copies lobby code to peoples keyboard
 

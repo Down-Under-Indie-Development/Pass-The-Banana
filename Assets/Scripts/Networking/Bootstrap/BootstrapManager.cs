@@ -46,6 +46,7 @@ namespace PTB.Networking
         private void EnableUnityTransport()
         {
             if (selectedTransport != Transport.Unity) return;
+            networkManager.GetComponent<FacepunchTransport>().enabled = false;
             Destroy(steamManager.gameObject);
 
             #region Create Unity Transport Object
@@ -54,6 +55,7 @@ namespace PTB.Networking
             transportObject.name = "Unity Transport [DEBUG]";
             _unityTransport = transportObject.GetComponent<UnityTransport>();
             #endregion
+
 
             // INFO: Update the network manager
             networkManager.NetworkConfig.NetworkTransport = _unityTransport;

@@ -14,6 +14,7 @@ namespace PTB.Networking.Menus
 {
     public class LobbyMenu : CustomMonoBehaviour, IMenu
     {
+        [SerializeField] private TextMeshProUGUI _roundsText;
 
         [Header("Player Panel")]
         [SerializeField] private GameObject _playerPanelContentGO;
@@ -37,7 +38,7 @@ namespace PTB.Networking.Menus
             _eventManager.OnUnityClientDisconnected += ResetMenu;
 
             if (_networkHelper.networkManager != null && !_networkHelper.networkManager.IsHost && _startGameBTN != null) _startGameBTN.interactable = false;
-            UpdateLobbyCodeText();
+            UpdateLobbyScreenTextRPC();
 
         }
 
@@ -66,14 +67,16 @@ namespace PTB.Networking.Menus
 
         private void OnLobbyEntered(Lobby lobby)
         {
-            UpdateLobbyCodeText();
+            UpdateLobbyScreenTextRPC();
             RefreshUI(lobby);
 
         }
 
-        private void UpdateLobbyCodeText()
+        [Rpc(SendTo.ClientsAndHost)]
+        private void UpdateLobbyScreenTextRPC()
         {
             if (_lobbyCodeTxt != null && _steamManager.myLobby.HasValue) _lobbyCodeTxt.text = $"Code: {_steamManager.myLobby.Value.Id}";
+            if (_roundsText != null && BootstrapNetworkManager.Instance.lobbyData != null) _roundsText.text = $"ROUND 1 OF {BootstrapNetworkManager.Instance.lobbyData.numberOfRounds}";
 
         }
 
@@ -117,7 +120,7 @@ namespace PTB.Networking.Menus
             if (!lobby.HasValue) return;
             ClearPlayerPanel();
 
-            if (_lobbyCodeTxt != null && _lobbyCodeTxt.text == "") UpdateLobbyCodeText();
+            if (_lobbyCodeTxt != null && _lobbyCodeTxt.text == "") UpdateLobbyScreenTextRPC();
             foreach (Friend member in lobby.Value.Members)
             {
                 // INFO: Set Display

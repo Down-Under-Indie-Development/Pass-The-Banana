@@ -69,24 +69,6 @@ namespace PTB.Networking.Menus
 
         }
 
-
-        public void CreateLobby()
-        {
-            Slider playerCountSlider = _hostGameMenu.gameObject.GetComponentInChildren<Slider>();
-            if (playerCountSlider == null) { Debug.LogError($"Host game menu needs a slider for player count!"); return; }
-
-            if (_bootstrapManager.networkManager.NetworkConfig.NetworkTransport is UnityTransport)
-            {
-                Debug.Log($"<color={LogColours.Debug}>[DEBUG]</color> <color={LogColours.Unity}>[UNITY]</color> Bypassing Facepunch transport, starting host!");
-                _eventManager.OnSteamHostConnect?.Invoke();
-                return;
-
-            }
-
-            _eventManager.OnCreateLobbyRequest?.Invoke((int)playerCountSlider.value);
-
-        }
-
         public void JoinGame()
         {
             if (_joinGameMenu == null) { Debug.LogWarning($"Join game menu is null!"); return; }

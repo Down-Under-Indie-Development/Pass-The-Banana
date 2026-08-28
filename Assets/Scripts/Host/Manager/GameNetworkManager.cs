@@ -35,6 +35,8 @@ public class GameNetworkManager : NetworkedSingleton<GameNetworkManager>
     public BootstrapNetworkManager bootstrapNetworkManager => BootstrapNetworkManager.Instance;
     #endregion
 
+    public LobbyData currentGameLobbyData { get; private set; }
+
     #region Events
     private void OnEnable()
     {
@@ -62,6 +64,7 @@ public class GameNetworkManager : NetworkedSingleton<GameNetworkManager>
     [Rpc(SendTo.Server)]
     public void HandleStartGameRPC()
     {
+        currentGameLobbyData = bootstrapNetworkManager.lobbyData;
         BootstrapManager.Instance.sessionStateManager.UpdateSessionState(GameState.Playing);
         if (BootstrapManager.Instance.sessionStateManager.currentSessionState.Value != GameState.Playing) return;
 
