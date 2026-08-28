@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -9,25 +10,25 @@ using UnityEngine.UIElements;
 public class MatchSummary : NetworkBehaviour
 {
     private GameNetworkManager _gameManager => GameNetworkManager.Instance;
+
+    [Header("Round Info")]
+    [SerializeField] private TextMeshProUGUI _roundStatusTxt;
+    [SerializeField] private TextMeshProUGUI _nextRoundTxt;
+
+
+    [Header("Player Panel")]
     [SerializeField] private GameObject _playerContentGO;
     [SerializeField] private GameObject _playerCardPrefab;
 
-    public override void OnNetworkSpawn()
-    {
-        base.OnNetworkSpawn();
-
-        if (IsServer) StartCoroutine(MatchSummaryCoroutine(_gameManager.roundManager.ProgressToNextRound));
-
-    }
-
-    private IEnumerator MatchSummaryCoroutine(Action onCompleted = null)
+    public IEnumerator MatchSummaryCoroutine(Dictionary<ulong, ScoreData> dataSet, Action onCompleted = null)
     {
         if (_playerCardPrefab == null) { Debug.LogError($"Player card prefab is null!"); yield break; }
         if (_playerContentGO == null) { Debug.LogError($"Player content object is null!"); yield break; }
 
-        Debug.Log($"We made it!");
+        int nextRound = _gameManager.roundManager.currentRound + 1;
+        if (_roundStatusTxt != null) _roundStatusTxt.text = $"ROUND {_gameManager.roundManager.currentRound} DONE";
+        if (_nextRoundTxt != null) _nextRoundTxt.text = nextRound < _gameManager.currentGameLobbyData.numberOfRounds ? $"ROUND {nextRound}" : _nextRoundTxt.text = "LOBBY";
 
-        Dictionary<ulong, ScoreData> dataSet = _gameManager.roundManager.currentRoundData;
 
         System.Collections.Generic.List<ulong> clientIds = new(NetworkManager.ConnectedClientsIds);
         clientIds.Sort((a, b) =>
@@ -35,30 +36,15 @@ public class MatchSummary : NetworkBehaviour
                 .CompareTo(_gameManager.scoreManager.GetPlayerPlace(b, dataSet))
         );
 
+        // INFO: Show all player cards
         foreach (ulong clientId in clientIds)
-        {
             yield return ShowPlayerStats(clientId, dataSet);
 
-        }
-
+        // INFO: Last player delay
         yield return new WaitForSeconds(2f);
 
         onCompleted?.Invoke();
-        if (IsServer)
-        {
-            // Despawn all player card children first
-            foreach (Transform child in _playerContentGO.transform)
-            {
-                NetworkObject childNetworkObject = child.GetComponent<NetworkObject>();
-                if (childNetworkObject != null)
-                {
-                    childNetworkObject.Despawn(true);
-                }
-            }
-
-            // Then despawn the MatchSummary itself
-            NetworkObject.Despawn(true);
-        }
+        if (IsServer || (IsServer && onCompleted == null)) DeleteChildObject();
 
     }
 
@@ -70,11 +56,13 @@ public class MatchSummary : NetworkBehaviour
             NetworkManager.LocalClientId
         );
 
-        ScoreData playerScore = _gameManager.roundManager.currentRoundData[clientId];
-        int playerPlace = _gameManager.scoreManager.GetPlayerPlace(clientId, _gameManager.roundManager.currentRoundData);
+        ScoreData playerScore = dataSet[clientId];
+        int playerPlace = _gameManager.scoreManager.GetPlayerPlace(clientId, dataSet);
 
         // Tell all clients to parent it
         ParentPlayerCardRPC(playerCardNetObj.NetworkObjectId, playerScore.points, playerScore.fails, playerScore.passes, clientId, playerPlace);
+
+        // INFO: Delay for each player
         yield return new WaitForSeconds(.5f);
 
     }
@@ -100,5 +88,23 @@ public class MatchSummary : NetworkBehaviour
         cardNetObj.transform.localPosition = Vector3.zero;
         cardNetObj.transform.localScale = Vector3.one;
     }
+
+    #region Utility
+    private void DeleteChildObject()
+    {
+        // Despawn all player card children first
+        foreach (Transform child in _playerContentGO.transform)
+        {
+            NetworkObject childNetworkObject = child.GetComponent<NetworkObject>();
+            if (childNetworkObject != null)
+            {
+                childNetworkObject.Despawn(true);
+            }
+        }
+
+        // Then despawn the MatchSummary itself
+        NetworkObject.Despawn(true);
+    }
+    #endregion
 
 }

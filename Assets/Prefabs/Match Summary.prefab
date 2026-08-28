@@ -1671,7 +1671,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 3884235735
+  GlobalObjectIdHash: 1631337278
   InScenePlacedSourceGlobalObjectIdHash: 0
   DeferredDespawnTick: 0
   Ownership: 1
@@ -1698,6 +1698,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MatchSummary
   ShowTopMostFoldoutHeaderGroup: 1
+  _roundStatusTxt: {fileID: 377090918975097016}
+  _nextRoundTxt: {fileID: 2756221090427114707}
   _playerContentGO: {fileID: 4399998769826008996}
   _playerCardPrefab: {fileID: 2312104147360830240, guid: bf8692a1b4c79fd46834fccac1369cf9, type: 3}
 --- !u!1 &6519662153100777894

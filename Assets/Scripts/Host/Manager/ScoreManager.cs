@@ -63,10 +63,9 @@ public class ScoreManager : NetworkedSingleton<ScoreManager>
     #region Fails
     public void AwardFail(ulong clientId, int amount = 1)
     {
-        if (!EnsurePlayerScoreExists(clientId))
-            return;
-
+        EnsurePlayerScoreExists(clientId);
         playerScores[clientId].fails += amount;
+
     }
     #endregion
 

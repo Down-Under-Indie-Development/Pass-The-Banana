@@ -2,9 +2,12 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata.Ecma335;
+using System.Text.RegularExpressions;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.SocialPlatforms.Impl;
 using Utility;
 
 public class RoundManger : NetworkedSingleton<RoundManger>
@@ -19,7 +22,7 @@ public class RoundManger : NetworkedSingleton<RoundManger>
     [SerializeField] private GameObject _winScreenGO;
     [SerializeField] private GameObject _endOfRoundSummaryGO;
 
-    private int _currentRound = 1;
+    public int currentRound { get; private set; } = 1;
     public Dictionary<ulong, ScoreData> currentRoundData { get; private set; } = new();
 
     public void StartRound()
@@ -29,7 +32,7 @@ public class RoundManger : NetworkedSingleton<RoundManger>
             currentRoundData[clientId] = ScoreData.Empty();
         }
 
-        Debug.Log($"Starting Round {_currentRound}/{_gameManager.currentGameLobbyData.numberOfRounds}");
+        Debug.Log($"Starting Round {currentRound}/{_gameManager.currentGameLobbyData.numberOfRounds}");
         _gameManager.bombManager.SelectStartingPlayer();
         StartCoroutine(_gameManager.DelayCoroutine(.1f, ShowCategorySelection)); // INFO: Allow time for syncing
 
@@ -110,36 +113,29 @@ public class RoundManger : NetworkedSingleton<RoundManger>
 
 
     #region End Of Round
+    private NetworkObject SpawnMatchSummary(Dictionary<ulong, ScoreData> dataSet, Action onCompleted = null)
+    {
+        NetworkObject networkObject = NetworkManager.Singleton.SpawnManager.InstantiateAndSpawn(_endOfRoundSummaryGO.GetComponent<NetworkObject>(), NetworkManager.Singleton.LocalClientId);
+        MatchSummary matchSummary = networkObject.GetComponent<MatchSummary>();
+        matchSummary.StartCoroutine(matchSummary.MatchSummaryCoroutine(dataSet, onCompleted));
+
+        return networkObject;
+
+    }
 
     [ContextMenu("Start Next Round")]
     public void ProcessNextRound()
     {
-
-        NetworkObject networkObject = NetworkManager.Singleton.SpawnManager.InstantiateAndSpawn(_endOfRoundSummaryGO.GetComponent<NetworkObject>(), NetworkManager.Singleton.LocalClientId);
-        // _endOfRoundSummaryGO.SetActive(true);
         HandleServerEndOfRound();
-        ClientSideRPC(networkObject.NetworkObjectId);
-
-    }
-
-    [Rpc(SendTo.ClientsAndHost)]
-    private void ClientSideRPC(ulong tileNetworkObjectId)
-    {
-        if (!NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(tileNetworkObjectId, out NetworkObject tileNetObj))
-        {
-            Debug.LogWarning($"Could not find tile with ID {tileNetworkObjectId}");
-            return;
-        }
-
-
-        if (!NetworkManager.Singleton.IsServer) SceneManager.MoveGameObjectToScene(tileNetObj.gameObject, gameObject.scene);
+        if (IsGameOver()) { HandleGameOver(); return; }
+        NetworkObject networkObject = SpawnMatchSummary(_gameManager.roundManager.currentRoundData, ProgressToNextRound);
 
     }
 
     private void HandleServerEndOfRound()
     {
 
-        Debug.Log($"<color={LogColours.Unity}>[ROUND MANAGER]</color> Round {_currentRound} done, processing next round");
+        Debug.Log($"<color={LogColours.Unity}>[ROUND MANAGER]</color> Round {currentRound} done, processing next round");
         Timer.Instance.StopCountdown();
 
         ulong previousPlayer = _gameManager.bombManager.previousPlayerWithBanana;
@@ -152,25 +148,20 @@ public class RoundManger : NetworkedSingleton<RoundManger>
 
     public void ProgressToNextRound()
     {
-        _currentRound++;
-
-        if (IsGameOver())
-        {
-            HandleGameOver();
-            return;
-        }
-
+        currentRound++;
         currentRoundData.Clear();
         StartRound();
 
     }
 
-    private bool IsGameOver() => _currentRound >= _gameManager.currentGameLobbyData.numberOfRounds;
+    private bool IsGameOver() => currentRound >= _gameManager.currentGameLobbyData.numberOfRounds;
 
     private void HandleGameOver()
     {
         Debug.Log($"<color={LogColours.Unity}>[ROUND MANAGER]</color> All rounds finished!");
+        SpawnMatchSummary(_gameManager.scoreManager.GetAllPlayerScores());
         // TODO: Implement game over logic
+
     }
 
     #endregion
