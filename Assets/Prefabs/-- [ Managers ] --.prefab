@@ -260,9 +260,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RoundManger
   ShowTopMostFoldoutHeaderGroup: 1
-  _categorySelectionGO: {fileID: 0}
+  _categorySelectionGO: {fileID: 3235507296362562697, guid: 011cf7aecb533cd4ba2be5becec55851, type: 3}
   _winScreenGO: {fileID: 0}
-  _endOfMatchSummaryGO: {fileID: 0}
+  _endOfRoundSummaryGO: {fileID: 0}
 --- !u!1 &5806790733559091254
 GameObject:
   m_ObjectHideFlags: 0

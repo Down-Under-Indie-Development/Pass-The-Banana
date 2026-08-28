@@ -1,6 +1,9 @@
+using System;
+using System.Collections;
 using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Utility;
 
 public class RoundManger : NetworkedSingleton<RoundManger>
@@ -80,7 +83,7 @@ public class RoundManger : NetworkedSingleton<RoundManger>
 
     public void ProcessCorrectGuess(ulong clientId)
     {
-        if (_gameManager.playerManager.PlayersRemaining <= 1) { EndRound(true); return; }
+        // if (_gameManager.playerManager.PlayersRemaining <= 1) { HandleGameOver(); return; }
         NotifyAnswerResultRpc(true);
         _gameManager.scoreManager.AwardPoints(clientId); // INFO: Score
         _gameManager.bombManager.ProcessPassTheBomb();
@@ -90,34 +93,74 @@ public class RoundManger : NetworkedSingleton<RoundManger>
     public void ProcessIncorrectGuess(ulong clientId)
     {
         NotifyAnswerResultRpc(false);
+        _gameManager.scoreManager.AwardFail(clientId);
         _gameManager.bombManager.ProcessExplode();
+
     }
     #endregion
 
 
     #region End Of Round
-    private void EndRound(bool won)
-    {
-        if (won)
-            GameNetworkManager.Instance.EndGame();
-    }
 
     [ContextMenu("Start Next Round")]
     public void ProcessNextRound()
     {
-        if (_currentRound >= _gameManager.currentGameLobbyData.numberOfRounds) { Debug.Log($"All rounds finished!"); return; } // TODO: Game over logic
-        _currentRound++;
 
+        NetworkObject networkObject = NetworkManager.Singleton.SpawnManager.InstantiateAndSpawn(_endOfRoundSummaryGO.GetComponent<NetworkObject>(), NetworkManager.Singleton.LocalClientId);
+        _endOfRoundSummaryGO.SetActive(true);
+        HandleServerEndOfRound();
+        ClientSideRPC(networkObject.NetworkObjectId);
+        if (IsServer) ProgressToNextRound();
+
+    }
+
+    [Rpc(SendTo.ClientsAndHost)]
+    private void ClientSideRPC(ulong tileNetworkObjectId)
+    {
+        if (!NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(tileNetworkObjectId, out NetworkObject tileNetObj))
+        {
+            Debug.LogWarning($"Could not find tile with ID {tileNetworkObjectId}");
+            return;
+        }
+
+
+        if (!NetworkManager.Singleton.IsServer) SceneManager.MoveGameObjectToScene(tileNetObj.gameObject, gameObject.scene);
+
+    }
+
+    private void HandleServerEndOfRound()
+    {
+
+        Debug.Log($"<color={LogColours.Unity}>[ROUND MANAGER]</color> Round {_currentRound} done, processing next round");
         Timer.Instance.StopCountdown();
-        if (_endOfRoundSummaryGO != null) _endOfRoundSummaryGO.SetActive(true);
 
-        _gameManager.playerManager.MoveToHotSeat(_gameManager.bombManager.previousPlayerWithBanana, true);
-        _gameManager.playerManager.HandleChangePodiumColor(_gameManager.bombManager.previousPlayerWithBanana, Color.white);
+        ulong previousPlayer = _gameManager.bombManager.previousPlayerWithBanana;
+        _gameManager.playerManager.MoveToHotSeat(previousPlayer, true);
+        _gameManager.playerManager.HandleChangePodiumColorRPC(previousPlayer, Color.white);
+
         _gameManager.questionManager.ClearAnswers();
 
-        StartRound();
-        Debug.Log($"<color={LogColours.Unity}>[ROUND MANAGER]</color> Starting next round");
+    }
 
+    private void ProgressToNextRound()
+    {
+        _currentRound++;
+
+        if (IsGameOver())
+        {
+            HandleGameOver();
+            return;
+        }
+
+        StartRound();
+    }
+
+    private bool IsGameOver() => _currentRound >= _gameManager.currentGameLobbyData.numberOfRounds;
+
+    private void HandleGameOver()
+    {
+        Debug.Log($"<color={LogColours.Unity}>[ROUND MANAGER]</color> All rounds finished!");
+        // TODO: Implement game over logic
     }
 
     #endregion

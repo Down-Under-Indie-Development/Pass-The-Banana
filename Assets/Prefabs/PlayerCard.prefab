@@ -85,8 +85,10 @@ GameObject:
   m_Component:
   - component: {fileID: 8735218913445872009}
   - component: {fileID: 5938107019589849679}
+  - component: {fileID: 7597875189939212630}
+  - component: {fileID: 356007744733133612}
   m_Layer: 0
-  m_Name: PlayerTile
+  m_Name: PlayerCard
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -121,6 +123,49 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2312104147360830240}
   m_CullTransparentMesh: 1
+--- !u!114 &7597875189939212630
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2312104147360830240}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
+  GlobalObjectIdHash: 1549909020
+  InScenePlacedSourceGlobalObjectIdHash: 0
+  DeferredDespawnTick: 0
+  Ownership: 1
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 0
+  m_InScenePlaced: 0
+  ActiveSceneSynchronization: 1
+  SceneMigrationSynchronization: 1
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 0
+  SyncOwnerTransformWhenParented: 0
+  AllowOwnerToParent: 0
+--- !u!114 &356007744733133612
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2312104147360830240}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c13994a15e9592d4dacd9c509a6f0ba0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerCard
+  _placeTxt: {fileID: 990668707457310850}
+  _playerNameTxt: {fileID: 6931509584807238526}
+  _passesTxt: {fileID: 2142115311171744773}
+  _failsTxt: {fileID: 9215278865027463719}
+  _scoreTxt: {fileID: 812003077617076003}
 --- !u!1 &3922301582286825867
 GameObject:
   m_ObjectHideFlags: 0

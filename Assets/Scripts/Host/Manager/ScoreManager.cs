@@ -1,30 +1,103 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using Utility;
 
 /// <summary>
-/// Holds and manages all logic regarding to score tracking
+/// Holds and manages all logic regarding score tracking
 /// </summary>
 public class ScoreManager : NetworkedSingleton<ScoreManager>
 {
     private GameNetworkManager _gameManager => GameNetworkManager.Instance;
 
-    // INFO: Player Scores
-    private Dictionary<ulong, int> playerScores = new();
+    private Dictionary<ulong, ScoreData> playerScores = new();
 
-    public void AwardPoints(ulong clientId, int points = 1)
+    public override void OnNetworkSpawn()
     {
-        playerScores[clientId] = playerScores.GetValueOrDefault(clientId) + points;
-        Debug.Log($"<color={LogColours.Unity}>[SCORE MANAGER]</color> Player {clientId} now has {playerScores[clientId]} point(s)");
+        base.OnNetworkSpawn();
+
+        foreach (ulong client in NetworkManager.ConnectedClientsIds)
+        {
+            playerScores[client] = ScoreData.Empty();
+
+        }
 
     }
 
-    public int GetPlayerScore(ulong clientId) => playerScores.GetValueOrDefault(clientId, 0);
+    #region Points
+    public ScoreData GetPlayerScore(ulong clientId)
+    {
+        if (!playerScores.TryGetValue(clientId, out ScoreData scoreData))
+        {
+            Debug.LogWarning($"No score found for clientId {clientId}. Available clients: {string.Join(", ", playerScores.Keys)}");
+            return ScoreData.Empty();
+        }
 
-    public Dictionary<ulong, int> GetAllScores() => playerScores;
+        Debug.Log($"Getting score for {clientId}: {scoreData}");
+        return scoreData;
 
+    }
 
-    public void ResetScores() => playerScores.Clear();
+    public void AwardPoints(ulong clientId, int points = 1)
+    {
+        if (!EnsurePlayerScoreExists(clientId))
+            return;
 
+        playerScores[clientId].points += points;
+        Debug.Log($"<color={LogColours.Unity}>[SCORE MANAGER]</color> Player {clientId} now has {playerScores[clientId].points} point(s)");
+    }
 
+    #endregion
+
+    #region Pass
+    public void RecordPass(ulong clientId)
+    {
+        if (!EnsurePlayerScoreExists(clientId))
+            return;
+
+        playerScores[clientId].passes++;
+    }
+    #endregion
+
+    #region Fails
+    public void AwardFail(ulong clientId, int amount = 1)
+    {
+        if (!EnsurePlayerScoreExists(clientId))
+            return;
+
+        playerScores[clientId].fails += amount;
+    }
+    #endregion
+
+    public Dictionary<ulong, ScoreData> GetAllPlayerScores() => playerScores;
+    public void ResetAllScores() => playerScores.Clear();
+
+    private bool EnsurePlayerScoreExists(ulong clientId)
+    {
+        if (playerScores.ContainsKey(clientId))
+            return true;
+
+        playerScores[clientId] = new ScoreData();
+        return true;
+    }
+
+    public int GetPlayerPlace(ulong clientId)
+    {
+        if (!playerScores.ContainsKey(clientId))
+            return -69;
+
+        return playerScores.Values.Count(s => s.points > playerScores[clientId].points) + 1;
+    }
+
+}
+
+public class ScoreData
+{
+    public int points;
+    public int passes;
+    public int fails;
+
+    public static ScoreData Empty() => new();
+
+    public override string ToString() => $"Points: {points} | Passes: {passes} | Fails: {fails}";
 }

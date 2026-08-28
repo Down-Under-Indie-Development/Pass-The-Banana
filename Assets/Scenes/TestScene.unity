@@ -1633,9 +1633,9 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 417959216}
     - target: {fileID: 5111221819516972119, guid: 2ffda40d38f1aa948af6c692190f3323, type: 3}
-      propertyPath: _categorySelectionGO
+      propertyPath: _endOfRoundSummaryGO
       value: 
-      objectReference: {fileID: 3235507296362562697, guid: 011cf7aecb533cd4ba2be5becec55851, type: 3}
+      objectReference: {fileID: 6325904124438796401, guid: c03a32cb60491df47a7338c26772948b, type: 3}
     - target: {fileID: 5718013612683589735, guid: 2ffda40d38f1aa948af6c692190f3323, type: 3}
       propertyPath: m_InScenePlaced
       value: 1
@@ -1651,6 +1651,10 @@ PrefabInstance:
     - target: {fileID: 5718013612683589735, guid: 2ffda40d38f1aa948af6c692190f3323, type: 3}
       propertyPath: SceneMigrationSynchronization
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5769127408973522235, guid: 2ffda40d38f1aa948af6c692190f3323, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5893354376587521780, guid: 2ffda40d38f1aa948af6c692190f3323, type: 3}
       propertyPath: m_InScenePlaced

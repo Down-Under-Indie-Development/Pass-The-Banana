@@ -98,11 +98,6 @@ public class GameNetworkManager : NetworkedSingleton<GameNetworkManager>
 
     }
 
-    public void EndGame()
-    {
-        Debug.Log($"YOu win!");
-    }
-
 }
 
 // INFO: Game state
