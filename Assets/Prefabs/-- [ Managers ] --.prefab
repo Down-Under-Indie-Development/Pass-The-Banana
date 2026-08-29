@@ -262,7 +262,9 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   _categorySelectionGO: {fileID: 3235507296362562697, guid: 011cf7aecb533cd4ba2be5becec55851, type: 3}
   _winScreenGO: {fileID: 0}
-  _endOfRoundSummaryGO: {fileID: 0}
+  _endOfRoundSummaryGO: {fileID: 6325904124438796401, guid: c03a32cb60491df47a7338c26772948b, type: 3}
+  _perPlayerTimer: 0.25
+  _mathSummaryEndPause: 2
 --- !u!1 &5806790733559091254
 GameObject:
   m_ObjectHideFlags: 0

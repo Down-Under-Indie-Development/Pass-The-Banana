@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using Netcode.Transports.Facepunch;
 using NUnit.Framework;
 using PTB.Client.Player;
@@ -35,8 +37,21 @@ public class BombManager : NetworkedSingleton<BombManager>
 
     public void ProcessPassTheBomb()
     {
-        ulong playerCount = (ulong)NetworkManager.ConnectedClients.Count;
-        playerWithBanana.Value = (playerWithBanana.Value + 1) % playerCount;
+        List<ulong> activePlayers = NetworkManager.ConnectedClientsIds
+            .Where(clientId => _gameManager.playerManager.IsPlayerActive(clientId))
+            .ToList();
+
+        if (activePlayers.Count <= 1)
+        {
+            Debug.Log($"<color={LogColours.Unity}>[BOMB MANAGER]</color> We have a winner!");
+            // TODO: Add logic to give points to the active player
+            _gameManager.questionManager.ProcessNextQuestion(); return;
+
+        }
+
+        int currentIndex = activePlayers.IndexOf(playerWithBanana.Value);
+        int nextIndex = (currentIndex + 1) % activePlayers.Count;
+        playerWithBanana.Value = activePlayers[nextIndex];
 
         StartCoroutine(_gameManager.DelayCoroutine(.1f, _gameManager.questionManager.ProcessNextQuestion));
         Debug.Log($"<color={LogColours.Unity}>[BOMB MANAGER]</color> Bomb passed to player {playerWithBanana.Value}");

@@ -16,6 +16,8 @@ public class CategorySO : ScriptableObject
         Easy = 120,
         Medium = 60,
         Hard = 30,
+        Test = 10,
+
     }
 
 }

@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: About Expresso
   m_EditorClassIdentifier: Assembly-CSharp::CategorySO
   <categoryName>k__BackingField: About Expresso
-  <categoryDifficulty>k__BackingField: 120
+  <categoryDifficulty>k__BackingField: 10
   <questions>k__BackingField:
   - question: Why is expresso a bitch?
     answers:
@@ -26,4 +26,10 @@ MonoBehaviour:
     - answer: Jesse
       correctAnswer: 0
     - answer: Born that way
+      correctAnswer: 1
+  - question: Why Expresso?
+    answers:
+    - answer: Jesse
+      correctAnswer: 0
+    - answer: Drugs
       correctAnswer: 1

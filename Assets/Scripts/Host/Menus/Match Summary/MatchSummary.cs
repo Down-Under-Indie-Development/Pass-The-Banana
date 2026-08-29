@@ -20,7 +20,7 @@ public class MatchSummary : NetworkBehaviour
     [SerializeField] private GameObject _playerContentGO;
     [SerializeField] private GameObject _playerCardPrefab;
 
-    public IEnumerator MatchSummaryCoroutine(Dictionary<ulong, ScoreData> dataSet, Action onCompleted = null)
+    public IEnumerator MatchSummaryCoroutine(Dictionary<ulong, ScoreData> dataSet, float perPlayerDelay, float endPause, Action onCompleted = null)
     {
         if (_playerCardPrefab == null) { Debug.LogError($"Player card prefab is null!"); yield break; }
         if (_playerContentGO == null) { Debug.LogError($"Player content object is null!"); yield break; }
@@ -38,10 +38,10 @@ public class MatchSummary : NetworkBehaviour
 
         // INFO: Show all player cards
         foreach (ulong clientId in clientIds)
-            yield return ShowPlayerStats(clientId, dataSet);
+            yield return ShowPlayerStats(clientId, dataSet, perPlayerDelay);
 
         // INFO: Last player delay
-        yield return new WaitForSeconds(2f);
+        yield return new WaitForSeconds(endPause);
 
         onCompleted?.Invoke();
         if (IsServer || (IsServer && onCompleted == null)) DeleteChildObject();
@@ -49,7 +49,7 @@ public class MatchSummary : NetworkBehaviour
     }
 
     // INFO: Animation per player card
-    private IEnumerator ShowPlayerStats(ulong clientId, Dictionary<ulong, ScoreData> dataSet)
+    private IEnumerator ShowPlayerStats(ulong clientId, Dictionary<ulong, ScoreData> dataSet, float perPlayerDelay)
     {
         NetworkObject playerCardNetObj = NetworkManager.SpawnManager.InstantiateAndSpawn(
             _playerCardPrefab.GetComponent<NetworkObject>(),
@@ -63,7 +63,7 @@ public class MatchSummary : NetworkBehaviour
         ParentPlayerCardRPC(playerCardNetObj.NetworkObjectId, playerScore.points, playerScore.fails, playerScore.passes, clientId, playerPlace);
 
         // INFO: Delay for each player
-        yield return new WaitForSeconds(.5f);
+        yield return new WaitForSeconds(perPlayerDelay);
 
     }
 

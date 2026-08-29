@@ -16,6 +16,7 @@ public class PlayerManager : NetworkedSingleton<PlayerManager>
 {
     private GameNetworkManager _gameManager => GameNetworkManager.Instance;
     private Dictionary<ulong, Vector3> _originalPodiumPositions = new Dictionary<ulong, Vector3>();
+    private HashSet<ulong> _eliminatedPlayers = new HashSet<ulong>(); // Track eliminated players
 
     [field: Header("Player Tracking")]
     [field: SerializeField, ReadOnly] public int PlayersRemaining { get; private set; }
@@ -58,7 +59,14 @@ public class PlayerManager : NetworkedSingleton<PlayerManager>
             .GetComponent<IDamageable>()
             .Die();
 
+        _eliminatedPlayers.Add(clientId); // Track as eliminated
         PlayersRemaining--;
+
+    }
+
+    public bool IsPlayerActive(ulong clientId)
+    {
+        return NetworkManager.ConnectedClients.ContainsKey(clientId) && !_eliminatedPlayers.Contains(clientId);
     }
 
     public Coroutine MoveToHotSeat(ulong clientId, bool reverse = false)

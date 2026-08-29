@@ -2,12 +2,10 @@ using Utility;
 using UnityEngine;
 using Unity.Netcode;
 using UnityEngine.SceneManagement;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System;
 using PTB.Client.Player;
-using PTB.Networking.Menus;
 
 public class BootstrapNetworkManager : NetworkedSingleton<BootstrapNetworkManager>
 {
@@ -15,56 +13,62 @@ public class BootstrapNetworkManager : NetworkedSingleton<BootstrapNetworkManage
     public LobbyData lobbyData { get; private set; }
 
     #region Change Scene
-    public void ChangeNetworkScene(string sceneToLoad, string sceneToClose)
+
+    #region SERVER
+    public SceneEventProgressStatus ChangeNetworkScene(string sceneToLoad, string sceneToClose)
     {
         List<string> sceneList = new List<string> { sceneToClose };
-        ChangeNetworkScene(sceneToLoad, sceneList.ToList<string>());
+        return ChangeNetworkScene(sceneToLoad, sceneList.ToList<string>());
 
     }
 
-    public void ChangeNetworkScene(string sceneToLoad, List<string> scenesToClose)
+    public SceneEventProgressStatus ChangeNetworkScene(string sceneToLoad, List<string> scenesToClose)
     {
         // if (!NetworkManager.Singleton.IsServer) return;
-        if (scenesToClose.Count == 0) return;
+        if (scenesToClose.Count == 0) return SceneEventProgressStatus.None;
 
         foreach (string sceneName in scenesToClose)
         {
             if (string.IsNullOrEmpty(sceneToLoad)) continue;
-            Instance.CloseSceneObserverRPC(sceneToLoad, sceneName);
+            Instance.CloseSceneObserverRPC(sceneName);
 
         }
 
-        NetworkManager.SceneManager.LoadScene(sceneToLoad, LoadSceneMode.Additive);
-        Debug.Log($"Scene transition complete: {sceneToLoad}");
+        SceneEventProgressStatus sceneLoadStatus = NetworkManager.SceneManager.LoadScene(sceneToLoad, LoadSceneMode.Additive);
+        if (sceneLoadStatus == SceneEventProgressStatus.Started) Debug.Log($"<color={LogColours.Unity}>[NETWORK]></color> Scene transition complete: {sceneToLoad}");
+        return sceneLoadStatus;
 
     }
+    #endregion
 
-    // [Rpc(SendTo.Authority)]
-    // private void ClosesScenesRPC(string scenesToClose)
-    // {
-    //     CloseSceneObserverRPC(scenesToClose);
-    // }
+    #region CLIENT 
 
     [Rpc(SendTo.Everyone)]
-    private void CloseSceneObserverRPC(string sceneToLoad, string scenesToClose)
+    private void CloseSceneObserverRPC(string scenesToClose)
     {
         SceneManager.UnloadSceneAsync(scenesToClose);
 
     }
     #endregion
 
+    #endregion
+
+    #region Return To Lobby
     public void ReturnToLobby()
     {
-        ChangeNetworkScene("MainMenuScene", "TestScene");
-        Invoke(nameof(Test), .01f);
+        SceneEventProgressStatus status = ChangeNetworkScene("MainMenuScene", "TestScene");
+        if (status == SceneEventProgressStatus.Started) Invoke(nameof(OpenLobbyMenuClientRPC), 0.1f);
 
     }
 
-    private void Test()
+    [Rpc(SendTo.ClientsAndHost)]
+    private void OpenLobbyMenuClientRPC()
     {
         _eventManager.OnStartUnityClient?.Invoke();
 
     }
+
+    #endregion
 
     public void ForEachPlayer(Action<PlayerNetworkedController> action, bool includeHost = true)
     {
@@ -82,10 +86,8 @@ public class BootstrapNetworkManager : NetworkedSingleton<BootstrapNetworkManage
         }
     }
 
-    public void SetLobbyData(LobbyData newLobbyData)
-    {
-        lobbyData = newLobbyData;
+    public void SetLobbyData(LobbyData newLobbyData) => lobbyData = newLobbyData;
 
-    }
+
 
 }

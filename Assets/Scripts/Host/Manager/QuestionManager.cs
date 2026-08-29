@@ -31,7 +31,7 @@ public class QuestionManager : NetworkedSingleton<QuestionManager>
     {
         _currentQuestionIndex += 1;
 
-        if (_currentQuestionIndex > _currentCategory.questions.Count - 1)
+        if (_currentQuestionIndex > _currentCategory.questions.Count - 1 || _gameManager.playerManager.PlayersRemaining <= 1)
         {
             _gameManager.roundManager.ProcessNextRound();
             return;
