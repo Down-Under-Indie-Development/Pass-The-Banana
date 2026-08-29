@@ -21,7 +21,7 @@ namespace PTB.Networking.Menus
         [SerializeField] private GameObject _hostGameMenu;
         [SerializeField] private GameObject _joinGameMenu;
         [SerializeField] private GameObject _optionsMenu;
-        [SerializeField] private GameObject _lobbyScreen;
+        [SerializeField] public GameObject _lobbyScreen;
 
         private GameState _localCurrentGameSate = GameState.MainMenu;
 

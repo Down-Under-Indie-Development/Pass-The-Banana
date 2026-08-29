@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System;
 using PTB.Client.Player;
+using PTB.Networking.Menus;
 
 public class BootstrapNetworkManager : NetworkedSingleton<BootstrapNetworkManager>
 {
@@ -52,7 +53,18 @@ public class BootstrapNetworkManager : NetworkedSingleton<BootstrapNetworkManage
     }
     #endregion
 
+    public void ReturnToLobby()
+    {
+        ChangeNetworkScene("MainMenuScene", "TestScene");
+        Invoke(nameof(Test), .01f);
 
+    }
+
+    private void Test()
+    {
+        _eventManager.OnStartUnityClient?.Invoke();
+
+    }
 
     public void ForEachPlayer(Action<PlayerNetworkedController> action, bool includeHost = true)
     {

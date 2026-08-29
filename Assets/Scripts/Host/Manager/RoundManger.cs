@@ -167,8 +167,9 @@ public class RoundManger : NetworkedSingleton<RoundManger>
 
     private void ReturnToLobby()
     {
+        _gameManager.bootstrapNetworkManager.ReturnToLobby();
 
-        _gameManager.bootstrapNetworkManager.ChangeNetworkScene("MainMenuScene", "TestScene");
+
     }
 
     #endregion
