@@ -27,6 +27,8 @@ public class PlayerManager : NetworkedSingleton<PlayerManager>
     [SerializeField] private List<Transform> _spawnPositions = new();
     [SerializeField] private Transform _hotSeat;
 
+    private PlayerAnimationHandler _playerAnimationHandler => PlayerAnimationHandler.Instance;
+
     #region Spawn Players
     public void SpawnPlayers()
     {
@@ -64,16 +66,15 @@ public class PlayerManager : NetworkedSingleton<PlayerManager>
 
     }
 
-    public bool IsPlayerActive(ulong clientId)
-    {
-        return NetworkManager.ConnectedClients.ContainsKey(clientId) && !_eliminatedPlayers.Contains(clientId);
-    }
 
+
+    #region Move To Hot Seat
     public Coroutine MoveToHotSeat(ulong clientId, bool reverse = false)
     {
         if (_hotSeat == null) { Debug.LogWarning($"Hot seat transform is null, cannot move player!"); return null; }
-        PlayerNetworkedController player = NetworkManager.ConnectedClients[clientId].PlayerObject.GetComponent<PlayerNetworkedController>();
-        return StartCoroutine(MoveToHotSeatCoroutine(player.transform, .5f, reverse, clientId));
+        NetworkObject playerObj = NetworkManager.ConnectedClients[clientId].PlayerObject;
+        _playerAnimationHandler.SetAnimator(playerObj.GetComponent<Animator>(), "inHotSeat", !reverse);
+        return StartCoroutine(MoveToHotSeatCoroutine(playerObj.transform, .5f, reverse, clientId));
 
     }
 
@@ -110,11 +111,18 @@ public class PlayerManager : NetworkedSingleton<PlayerManager>
         playerTransform.position = playerTargetPosition;
 
     }
+    #endregion
 
     [Rpc(SendTo.ClientsAndHost)]
     public void HandleChangePodiumColorRPC(ulong client, Color colour)
     {
         NetworkManager.ConnectedClients[client].PlayerObject.GetComponent<PlayerNetworkedController>().podium.transform.GetChild(1).GetComponent<MeshRenderer>().material.color = colour;
+    }
+
+    #region Utility
+    public bool IsPlayerActive(ulong clientId)
+    {
+        return NetworkManager.ConnectedClients.ContainsKey(clientId) && !_eliminatedPlayers.Contains(clientId);
     }
 
     public void InitializePlayers(int playerCount)
@@ -128,4 +136,6 @@ public class PlayerManager : NetworkedSingleton<PlayerManager>
         if (PlayersRemaining - newValue <= 0) { PlayersRemaining = 0; return; }
         PlayersRemaining += newValue;
     }
+    #endregion
+
 }

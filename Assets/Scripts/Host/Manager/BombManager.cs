@@ -53,8 +53,8 @@ public class BombManager : NetworkedSingleton<BombManager>
         int nextIndex = (currentIndex + 1) % activePlayers.Count;
         playerWithBanana.Value = activePlayers[nextIndex];
 
-        StartCoroutine(_gameManager.DelayCoroutine(.1f, _gameManager.questionManager.ProcessNextQuestion));
         Debug.Log($"<color={LogColours.Unity}>[BOMB MANAGER]</color> Bomb passed to player {playerWithBanana.Value}");
+        StartCoroutine(_gameManager.DelayCoroutine(.1f, _gameManager.questionManager.ProcessNextQuestion));
 
     }
 
