@@ -189,6 +189,7 @@ namespace PTB.Networking
             {
                 lobby.Value.SetFriendsOnly();
                 lobby.Value.SetJoinable(true);
+
             }
             else
             {
@@ -230,6 +231,8 @@ namespace PTB.Networking
             RoomEnter joinedLobby = await lobby.Join();
             if (joinedLobby != RoomEnter.Success) { Debug.LogError($"Failed to join {lobby}"); return; }
 
+            myLobby = lobby;
+
         }
 
         private async void OnGameRichPresenceJoinRequested(Friend friend, string s)
@@ -239,6 +242,9 @@ namespace PTB.Networking
             if (!ulong.TryParse(s, out ulong seshID)) return;
             Lobby? joinedLobby = await SteamMatchmaking.JoinLobbyAsync(seshID);
             if (joinedLobby == null) { Debug.LogError($"Failed to join lobby!"); return; }
+
+            myLobby = joinedLobby;
+
 
         }
         #endregion
@@ -253,6 +259,8 @@ namespace PTB.Networking
 
         private void OnLobbyEntered(Lobby lobby)
         {
+            myLobby = lobby;
+
             if (SteamClient.SteamId != lobby.Owner.Id) Debug.Log($"<color={LogColours.Steamworks}>[STEAM]</color> <color={LogColours.Client}>[CLIENT]</color> You entered {lobby.Owner.Name}'s lobby!");
             OnSteamClientEntered(lobby);
 
@@ -292,7 +300,6 @@ namespace PTB.Networking
         #endregion
 
         #region Client
-
         protected virtual void OnSteamClientEntered(Lobby lobby)
         {
             // INFO: Client
