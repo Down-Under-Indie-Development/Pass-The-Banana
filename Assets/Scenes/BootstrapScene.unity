@@ -278,7 +278,7 @@ MonoBehaviour:
   <mainMenuScene>k__BackingField: MainMenuScene
   <gameplayScenes>k__BackingField:
   - TestScene
-  <selectedTransport>k__BackingField: 0
+  <selectedTransport>k__BackingField: 1
 --- !u!1001 &623514394
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -38,7 +38,7 @@ namespace PTB.Networking.Menus
             _eventManager.OnUnityClientDisconnected += ResetMenu;
 
             if (_networkHelper.networkManager != null && !_networkHelper.networkManager.IsHost && _startGameBTN != null) _startGameBTN.interactable = false;
-            UpdateLobbyScreenTextRPC();
+            UpdateLobbyScreenText();
 
         }
 
@@ -62,13 +62,12 @@ namespace PTB.Networking.Menus
 
         private void OnLobbyEntered(Lobby lobby)
         {
-            UpdateLobbyScreenTextRPC();
+            UpdateLobbyScreenText();
             RefreshUI(lobby);
 
         }
 
-        [Rpc(SendTo.ClientsAndHost)]
-        private void UpdateLobbyScreenTextRPC()
+        private void UpdateLobbyScreenText()
         {
             if (_lobbyCodeTxt != null && _steamManager.myLobby.HasValue) _lobbyCodeTxt.text = $"Code: {_steamManager.myLobby.Value.Id}";
             if (_roundsText != null && BootstrapNetworkManager.Instance.lobbyData != null) _roundsText.text = $"ROUND 1 OF {BootstrapNetworkManager.Instance.lobbyData.numberOfRounds}";
@@ -92,7 +91,8 @@ namespace PTB.Networking.Menus
 
         public void Refresh()
         {
-            if (_steamManager.myLobby.HasValue || BootstrapManager.Instance.selectedTransport == BootstrapManager.Transport.Unity) RefreshUI(_steamManager.myLobby.Value);
+            if (_steamManager.myLobby.HasValue && BootstrapManager.Instance.selectedTransport == BootstrapManager.Transport.Facepunch) { RefreshUI(_steamManager.myLobby.Value); return; }
+            RefreshUI();
 
         }
 
@@ -103,19 +103,20 @@ namespace PTB.Networking.Menus
 
         }
 
-        private void RefreshUI(Lobby? lobby)
+        private void RefreshUI(Lobby? lobby = null)
         {
             // GUARD: Prevent Nulls
             if (_playerPanelContentGO == null) { Debug.LogError($"Player panel content is null!"); return; }
             if (_playerInfoPanelPrefab == null) { Debug.LogError($"Player info panel is null, cannot display player"); return; }
 
+            ClearPlayerPanel();
+            if (_lobbyCodeTxt != null) UpdateLobbyScreenText();
+
             // DEBUG: Check for Unity Transport
             if (BootstrapManager.Instance.selectedTransport == BootstrapManager.Transport.Unity) { GetUnityPlayerList(); return; }
 
             if (!lobby.HasValue) return;
-            ClearPlayerPanel();
 
-            if (_lobbyCodeTxt != null && _lobbyCodeTxt.text == "") UpdateLobbyScreenTextRPC();
             foreach (Friend member in lobby.Value.Members)
             {
                 // INFO: Set Display
@@ -143,8 +144,6 @@ namespace PTB.Networking.Menus
         // INFO: Client Side
         private void GetUnityPlayerList()
         {
-            ClearPlayerPanel();
-
             foreach (NetworkClient client in NetworkManager.Singleton.ConnectedClientsList)
             {
                 bool isHost = client.ClientId == 0;

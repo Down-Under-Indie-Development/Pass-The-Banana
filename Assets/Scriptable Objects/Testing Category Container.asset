@@ -10,6 +10,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ac4dc60f8de418840b7cf126b5909e35, type: 3}
-  m_Name: Category Container
+  m_Name: Testing Category Container
   m_EditorClassIdentifier: Assembly-CSharp::CategoriesContainerSO
-  <categories>k__BackingField: []
+  <categories>k__BackingField:
+  - {fileID: 11400000, guid: e0961b562aa64614a973998f695f1c6e, type: 2}
+  - {fileID: 11400000, guid: 524c448a7f380234cb98129b005e4454, type: 2}
