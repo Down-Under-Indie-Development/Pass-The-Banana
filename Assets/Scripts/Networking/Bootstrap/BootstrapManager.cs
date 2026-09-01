@@ -19,16 +19,22 @@ namespace PTB.Networking
         [field: SerializeField] public string mainMenuScene { get; private set; }
         [field: SerializeField] public List<string> gameplayScenes { get; private set; }
 
-        [Header("Network Components")]
-        public SteamManager steamManager => SteamManager.Instance;
-        public UnityNetworkHelper unityNetworkHelper => UnityNetworkHelper.Instance;
-        public SessionStateManager sessionStateManager => SessionStateManager.Instance;
+        [Header("Lobby Settings")]
+        [field: SerializeField] public int minimumPlayers { get; private set; }
+
 
         [Header("Transports")]
         [field: SerializeField] public Transport selectedTransport { get; private set; } = Transport.Facepunch;
 
         // INFO: Debugging
         private UnityTransport _unityTransport = null;
+
+
+        #region Network Components
+        public SteamManager steamManager => SteamManager.Instance;
+        public UnityNetworkHelper unityNetworkHelper => UnityNetworkHelper.Instance;
+        public SessionStateManager sessionStateManager => SessionStateManager.Instance;
+        #endregion
 
         private void Start()
         {

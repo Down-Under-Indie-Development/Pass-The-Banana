@@ -37,6 +37,8 @@ public class GameNetworkManager : NetworkedSingleton<GameNetworkManager>
 
     public LobbyData currentGameLobbyData { get; private set; }
 
+    public List<ulong> activePlayers;
+
     #region Events
     private void OnEnable()
     {
@@ -67,6 +69,10 @@ public class GameNetworkManager : NetworkedSingleton<GameNetworkManager>
         currentGameLobbyData = bootstrapNetworkManager.lobbyData;
         BootstrapManager.Instance.sessionStateManager.UpdateSessionState(GameState.Playing);
         if (BootstrapManager.Instance.sessionStateManager.currentSessionState.Value != GameState.Playing) return;
+
+        activePlayers = NetworkManager.Singleton.ConnectedClientsIds
+           .Where(clientId => playerManager.IsPlayerActive(clientId))
+           .ToList();
 
         playerManager.SpawnPlayers();
         roundManager.StartRound();

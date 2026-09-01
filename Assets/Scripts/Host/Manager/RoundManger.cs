@@ -34,9 +34,23 @@ public class RoundManger : NetworkedSingleton<RoundManger>
     public int currentRound { get; private set; } = 1;
     public Dictionary<int, Dictionary<ulong, ScoreData>> currentRoundData { get; private set; } = new();
 
+    #region Events
+    private void OnEnable()
+    {
+        _eventManager.OnCountdownFinished += _gameManager.bombManager.ProcessExplode;
+
+    }
+
+    private void OnDisable()
+    {
+        _eventManager.OnCountdownFinished -= _gameManager.bombManager.ProcessExplode;
+    }
+    #endregion
+
     // INFO: Create the round tracking dictionary
     private void InitialiseRoundTracker()
     {
+        if (!currentRoundData.ContainsKey(currentRound)) currentRoundData[currentRound] = new Dictionary<ulong, ScoreData>();
         foreach (ulong clientId in NetworkManager.ConnectedClientsIds)
         {
             currentRoundData[currentRound][clientId] = ScoreData.Empty();
@@ -45,8 +59,7 @@ public class RoundManger : NetworkedSingleton<RoundManger>
 
     public void StartRound()
     {
-        if (!currentRoundData.ContainsKey(currentRound)) currentRoundData[currentRound] = new Dictionary<ulong, ScoreData>();
-        if (currentRound <= 1) InitialiseRoundTracker();
+        InitialiseRoundTracker();
         Debug.Log($"Starting Round {currentRound}/{_gameManager.currentGameLobbyData.numberOfRounds}");
         _gameManager.bombManager.SelectStartingPlayer();
         StartCoroutine(_gameManager.DelayCoroutine(.1f, ShowCategorySelection)); // INFO: Allow time for syncing
@@ -67,8 +80,6 @@ public class RoundManger : NetworkedSingleton<RoundManger>
 
         // INFO: Intialise the timer
         _fuseTime = _gameManager.questionManager.GetCurrentCategory().GetTimeLimit();
-        // _eventManager.OnCountdownFinished -= _gameManager.bombManager.ProcessExplode;
-        _eventManager.OnCountdownFinished += _gameManager.bombManager.ProcessExplode;
 
         // INFO: Spawn the answers;
         _eventManager.OnCountdownStarted?.Invoke(_fuseTime, showCountdown);
@@ -171,11 +182,25 @@ public class RoundManger : NetworkedSingleton<RoundManger>
 
     private bool IsGameOver() => currentRound >= _gameManager.currentGameLobbyData.numberOfRounds;
 
-    private void HandleGameOver()
+    public void HandleGameOver()
     {
-        Debug.Log($"<color={LogColours.Unity}>[ROUND MANAGER]</color> All rounds finished!");
+        _gameManager.questionManager.ClearAnswers();
+
+        if (_gameManager.activePlayers.Count <= 0)
+        {
+            Debug.Log($"<color={LogColours.Unity}>[ROUND MANAGER]</color> ALL PLAYERS ELIMINATED ({_gameManager.activePlayers.Count})");
+
+        }
+        else
+        {
+            Debug.Log($"<color={LogColours.Unity}>[ROUND MANAGER]</color> All rounds finished!");
+
+        }
+
         SpawnMatchSummary(_gameManager.scoreManager.GetAllPlayerScores(), ReturnToLobby);
-        _gameManager.bootstrapNetworkManager.ForEachPlayer(p => NetworkObject.Destroy(p.gameObject));
+
+        // INFO: Destroy player game objects
+        _gameManager.bootstrapNetworkManager.ForEachPlayer(p => Destroy(p.gameObject));
 
     }
 

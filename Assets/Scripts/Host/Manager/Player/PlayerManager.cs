@@ -7,6 +7,7 @@ using PTB.Client.Player;
 using HealthSystem;
 using Unity.VisualScripting;
 using System.Collections;
+using System.Linq;
 
 
 /// <summary>
@@ -62,7 +63,12 @@ public class PlayerManager : NetworkedSingleton<PlayerManager>
             .Die();
 
         _eliminatedPlayers.Add(clientId); // Track as eliminated
-        PlayersRemaining--;
+
+        for (int i = 0; i < _gameManager.activePlayers.Count; i++)
+        {
+            if (_gameManager.activePlayers[i] != clientId) continue;
+            _gameManager.activePlayers.Remove(clientId);
+        }
 
     }
 

@@ -16,9 +16,6 @@ namespace PTB.Networking
         [field: SerializeField] public uint appID { get; protected set; } = 480;
         public bool connectedToSteam => SteamClient.IsValid;
 
-        [field: Header("Lobby Settings")]
-        [field: SerializeField] public int minimumPlayers { get; protected set; } = 2;
-        [field: SerializeField] public int maximumPlayers { get; protected set; } = 4;
         public Lobby? myLobby { get; protected set; }
 
 
@@ -180,7 +177,6 @@ namespace PTB.Networking
         private async void StartSteamServer(LobbyData lobbyData)
         {
             if (!connectedToSteam) EstablishSteamConnection();
-            if (lobbyData.maxPlayers <= 0) lobbyData.maxPlayers = minimumPlayers;
             Debug.Log($"<color={LogColours.Steamworks}>[STEAM]</color> Lobby request received creating lobby!");
             Lobby? lobby = await SteamMatchmaking.CreateLobbyAsync(lobbyData.maxPlayers);
             lobby.Value.SetGameServer(lobby.Value.Owner.Id);

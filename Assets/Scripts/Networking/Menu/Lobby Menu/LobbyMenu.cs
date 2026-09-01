@@ -157,7 +157,7 @@ namespace PTB.Networking.Menus
         {
             BootstrapManager bootstrapManager = BootstrapManager.Instance;
             // MainMenuController _mainMenuController = MainMenuController.Instance;
-            if (NetworkManager.Singleton.ConnectedClients.Count < SteamManager.Instance.minimumPlayers && !_debug) { Debug.LogWarning($"Need {SteamManager.Instance.minimumPlayers} players to start"); return; }
+            if (NetworkManager.Singleton.ConnectedClients.Count < bootstrapManager.minimumPlayers && !_debug) { Debug.LogWarning($"Need {bootstrapManager.minimumPlayers} players to start"); return; }
             Debug.Log($"{_networkHelper.CheckPrivilege()} Started the game!");
             BootstrapNetworkManager.Instance.ChangeNetworkScene(bootstrapManager.gameplayScenes[0], bootstrapManager.mainMenuScene);
 

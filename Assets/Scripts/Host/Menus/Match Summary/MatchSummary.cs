@@ -30,7 +30,7 @@ public class MatchSummary : NetworkBehaviour
         if (_nextRoundTxt != null) _nextRoundTxt.text = nextRound < _gameManager.currentGameLobbyData.numberOfRounds ? $"ROUND {nextRound}" : _nextRoundTxt.text = "LOBBY";
 
 
-        System.Collections.Generic.List<ulong> clientIds = new(NetworkManager.ConnectedClientsIds);
+        List<ulong> clientIds = new(NetworkManager.ConnectedClientsIds);
         clientIds.Sort((a, b) =>
             _gameManager.scoreManager.GetPlayerPlace(a, dataSet)
                 .CompareTo(_gameManager.scoreManager.GetPlayerPlace(b, dataSet))
