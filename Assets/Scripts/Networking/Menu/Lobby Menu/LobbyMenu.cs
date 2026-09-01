@@ -52,11 +52,6 @@ namespace PTB.Networking.Menus
         }
         #endregion
 
-        private void Start()
-        {
-            Refresh();
-        }
-
         private void LateUpdate()
         {
             Refresh();
@@ -97,7 +92,7 @@ namespace PTB.Networking.Menus
 
         public void Refresh()
         {
-            if (_steamManager.myLobby.HasValue || BootstrapManager.Instance.selectedTransport == BootstrapManager.Transport.Unity) RefreshUI(_steamManager.myLobby);
+            if (_steamManager.myLobby.HasValue || BootstrapManager.Instance.selectedTransport == BootstrapManager.Transport.Unity) RefreshUI(_steamManager.myLobby.Value);
 
         }
 
@@ -124,41 +119,38 @@ namespace PTB.Networking.Menus
             foreach (Friend member in lobby.Value.Members)
             {
                 // INFO: Set Display
-                PlayerUIInfo playerInfo = CreatePlayerInfo();
                 bool isHost = lobby.Value.Owner.Id == member.Id;
-
-                playerInfo.playerName = $"{member.Name} {(isHost ? "[HOST]" : "     ")}";
-                playerInfo.playerPing = $"{-1}ms";
-
+                CreatePlayerCard($"{member.Name}", isHost, $"{-1}ms");
 
             }
         }
 
-        private PlayerUIInfo CreatePlayerInfo()
+        // INFO: Client
+        private PlayerUIInfo CreatePlayerCard(string playerName, bool host, string playerPing)
         {
             GameObject playerInfoGO = Instantiate(_playerInfoPanelPrefab);
             playerInfoGO.transform.SetParent(_playerPanelContentGO.transform, false);
 
             // INFO: Set Display
             PlayerUIInfo playerInfo = playerInfoGO.GetComponent<PlayerUIInfo>();
+            playerInfo.playerName = playerInfo.playerName = $"{playerName} {(host ? "[HOST]" : "")}";
+            playerInfo.playerPing = playerPing;
 
             return playerInfo;
         }
 
         #region Debugging
+        // INFO: Client Side
         private void GetUnityPlayerList()
         {
             ClearPlayerPanel();
 
             foreach (NetworkClient client in NetworkManager.Singleton.ConnectedClientsList)
             {
-                bool isHost = client.ClientId == NetworkManager.Singleton.LocalClientId
-                              && NetworkManager.Singleton.IsHost;
+                bool isHost = client.ClientId == 0;
 
                 // INFO: Set Display
-                PlayerUIInfo playerInfo = CreatePlayerInfo();
-                playerInfo.playerName = $"{client.ClientId} {(isHost ? "[HOST]" : "     ")}";
-                playerInfo.playerPing = $"{0}ms";
+                CreatePlayerCard($"{client.ClientId}", isHost, $"{0}ms");
 
             }
         }
@@ -167,10 +159,11 @@ namespace PTB.Networking.Menus
         #region Buttons
         public void StartGame()
         {
+            BootstrapManager bootstrapManager = BootstrapManager.Instance;
             // MainMenuController _mainMenuController = MainMenuController.Instance;
             if (_connectedMembers.Count < SteamManager.Instance.minimumPlayers && !_debug) { Debug.LogWarning($"Need {SteamManager.Instance.minimumPlayers} players to start"); return; }
             Debug.Log($"{_networkHelper.CheckPrivilege()} Started the game!");
-            BootstrapNetworkManager.Instance.ChangeNetworkScene("TestScene", "MainMenuScene");
+            BootstrapNetworkManager.Instance.ChangeNetworkScene(bootstrapManager.gameplayScenes[0], bootstrapManager.mainMenuScene);
 
         }
         #endregion

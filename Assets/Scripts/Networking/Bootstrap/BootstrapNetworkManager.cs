@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System;
 using PTB.Client.Player;
+using PTB.Networking;
 
 public class BootstrapNetworkManager : NetworkedSingleton<BootstrapNetworkManager>
 {
@@ -17,6 +18,8 @@ public class BootstrapNetworkManager : NetworkedSingleton<BootstrapNetworkManage
     #region SERVER
     public SceneEventProgressStatus ChangeNetworkScene(string sceneToLoad, string sceneToClose)
     {
+        if (!NetworkManager.IsServer) return SceneEventProgressStatus.None;
+
         List<string> sceneList = new List<string> { sceneToClose };
         return ChangeNetworkScene(sceneToLoad, sceneList.ToList<string>());
 
@@ -24,7 +27,7 @@ public class BootstrapNetworkManager : NetworkedSingleton<BootstrapNetworkManage
 
     public SceneEventProgressStatus ChangeNetworkScene(string sceneToLoad, List<string> scenesToClose)
     {
-        // if (!NetworkManager.Singleton.IsServer) return;
+        if (!NetworkManager.IsServer) return SceneEventProgressStatus.None;
         if (scenesToClose.Count == 0) return SceneEventProgressStatus.None;
 
         foreach (string sceneName in scenesToClose)
@@ -35,7 +38,7 @@ public class BootstrapNetworkManager : NetworkedSingleton<BootstrapNetworkManage
         }
 
         SceneEventProgressStatus sceneLoadStatus = NetworkManager.SceneManager.LoadScene(sceneToLoad, LoadSceneMode.Additive);
-        if (sceneLoadStatus == SceneEventProgressStatus.Started) Debug.Log($"<color={LogColours.Unity}>[NETWORK]></color> Scene transition complete: {sceneToLoad}");
+        if (sceneLoadStatus == SceneEventProgressStatus.Started) Debug.Log($"<color={LogColours.Unity}>[NETWORK]</color> Scene transition complete: {sceneToLoad}");
         return sceneLoadStatus;
 
     }
@@ -56,7 +59,9 @@ public class BootstrapNetworkManager : NetworkedSingleton<BootstrapNetworkManage
     #region Return To Lobby
     public void ReturnToLobby()
     {
-        SceneEventProgressStatus status = ChangeNetworkScene("MainMenuScene", "TestScene");
+        if (!NetworkManager.IsServer) return;
+
+        SceneEventProgressStatus status = ChangeNetworkScene(BootstrapManager.Instance.mainMenuScene, BootstrapManager.Instance.gameplayScenes);
         if (status == SceneEventProgressStatus.Started) Invoke(nameof(OpenLobbyMenuClientRPC), 0.1f);
 
     }

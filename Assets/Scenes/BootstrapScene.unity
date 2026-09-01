@@ -275,6 +275,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BootstrapManager
   _debug: 0
   defaultSceneToOpen: MainMenuScene
+  <mainMenuScene>k__BackingField: MainMenuScene
+  <gameplayScenes>k__BackingField:
+  - TestScene
   <selectedTransport>k__BackingField: 0
 --- !u!1001 &623514394
 PrefabInstance:

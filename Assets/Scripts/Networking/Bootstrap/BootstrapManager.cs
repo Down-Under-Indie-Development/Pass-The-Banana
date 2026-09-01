@@ -15,9 +15,12 @@ namespace PTB.Networking
         [Header("Default Menu")]
         [SerializeField] private string defaultSceneToOpen = "MainMenuScene";
 
+        [field: Header("Other Scenes")]
+        [field: SerializeField] public string mainMenuScene { get; private set; }
+        [field: SerializeField] public List<string> gameplayScenes { get; private set; }
+
         [Header("Network Components")]
         public SteamManager steamManager => SteamManager.Instance;
-        public NetworkManager networkManager => NetworkManager.Singleton;
         public UnityNetworkHelper unityNetworkHelper => UnityNetworkHelper.Instance;
         public SessionStateManager sessionStateManager => SessionStateManager.Instance;
 
@@ -46,7 +49,7 @@ namespace PTB.Networking
         private void EnableUnityTransport()
         {
             if (selectedTransport != Transport.Unity) return;
-            networkManager.GetComponent<FacepunchTransport>().enabled = false;
+            unityNetworkHelper.networkManager.GetComponent<FacepunchTransport>().enabled = false;
             Destroy(steamManager.gameObject);
 
             #region Create Unity Transport Object
@@ -58,7 +61,7 @@ namespace PTB.Networking
 
 
             // INFO: Update the network manager
-            networkManager.NetworkConfig.NetworkTransport = _unityTransport;
+            unityNetworkHelper.networkManager.NetworkConfig.NetworkTransport = _unityTransport;
             Debug.Log($"<color={LogColours.Debug}>[DEBUG]</color> <color={LogColours.Unity}>[UNITY]</color> Using Unity Transport (Switch transport to use facepunch!)");
 
             GoToMenu();

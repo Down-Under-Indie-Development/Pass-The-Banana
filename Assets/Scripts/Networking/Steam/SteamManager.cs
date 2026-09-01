@@ -184,18 +184,16 @@ namespace PTB.Networking
             Debug.Log($"<color={LogColours.Steamworks}>[STEAM]</color> Lobby request received creating lobby!");
             Lobby? lobby = await SteamMatchmaking.CreateLobbyAsync(lobbyData.maxPlayers);
             lobby.Value.SetGameServer(lobby.Value.Owner.Id);
+            lobby.Value.SetJoinable(true);
 
             if (lobbyData.friendsOnly)
             {
                 lobby.Value.SetFriendsOnly();
-                lobby.Value.SetJoinable(true);
 
             }
             else
             {
                 lobby.Value.SetPrivate();
-                lobby.Value.SetJoinable(false);
-
             }
 
 
@@ -231,7 +229,7 @@ namespace PTB.Networking
             RoomEnter joinedLobby = await lobby.Join();
             if (joinedLobby != RoomEnter.Success) { Debug.LogError($"Failed to join {lobby}"); return; }
 
-            myLobby = lobby;
+            // myLobby = lobby;
 
         }
 
@@ -243,7 +241,7 @@ namespace PTB.Networking
             Lobby? joinedLobby = await SteamMatchmaking.JoinLobbyAsync(seshID);
             if (joinedLobby == null) { Debug.LogError($"Failed to join lobby!"); return; }
 
-            myLobby = joinedLobby;
+            // myLobby = joinedLobby;
 
 
         }
@@ -259,10 +257,8 @@ namespace PTB.Networking
 
         private void OnLobbyEntered(Lobby lobby)
         {
-            myLobby = lobby;
-
-            if (SteamClient.SteamId != lobby.Owner.Id) Debug.Log($"<color={LogColours.Steamworks}>[STEAM]</color> <color={LogColours.Client}>[CLIENT]</color> You entered {lobby.Owner.Name}'s lobby!");
             OnSteamClientEntered(lobby);
+            if (SteamClient.SteamId != lobby.Owner.Id) Debug.Log($"<color={LogColours.Steamworks}>[STEAM]</color> <color={LogColours.Client}>[CLIENT]</color> You entered {lobby.Owner.Name}'s lobby!");
 
 
         }
@@ -349,6 +345,22 @@ namespace PTB.Networking
                 case false:
                     return $"<color={LogColours.Steamworks}>[STEAM]</color> <color={LogColours.Client}>[CLIENT]</color>";
             }
+        }
+
+        private bool AreAllPlayersReady()
+        {
+            // int lobbyMemberCount = SteamMatchmaking.;
+
+            // for (int i = 0; i < lobbyMemberCount; i++)
+            // {
+            //     CSteamID memberID = SteamMatchmaking.GetLobbyMemberByIndex(lobbyID, i);
+            //     string readyState = SteamMatchmaking.GetLobbyMemberData(lobbyID, memberID, "ready");
+
+            //     if (readyState != "true")
+            //         return false;
+            // }
+
+            return true;
         }
         #endregion
         #endregion

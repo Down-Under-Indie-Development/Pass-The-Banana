@@ -945,7 +945,7 @@ MonoBehaviour:
   m_fontSizeMax: 72
   m_fontStyle: 0
   m_HorizontalAlignment: 2
-  m_VerticalAlignment: 1024
+  m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
   m_characterHorizontalScale: 1
@@ -1040,7 +1040,7 @@ MonoBehaviour:
   m_Spacing: 0
   m_ChildForceExpandWidth: 1
   m_ChildForceExpandHeight: 1
-  m_ChildControlWidth: 0
+  m_ChildControlWidth: 1
   m_ChildControlHeight: 0
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
@@ -1254,7 +1254,7 @@ MonoBehaviour:
     m_Top: 0
     m_Bottom: 0
   m_ChildAlignment: 1
-  m_Spacing: 480
+  m_Spacing: 0
   m_ChildForceExpandWidth: 1
   m_ChildForceExpandHeight: 1
   m_ChildControlWidth: 1
@@ -1478,7 +1478,7 @@ MonoBehaviour:
   m_fontSizeMax: 72
   m_fontStyle: 0
   m_HorizontalAlignment: 2
-  m_VerticalAlignment: 1024
+  m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
   m_characterHorizontalScale: 1
@@ -2306,7 +2306,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 47cd14ab8e33b4940887b2687c29e23e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LobbyUIManager
-  _debug: 0
+  _debug: 1
   _roundsText: {fileID: 2969178023586789798}
   _playerPanelContentGO: {fileID: 4938979042110284032}
   _playerInfoPanelPrefab: {fileID: 5007616894640670429, guid: 6b25faf223707b5478bbd8483bf2a549, type: 3}
