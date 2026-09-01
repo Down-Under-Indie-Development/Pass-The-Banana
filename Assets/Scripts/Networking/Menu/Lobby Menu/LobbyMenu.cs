@@ -28,9 +28,6 @@ namespace PTB.Networking.Menus
         private UnityNetworkHelper _networkHelper => UnityNetworkHelper.Instance;
         private SteamManager _steamManager => SteamManager.Instance;
 
-
-        private Queue<SteamId> _connectedMembers = new();
-
         #region Events
         private void OnEnable()
         {
@@ -160,7 +157,7 @@ namespace PTB.Networking.Menus
         {
             BootstrapManager bootstrapManager = BootstrapManager.Instance;
             // MainMenuController _mainMenuController = MainMenuController.Instance;
-            if (_connectedMembers.Count < SteamManager.Instance.minimumPlayers && !_debug) { Debug.LogWarning($"Need {SteamManager.Instance.minimumPlayers} players to start"); return; }
+            if (NetworkManager.Singleton.ConnectedClients.Count < SteamManager.Instance.minimumPlayers && !_debug) { Debug.LogWarning($"Need {SteamManager.Instance.minimumPlayers} players to start"); return; }
             Debug.Log($"{_networkHelper.CheckPrivilege()} Started the game!");
             BootstrapNetworkManager.Instance.ChangeNetworkScene(bootstrapManager.gameplayScenes[0], bootstrapManager.mainMenuScene);
 

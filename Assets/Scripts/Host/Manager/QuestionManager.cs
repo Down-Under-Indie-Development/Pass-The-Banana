@@ -16,7 +16,6 @@ public class QuestionManager : NetworkedSingleton<QuestionManager>
     private QuestionData _currentQuestion;
     private int _currentQuestionIndex = 0;
     [field: SerializeField] public CategoriesContainerSO categoryContainer { get; private set; }
-    [field: SerializeField] public CategoriesContainerSO testingCategoryContainer { get; private set; }
 
     // Functions
     public void SelectCategory(string selectedCategory)

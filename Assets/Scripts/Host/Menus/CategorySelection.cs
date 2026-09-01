@@ -64,15 +64,6 @@ public class CategorySelection : NetworkBehaviour
 
         }
 
-
-        // !! INFO: Dev testing only
-        if (!Debug.isDebugBuild) return;
-        foreach (CategorySO category in GameNetworkManager.Instance.questionManager.testingCategoryContainer.categories)
-        {
-            AddItemToDropDown(category.categoryName + " (TESTING)");
-
-        }
-
     }
     #endregion
 
