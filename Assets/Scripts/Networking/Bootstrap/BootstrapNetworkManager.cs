@@ -59,7 +59,7 @@ public class BootstrapNetworkManager : NetworkedSingleton<BootstrapNetworkManage
     {
         if (!NetworkManager.IsServer) return;
 
-        SceneEventProgressStatus status = ChangeNetworkScene(BootstrapManager.Instance.mainMenuScene, BootstrapManager.Instance.gameplayScenes);
+        SceneEventProgressStatus status = ChangeNetworkScene(BootstrapManager.Instance.lobbyScene, BootstrapManager.Instance.gameplayScenes);
         if (status == SceneEventProgressStatus.Started) Invoke(nameof(OpenLobbyMenuClientRPC), 0.1f);
 
     }

@@ -131,7 +131,7 @@ public class RoundManger : NetworkedSingleton<RoundManger>
     {
         NotifyAnswerResultRpc(false);
         _gameManager.scoreManager.AwardFail(clientId);
-        currentRoundData[currentRound][clientId].fails += 1;
+        currentRoundData[currentRound][clientId].fails++;
         _gameManager.bombManager.ProcessExplode();
 
     }

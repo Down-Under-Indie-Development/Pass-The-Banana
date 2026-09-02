@@ -21,6 +21,9 @@ public class BombManager : NetworkedSingleton<BombManager>
         NetworkVariableReadPermission.Everyone,
         NetworkVariableWritePermission.Server);
 
+    [Header("Audio Settings")]
+    [SerializeField] private AudioClip _bombExplodeSFX;
+
     public ulong SelectStartingPlayer()
     {
         return playerWithBanana.Value = (ulong)Random.Range(0, NetworkManager.ConnectedClientsIds.Count - 1);
@@ -30,8 +33,9 @@ public class BombManager : NetworkedSingleton<BombManager>
     public void ProcessExplode()
     {
         if (playerWithBanana == null) return;
-        _gameManager.playerManager.EliminatePlayer(playerWithBanana.Value);
-        ProcessPassTheBomb();
+        _gameManager.playerManager.EliminatePlayerRPC(playerWithBanana.Value);
+        AudioManager.Instance.PlayerAudio(_bombExplodeSFX);
+        StartCoroutine(_gameManager.DelayCoroutine(.2f, ProcessPassTheBomb)); // INFO: Add delay for explosion animation
 
     }
 
@@ -40,7 +44,7 @@ public class BombManager : NetworkedSingleton<BombManager>
         if (_gameManager.activePlayers.Count == 1)
         {
             Debug.Log($"<color={LogColours.Unity}>[BOMB MANAGER]</color> We have a winner!");
-            // TODO: Add logic to give points to the active player
+            _gameManager.scoreManager.AwardPoints(_gameManager.activePlayers[0]);
             _gameManager.questionManager.ProcessNextQuestion(); return;
 
         }

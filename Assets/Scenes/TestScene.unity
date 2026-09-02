@@ -1444,6 +1444,18 @@ PrefabInstance:
       propertyPath: m_Name
       value: -- [ Managers ] --
       objectReference: {fileID: 0}
+    - target: {fileID: 2423859330822276206, guid: 2ffda40d38f1aa948af6c692190f3323, type: 3}
+      propertyPath: m_InScenePlaced
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2423859330822276206, guid: 2ffda40d38f1aa948af6c692190f3323, type: 3}
+      propertyPath: GlobalObjectIdHash
+      value: 2474955147
+      objectReference: {fileID: 0}
+    - target: {fileID: 2423859330822276206, guid: 2ffda40d38f1aa948af6c692190f3323, type: 3}
+      propertyPath: SceneMigrationSynchronization
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3703096521794860464, guid: 2ffda40d38f1aa948af6c692190f3323, type: 3}
       propertyPath: m_InScenePlaced
       value: 1

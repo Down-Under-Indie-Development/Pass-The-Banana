@@ -1,14 +1,17 @@
 using Utility;
 using UnityEngine;
+using System.Collections.Generic;
 
 
 public class Timer : Singleton<Timer>
 {
 
-    // [SerializeField] public float time = 10f;
+    [Header("Audio Settings")]
+    [SerializeField] private List<AudioClip> _timerCountdownSFX;
+
     private float _currentTime;
     private bool _counting;
-    public bool showCountdown;
+    private bool showCountdown;
 
     #region Events
     private void OnEnable()
@@ -28,6 +31,14 @@ public class Timer : Singleton<Timer>
     private void Update()
     {
         if (!_counting) return;
+
+        // INFO: Only play audio when the second changes
+        float roundedTime = Mathf.Round(_currentTime);
+
+        // INFO: SFX
+        if (roundedTime != _lastLoggedSecond) AudioManager.Instance.PlayerAudio(_timerCountdownSFX[0]);
+
+
         if (_currentTime <= 0)
         {
             Debug.Log($"Timer finished");
@@ -37,17 +48,10 @@ public class Timer : Singleton<Timer>
         }
 
         _currentTime -= Time.deltaTime;
-        if (showCountdown) DisplayCountdown(_currentTime);
 
-    }
-
-    private void DisplayCountdown(float currentTime)
-    {
-        float roundedTime = Mathf.Round(currentTime);
-
-        if (roundedTime == _lastLoggedSecond) return;
-        Debug.Log($"<color={LogColours.Debug}>[DEBUG]</color> <color={LogColours.Unity}>[TIMER]</color> {roundedTime} second(s) remaining");
+        if (showCountdown) Debug.Log($"<color={LogColours.Debug}>[DEBUG]</color> <color={LogColours.Unity}>[TIMER]</color> {_lastLoggedSecond} second(s) remaining"); ;
         _lastLoggedSecond = roundedTime;
+
     }
 
     // INFO: Get current time
@@ -56,11 +60,12 @@ public class Timer : Singleton<Timer>
     #region Timer
     public void StartCountdown(float time, bool displayCountdown)
     {
+        Debug.Log($"<color={LogColours.Unity}>[TIMER]</color> Countdown started: {time}");
         _currentTime = time;
+        _lastLoggedSecond = Mathf.Round(time--);
         _counting = true;
         showCountdown = displayCountdown;
 
-        Debug.Log($"<color={LogColours.Unity}>[TIMER]</color> Countdown started: {time}");
 
     }
 

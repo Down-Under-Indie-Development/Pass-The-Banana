@@ -79,7 +79,10 @@ namespace PTB.Networking.Menus
 
         public void Options()
         {
-            Debug.LogWarning($"Not implemented!");
+            if (_optionsMenu == null) return;
+
+            _optionsMenu.SetActive(true);
+            _localCurrentGameSate = GameState.Options;
 
         }
         #endregion
@@ -126,6 +129,9 @@ namespace PTB.Networking.Menus
                 case GameState.HostGame:
                     HandleMenuSwitching(_hostGameMenu, GameState.MainMenu);
                     HandleMenuSwitching(_lobbyScreen, GameState.MainMenu);
+                    break;
+                case GameState.Options:
+                    HandleMenuSwitching(_optionsMenu, GameState.MainMenu);
                     break;
                 case GameState.Lobby:
                     _eventManager.OnSteamClientDisconnect?.Invoke();

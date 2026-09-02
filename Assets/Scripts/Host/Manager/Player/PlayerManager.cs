@@ -28,6 +28,9 @@ public class PlayerManager : NetworkedSingleton<PlayerManager>
     [SerializeField] private List<Transform> _spawnPositions = new();
     [SerializeField] private Transform _hotSeat;
 
+    [Header("Audio Settings")]
+    [SerializeField] private AudioClip _bombExplodeSFX;
+
     private PlayerAnimationHandler _playerAnimationHandler => PlayerAnimationHandler.Instance;
 
     #region Spawn Players
@@ -55,7 +58,8 @@ public class PlayerManager : NetworkedSingleton<PlayerManager>
     }
     #endregion
 
-    public void EliminatePlayer(ulong clientId)
+    [Rpc(SendTo.Server)]
+    public void EliminatePlayerRPC(ulong clientId)
     {
         NetworkManager.Singleton.ConnectedClients[clientId].PlayerObject
             .GetComponent<PlayerNetworkedController>()
@@ -72,8 +76,6 @@ public class PlayerManager : NetworkedSingleton<PlayerManager>
 
     }
 
-
-
     #region Move To Hot Seat
     public Coroutine MoveToHotSeat(ulong clientId, bool reverse = false)
     {
@@ -87,19 +89,7 @@ public class PlayerManager : NetworkedSingleton<PlayerManager>
     private IEnumerator MoveToHotSeatCoroutine(Transform playerTransform, float duration, bool reverse, ulong clientId)
     {
         Vector3 playerStart = playerTransform.position;
-        Vector3 playerTargetPosition;
-
-        if (reverse)
-        {
-            // Move back to original podium position
-            playerTargetPosition = _originalPodiumPositions[clientId];
-        }
-        else
-        {
-            // Move to hot seat
-            playerTargetPosition = _hotSeat.transform.position;
-
-        }
+        Vector3 playerTargetPosition = reverse ? _originalPodiumPositions[clientId] : _hotSeat.transform.position;
 
         float elapsed = 0f;
         while (elapsed < duration)
@@ -134,7 +124,8 @@ public class PlayerManager : NetworkedSingleton<PlayerManager>
     public void InitializePlayers(int playerCount)
     {
         PlayersRemaining = playerCount;
-        Debug.Log($"Game initialized with {PlayersRemaining} players");
+        Debug.Log($"<color={LogColours.Unity}>[ROUND MANAGER]</color> Game initialized with {PlayersRemaining} players");
+
     }
 
     public void UpdatePlayerRemaining(int newValue)
