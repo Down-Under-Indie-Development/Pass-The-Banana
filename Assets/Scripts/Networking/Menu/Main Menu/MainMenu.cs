@@ -21,8 +21,6 @@ namespace PTB.Networking.Menus
         [SerializeField] private GameObject _hostGameMenu;
         [SerializeField] private GameObject _joinGameMenu;
         [SerializeField] private GameObject _optionsMenu;
-        [SerializeField] public GameObject _lobbyScreen;
-
         private GameState _localCurrentGameSate = GameState.MainMenu;
 
         [Header("Debugging")]
@@ -47,7 +45,6 @@ namespace PTB.Networking.Menus
         private void Start()
         {
             if (_hostGameMenu != null) _hostGameMenu.SetActive(false);
-            if (_lobbyScreen != null) _lobbyScreen.SetActive(false);
             if (_joinGameMenu != null) _joinGameMenu.SetActive(false);
             if (_optionsMenu != null) _optionsMenu.SetActive(false);
 
@@ -104,7 +101,6 @@ namespace PTB.Networking.Menus
 
         public void ResetMenu()
         {
-            _lobbyScreen?.SetActive(false);
             _joinGameMenu?.SetActive(false);
             _hostGameMenu?.SetActive(false);
         }
@@ -128,14 +124,9 @@ namespace PTB.Networking.Menus
             {
                 case GameState.HostGame:
                     HandleMenuSwitching(_hostGameMenu, GameState.MainMenu);
-                    HandleMenuSwitching(_lobbyScreen, GameState.MainMenu);
                     break;
                 case GameState.Options:
                     HandleMenuSwitching(_optionsMenu, GameState.MainMenu);
-                    break;
-                case GameState.Lobby:
-                    _eventManager.OnSteamClientDisconnect?.Invoke();
-                    HandleMenuSwitching(_lobbyScreen, GameState.MainMenu);
                     break;
                 case GameState.JoinGame:
                     HandleMenuSwitching(_joinGameMenu, GameState.MainMenu);

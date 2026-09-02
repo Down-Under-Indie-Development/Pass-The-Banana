@@ -6,6 +6,9 @@ using UnityEngine.UI;
 using TMPro;
 using PTB.Networking.Menus.Interfaces;
 using Unity.Netcode;
+using UnityEngine.SceneManagement;
+using System.Collections.Generic;
+using System;
 
 namespace PTB.Networking.Menus
 {
@@ -32,19 +35,26 @@ namespace PTB.Networking.Menus
         private void OnEnable()
         {
             SteamMatchmaking.OnLobbyEntered += OnLobbyEntered;
-            _eventManager.OnUnityClientDisconnected += ResetMenu;
+            NetworkManager.OnClientDisconnectCallback += OnUnityClientDisconnect;
 
         }
 
         private void OnDisable()
         {
             SteamMatchmaking.OnLobbyEntered -= OnLobbyEntered;
-            _eventManager.OnUnityClientDisconnected -= ResetMenu;
-            CloseMenu();
-
+            NetworkManager.OnClientDisconnectCallback += OnUnityClientDisconnect;
 
         }
         #endregion
+
+        public override void OnNetworkSpawn()
+        {
+            base.OnNetworkSpawn();
+            if (!_networkHelper.networkManager.IsServer && _startGameBTN != null) _startGameBTN.interactable = false;
+            Refresh();
+
+        }
+
 
         #region IMenu Components
         public void OpenMenu() { ResetMenu(); }
@@ -65,14 +75,6 @@ namespace PTB.Networking.Menus
             RefreshUI();
         }
         #endregion
-
-        public override void OnNetworkSpawn()
-        {
-            base.OnNetworkSpawn();
-            if (!_networkHelper.networkManager.IsServer && _startGameBTN != null) _startGameBTN.interactable = false;
-            Refresh();
-
-        }
 
         #region Steamworks
 
@@ -148,20 +150,31 @@ namespace PTB.Networking.Menus
         [Rpc(SendTo.ClientsAndHost)]
         private void TellUnityPlayerListRPC()
         {
-            foreach (NetworkClient client in NetworkManager.Singleton.ConnectedClientsList)
+
+            // Display all connected members
+            foreach (ulong clientId in NetworkManager.ConnectedClientsIds)
             {
-                bool isHost = client.ClientId == 0;
+                bool isHost = clientId == 0;
 
                 // INFO: Set Display
-                CreatePlayerCard($"{client.ClientId}", isHost, $"{0}ms");
-
+                CreatePlayerCard($"{clientId}", isHost, $"{0}ms");
             }
+        }
+
+        private void OnUnityClientDisconnect(ulong clientId)
+        {
+            if (clientId == NetworkManager.Singleton.LocalClientId)
+                return;
+
+            Debug.Log($"<color={LogColours.Lobby}>[LOBBY]</color> {clientId} has left!");
+            Refresh();
+
         }
 
         #endregion
 
-
         #endregion
+
         #endregion
 
         // INFO: Client
@@ -185,8 +198,24 @@ namespace PTB.Networking.Menus
             if (NetworkManager.Singleton.ConnectedClients.Count < bootstrapManager.minimumPlayers && bootstrapManager.selectedTransport == BootstrapManager.Transport.Facepunch) { Debug.LogWarning($"Need {bootstrapManager.minimumPlayers} players to start"); return; }
             Debug.Log($"{_networkHelper.CheckPrivilege()} Started the game!");
             BootstrapNetworkManager.Instance.ChangeNetworkScene(bootstrapManager.gameplayScenes[0], bootstrapManager.lobbyScene);
+        }
+
+        public void LeaveGame()
+        {
+            if (_steamManager.connectedToSteam) { _eventManager.OnSteamClientDisconnect?.Invoke(); return; }
+
+            // !! Unity handling
+            if (IsServer) BootstrapNetworkManager.Instance.ChangeNetworkScene(BootstrapManager.Instance.mainMenuScene, BootstrapManager.Instance.lobbyScene);
+            if (!IsServer)
+            {
+                SceneManager.LoadScene(BootstrapManager.Instance.mainMenuScene, LoadSceneMode.Additive);
+                SceneManager.UnloadSceneAsync(gameObject.scene);
+                _eventManager.OnStopUnityClient?.Invoke();
+
+            }
 
         }
+
         #endregion
 
         #region Utility
