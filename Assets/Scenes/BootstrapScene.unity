@@ -279,7 +279,7 @@ MonoBehaviour:
   <lobbyScene>k__BackingField: LobbyScene
   <gameplayScenes>k__BackingField:
   - TestScene
-  <minimumPlayers>k__BackingField: 0
+  <minimumPlayers>k__BackingField: 2
   <selectedTransport>k__BackingField: 1
 --- !u!1001 &623514394
 PrefabInstance:
