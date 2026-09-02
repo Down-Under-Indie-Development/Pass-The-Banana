@@ -132,10 +132,13 @@ public class PlayerManager : NetworkedSingleton<PlayerManager>
 
         if (connectionEventData.ClientId == networkManager.LocalClientId)
         {
-            var sceneName = BootstrapManager.Instance.gameObject.scene.name;
+            string sceneName = BootstrapManager.Instance.gameObject.scene.name;
 
-            await SceneManager.UnloadSceneAsync(sceneName);
-            await Task.Delay(100);
+            // await SceneManager.UnloadSceneAsync(sceneName);
+            // await Task.Delay(100);
+            // await SceneManager.UnloadSceneAsync(gameObject.scene.name);
+            // await Task.Delay(100);
+
             await SceneManager.LoadSceneAsync(sceneName);
             return;
 

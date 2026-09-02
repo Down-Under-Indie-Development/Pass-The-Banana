@@ -1,6 +1,7 @@
 using Unity.Netcode;
 using Unity.Services.Matchmaker.Models;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 /// <summary>
 /// Creates a singleton in the scene when called to allow for public static access to 
@@ -21,7 +22,9 @@ namespace Utility
             {
                 if (instance == null)
                     instance = CreateSingletonInstance();
+
                 return instance;
+
             }
         }
 
@@ -47,11 +50,12 @@ namespace Utility
 
         protected static T CreateSingletonInstance()
         {
-            if (instance != null) return instance;
+            if (!Application.isPlaying) return null;
+
             instance = FindAnyObjectByType<T>();
 
             if (instance != null) return instance;
-            if (!Application.isPlaying) return instance;
+
             GameObject singletonObject = new GameObject($"{typeof(T).Name} (Singleton)");
             instance = singletonObject.AddComponent<T>();
 
@@ -87,60 +91,46 @@ namespace Utility
     #endregion
     #endregion
 
+    #region Network Singleton
     #region Networked Singleton
-    #region Networked Singleton
-    [RequireComponent(typeof(NetworkObject))]
     public abstract class NetworkedSingleton<T> : NetworkBehaviour where T : MonoBehaviour
     {
         protected virtual EventManager _eventManager => EventManager.Instance;
-        private static T instance;
+        private static T instance = null;
         public static bool hasInstance => instance != null;
 
-        public static T Instance
+        public static T Instance => instance;
+        protected virtual void Awake()
         {
-            get
-            {
-                return FindInstance();
-            }
-        }
-
-        private static T FindInstance()
-        {
-            instance = FindAnyObjectByType<T>();
-            if (instance == null) Debug.LogError($"Networked Singletons cannot be created at run time! ({typeof(T).Name})");
-
-            return instance;
-        }
-
-        public override void OnNetworkSpawn()
-        {
-            base.OnNetworkSpawn();
-
-            if (instance != null && instance != this)
-            {
-                Destroy(gameObject);
-                return;
-            }
-
-            instance = this as T;
+            SetSingleton();
             OnInstanceCreated();
 
-            NetworkObject.ActiveSceneSynchronization = true;
-            NetworkObject.SceneMigrationSynchronization = true;
-            NetworkObject.AlwaysReplicateAsRoot = true;
         }
 
-        public override void OnNetworkDespawn()
+        private void SetSingleton()
         {
-            base.OnNetworkDespawn();
+            instance = this as T;
 
-            if (instance == this)
-                instance = null;
+        }
+
+        private void ResetSingleton()
+        {
+            instance = null;
+        }
+
+        public override void OnDestroy()
+        {
+            // base.OnDestroy();
+            if (instance == this) ResetSingleton();
+
         }
 
         protected virtual void OnInstanceCreated() { }
-    }
 
+    }
+    #endregion
+
+    #region Persistent Networked Singleton
     public class PersistentNetworkSingleton<T> : NetworkedSingleton<T> where T : NetworkBehaviour
     {
         protected override void OnInstanceCreated()
@@ -149,6 +139,7 @@ namespace Utility
             // DontDestroyOnLoad(gameObject);
         }
     }
+
     #endregion
 
     #endregion

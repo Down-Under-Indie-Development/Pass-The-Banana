@@ -43,6 +43,8 @@ namespace PTB.Networking.Menus
         private void OnDisable()
         {
             SteamMatchmaking.OnLobbyEntered -= OnLobbyEntered;
+
+            if (NetworkManager == null) return;
             NetworkManager.OnConnectionEvent -= OnUnityClientDisconnect;
 
         }
@@ -169,12 +171,7 @@ namespace PTB.Networking.Menus
             if (connectionEventData.ClientId == NetworkManager.Singleton.LocalClientId)
             {
                 var sceneName = BootstrapManager.Instance.gameObject.scene.name;
-                var scene = SceneManager.GetSceneByName(sceneName);
-
-                await SceneManager.UnloadSceneAsync(sceneName);
-                await Task.Delay(100);
-                await SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Single);
-
+                await SceneManager.LoadSceneAsync(sceneName);
                 return;
 
             }
