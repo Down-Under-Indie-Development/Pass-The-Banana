@@ -2333,8 +2333,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 47cd14ab8e33b4940887b2687c29e23e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LobbyUIManager
-  _debug: 0
-  _roundsText: {fileID: 2969178023586789798}
+  ShowTopMostFoldoutHeaderGroup: 1
+  _roundsTxt: {fileID: 2969178023586789798}
   _playerPanelContentGO: {fileID: 4938979042110284032}
   _playerInfoPanelPrefab: {fileID: 5007616894640670429, guid: 6b25faf223707b5478bbd8483bf2a549, type: 3}
   _startGameBTN: {fileID: 7773334689440716104}

@@ -2,19 +2,17 @@ using Utility;
 using UnityEngine;
 using Steamworks.Data;
 using Steamworks;
-using System.Collections.Generic;
 using UnityEngine.UI;
 using TMPro;
 using PTB.Networking.Menus.Interfaces;
-using UnityEngine.SceneManagement;
 using Unity.Netcode;
-using Unity.Netcode.Transports.UTP;
 
 namespace PTB.Networking.Menus
 {
-    public class LobbyMenu : CustomMonoBehaviour, IMenu
+    public class LobbyUIManager : NetworkBehaviour, IMenu
     {
-        [SerializeField] private TextMeshProUGUI _roundsText;
+        private EventManager _eventManager => EventManager.Instance;
+
 
         [Header("Player Panel")]
         [SerializeField] private GameObject _playerPanelContentGO;
@@ -23,6 +21,8 @@ namespace PTB.Networking.Menus
         [Header("Buttons")]
         [SerializeField] private Button _startGameBTN;
 
+        [Header("Lobby Info Text")]
+        [SerializeField] private TextMeshProUGUI _roundsTxt;
         [SerializeField] private TextMeshProUGUI _lobbyCodeTxt;
 
         private UnityNetworkHelper _networkHelper => UnityNetworkHelper.Instance;
@@ -33,9 +33,6 @@ namespace PTB.Networking.Menus
         {
             SteamMatchmaking.OnLobbyEntered += OnLobbyEntered;
             _eventManager.OnUnityClientDisconnected += ResetMenu;
-
-            if (_networkHelper.networkManager != null && !_networkHelper.networkManager.IsHost && _startGameBTN != null) _startGameBTN.interactable = false;
-            UpdateLobbyScreenText();
 
         }
 
@@ -49,30 +46,7 @@ namespace PTB.Networking.Menus
         }
         #endregion
 
-        private void LateUpdate()
-        {
-            Refresh();
-        }
-
-
-        #region Steamworks
-
-        private void OnLobbyEntered(Lobby lobby)
-        {
-            UpdateLobbyScreenText();
-            RefreshUI(lobby);
-
-        }
-
-        private void UpdateLobbyScreenText()
-        {
-            if (_lobbyCodeTxt != null && _steamManager.myLobby.HasValue) _lobbyCodeTxt.text = $"Code: {_steamManager.myLobby.Value.Id}";
-            if (_roundsText != null && BootstrapNetworkManager.Instance.lobbyData != null) _roundsText.text = $"ROUND 1 OF {BootstrapNetworkManager.Instance.lobbyData.numberOfRounds}";
-
-        }
-
-        #endregion
-
+        #region IMenu Components
         public void OpenMenu() { ResetMenu(); }
         public void CloseMenu()
         {
@@ -88,40 +62,107 @@ namespace PTB.Networking.Menus
 
         public void Refresh()
         {
-            if (_steamManager.myLobby.HasValue && BootstrapManager.Instance.selectedTransport == BootstrapManager.Transport.Facepunch) { RefreshUI(_steamManager.myLobby.Value); return; }
+            RefreshUI();
+        }
+        #endregion
+
+        public override void OnNetworkSpawn()
+        {
+            base.OnNetworkSpawn();
+            if (!_networkHelper.networkManager.IsServer && _startGameBTN != null) _startGameBTN.interactable = false;
+            Refresh();
+
+        }
+
+        #region Steamworks
+
+        private void OnLobbyEntered(Lobby lobby)
+        {
             RefreshUI();
 
         }
+        #endregion
 
-        private void ClearPlayerPanel()
+        #region Networking
+        #region Get Lobby Info
+        [Rpc(SendTo.Server)]
+        private void AskForLobbyInfoRPC()
         {
-            for (int i = 0; i < _playerPanelContentGO.transform.childCount; i++)
-                Destroy(_playerPanelContentGO.transform.GetChild(i).gameObject);
+            string code = "Code: ";
+            string lobby = _steamManager.myLobby.HasValue ? _steamManager.myLobby.Value.Id.ToString() : "UNITY (NO CODE)";
+            string lobbyCode = code + lobby;
+            string numberOfRounds = $"ROUND 1 OF {BootstrapNetworkManager.Instance.lobbyData.numberOfRounds}";
+
+            TellLobbyInfoRPC(lobbyCode, numberOfRounds);
 
         }
 
-        private void RefreshUI(Lobby? lobby = null)
+        [Rpc(SendTo.ClientsAndHost)]
+        private void TellLobbyInfoRPC(string lobbyCode, string numberOfRounds)
         {
-            // GUARD: Prevent Nulls
-            if (_playerPanelContentGO == null) { Debug.LogError($"Player panel content is null!"); return; }
-            if (_playerInfoPanelPrefab == null) { Debug.LogError($"Player info panel is null, cannot display player"); return; }
+            // GUARD: Prevent unnecessary refresh
+            if (_lobbyCodeTxt.text == lobbyCode || _roundsTxt.text == numberOfRounds) return;
 
+            if (_lobbyCodeTxt != null) _lobbyCodeTxt.text = lobbyCode;
+            if (_roundsTxt != null) _roundsTxt.text = numberOfRounds;
+            Debug.Log($"Refresh Test");
+
+        }
+
+        #endregion
+
+        #region Get Player List
+        [Rpc(SendTo.Server)]
+        private void AskForPlayerListRPC()
+        {
             ClearPlayerPanel();
-            if (_lobbyCodeTxt != null) UpdateLobbyScreenText();
 
-            // DEBUG: Check for Unity Transport
-            if (BootstrapManager.Instance.selectedTransport == BootstrapManager.Transport.Unity) { GetUnityPlayerList(); return; }
+            switch (BootstrapManager.Instance.selectedTransport)
+            {
+                case BootstrapManager.Transport.Facepunch:
+                    TellSteamPlayerListRPC();
+                    break;
 
-            if (!lobby.HasValue) return;
+                case BootstrapManager.Transport.Unity:
+                    TellUnityPlayerListRPC();
+                    break;
+            }
+        }
 
-            foreach (Friend member in lobby.Value.Members)
+        [Rpc(SendTo.ClientsAndHost)]
+        private void TellSteamPlayerListRPC()
+        {
+            if (!_steamManager.myLobby.HasValue) { Debug.LogError($"Steam lobby doesn't have a value, can't show player list!"); return; }
+
+            Lobby lobby = _steamManager.myLobby.Value;
+            foreach (Friend member in lobby.Members)
             {
                 // INFO: Set Display
-                bool isHost = lobby.Value.Owner.Id == member.Id;
+                bool isHost = lobby.Owner.Id == member.Id;
                 CreatePlayerCard($"{member.Name}", isHost, $"{-1}ms");
 
             }
         }
+
+        #region Debugging
+        [Rpc(SendTo.ClientsAndHost)]
+        private void TellUnityPlayerListRPC()
+        {
+            foreach (NetworkClient client in NetworkManager.Singleton.ConnectedClientsList)
+            {
+                bool isHost = client.ClientId == 0;
+
+                // INFO: Set Display
+                CreatePlayerCard($"{client.ClientId}", isHost, $"{0}ms");
+
+            }
+        }
+
+        #endregion
+
+
+        #endregion
+        #endregion
 
         // INFO: Client
         private PlayerUIInfo CreatePlayerCard(string playerName, bool host, string playerPing)
@@ -137,29 +178,33 @@ namespace PTB.Networking.Menus
             return playerInfo;
         }
 
-        #region Debugging
-        // INFO: Client Side
-        private void GetUnityPlayerList()
-        {
-            foreach (NetworkClient client in NetworkManager.Singleton.ConnectedClientsList)
-            {
-                bool isHost = client.ClientId == 0;
-
-                // INFO: Set Display
-                CreatePlayerCard($"{client.ClientId}", isHost, $"{0}ms");
-
-            }
-        }
-        #endregion
-
         #region Buttons
         public void StartGame()
         {
             BootstrapManager bootstrapManager = BootstrapManager.Instance;
-            // MainMenuController _mainMenuController = MainMenuController.Instance;
-            if (NetworkManager.Singleton.ConnectedClients.Count < bootstrapManager.minimumPlayers && !_debug) { Debug.LogWarning($"Need {bootstrapManager.minimumPlayers} players to start"); return; }
+            if (NetworkManager.Singleton.ConnectedClients.Count < bootstrapManager.minimumPlayers && bootstrapManager.selectedTransport == BootstrapManager.Transport.Facepunch) { Debug.LogWarning($"Need {bootstrapManager.minimumPlayers} players to start"); return; }
             Debug.Log($"{_networkHelper.CheckPrivilege()} Started the game!");
-            BootstrapNetworkManager.Instance.ChangeNetworkScene(bootstrapManager.gameplayScenes[0], bootstrapManager.mainMenuScene);
+            BootstrapNetworkManager.Instance.ChangeNetworkScene(bootstrapManager.gameplayScenes[0], bootstrapManager.lobbyScene);
+
+        }
+        #endregion
+
+        #region Utility
+        private void ClearPlayerPanel()
+        {
+            foreach (Transform child in _playerPanelContentGO.transform)
+                Destroy(child.gameObject);
+
+        }
+
+        private void RefreshUI()
+        {
+            // GUARD: Prevent Nulls
+            if (_playerPanelContentGO == null) { Debug.LogError($"Player panel content is null!"); return; }
+            if (_playerInfoPanelPrefab == null) { Debug.LogError($"Player info panel is null, cannot display player"); return; }
+
+            AskForLobbyInfoRPC();
+            AskForPlayerListRPC();
 
         }
         #endregion

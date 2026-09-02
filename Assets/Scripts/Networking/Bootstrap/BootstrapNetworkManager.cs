@@ -18,21 +18,19 @@ public class BootstrapNetworkManager : NetworkedSingleton<BootstrapNetworkManage
     #region SERVER
     public SceneEventProgressStatus ChangeNetworkScene(string sceneToLoad, string sceneToClose)
     {
-        if (!NetworkManager.IsServer) return SceneEventProgressStatus.None;
-
         List<string> sceneList = new List<string> { sceneToClose };
-        return ChangeNetworkScene(sceneToLoad, sceneList.ToList<string>());
+        return ChangeNetworkScene(sceneToLoad, sceneList);
 
     }
 
     public SceneEventProgressStatus ChangeNetworkScene(string sceneToLoad, List<string> scenesToClose)
     {
-        if (!NetworkManager.IsServer) return SceneEventProgressStatus.None;
-        if (scenesToClose.Count == 0) return SceneEventProgressStatus.None;
+        if (!NetworkManager.IsServer) return SceneEventProgressStatus.None; // INFO: Ensure server is running this
+        if (sceneToLoad == null) { Debug.LogError($"Scene to load is null!"); return SceneEventProgressStatus.None; }
 
         foreach (string sceneName in scenesToClose)
         {
-            if (string.IsNullOrEmpty(sceneToLoad)) continue;
+            if (string.IsNullOrEmpty(sceneName)) continue;
             Instance.CloseSceneObserverRPC(sceneName);
 
         }

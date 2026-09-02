@@ -17,7 +17,9 @@ namespace PTB.Networking
 
         [field: Header("Other Scenes")]
         [field: SerializeField] public string mainMenuScene { get; private set; }
+        [field: SerializeField] public string lobbyScene { get; private set; }
         [field: SerializeField] public List<string> gameplayScenes { get; private set; }
+
 
         [Header("Lobby Settings")]
         [field: SerializeField] public int minimumPlayers { get; private set; }

@@ -31,13 +31,13 @@ namespace PTB.Networking.Menus
         #region Events
         private void OnEnable()
         {
-            _eventManager.OnStartUnityClient += ClientConnected;
+            _eventManager.OnStartUnityHost += LobbyCreated;
 
         }
 
         private void OnDisable()
         {
-            _eventManager.OnStartUnityClient -= ClientConnected;
+            _eventManager.OnStartUnityHost -= LobbyCreated;
             CloseMenu();
 
 
@@ -84,13 +84,12 @@ namespace PTB.Networking.Menus
         }
         #endregion
 
-        private void ClientConnected()
+        // INFO: Lobby Created, lets go!
+        private void LobbyCreated()
         {
-            ResetMenu();
-            _lobbyScreen?.SetActive(true);
+            if (!NetworkManager.Singleton.IsServer) return;
             _bootstrapManager.sessionStateManager.UpdateSessionState(GameState.Lobby);
-            _localCurrentGameSate = _bootstrapManager.sessionStateManager.currentSessionState.Value;
-
+            BootstrapNetworkManager.Instance.ChangeNetworkScene(_bootstrapManager.lobbyScene, _bootstrapManager.mainMenuScene);
 
         }
 

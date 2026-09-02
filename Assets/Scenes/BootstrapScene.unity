@@ -276,6 +276,7 @@ MonoBehaviour:
   _debug: 1
   defaultSceneToOpen: MainMenuScene
   <mainMenuScene>k__BackingField: MainMenuScene
+  <lobbyScene>k__BackingField: LobbyScene
   <gameplayScenes>k__BackingField:
   - TestScene
   <minimumPlayers>k__BackingField: 0
