@@ -1,4 +1,5 @@
 using Unity.Netcode;
+using Unity.Services.Matchmaker.Models;
 using UnityEngine;
 
 /// <summary>
@@ -99,9 +100,7 @@ namespace Utility
         {
             get
             {
-                if (instance == null)
-                    FindInstance();
-                return instance;
+                return FindInstance();
             }
         }
 
@@ -133,6 +132,8 @@ namespace Utility
 
         public override void OnNetworkDespawn()
         {
+            base.OnNetworkDespawn();
+
             if (instance == this)
                 instance = null;
         }

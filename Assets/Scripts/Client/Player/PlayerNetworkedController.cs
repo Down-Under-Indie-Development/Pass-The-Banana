@@ -32,7 +32,6 @@ namespace PTB.Client.Player
             if (!Keyboard.current.escapeKey.wasPressedThisFrame) return;
             if (!IsServer && !hostForcedPause)
             {
-                Debug.Log($"Test");
                 TogglePauseMenu(); return;
             }
 

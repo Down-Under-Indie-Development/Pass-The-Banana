@@ -9,6 +9,7 @@ using Unity.Netcode;
 using UnityEngine.SceneManagement;
 using System.Collections.Generic;
 using System;
+using System.Threading.Tasks;
 
 namespace PTB.Networking.Menus
 {
@@ -35,14 +36,14 @@ namespace PTB.Networking.Menus
         private void OnEnable()
         {
             SteamMatchmaking.OnLobbyEntered += OnLobbyEntered;
-            NetworkManager.OnClientDisconnectCallback += OnUnityClientDisconnect;
+            NetworkManager.OnConnectionEvent += OnUnityClientDisconnect;
 
         }
 
         private void OnDisable()
         {
             SteamMatchmaking.OnLobbyEntered -= OnLobbyEntered;
-            NetworkManager.OnClientDisconnectCallback += OnUnityClientDisconnect;
+            NetworkManager.OnConnectionEvent -= OnUnityClientDisconnect;
 
         }
         #endregion
@@ -161,12 +162,25 @@ namespace PTB.Networking.Menus
             }
         }
 
-        private void OnUnityClientDisconnect(ulong clientId)
+        private async void OnUnityClientDisconnect(NetworkManager networkManager, ConnectionEventData connectionEventData)
         {
-            if (clientId == NetworkManager.Singleton.LocalClientId)
+            if (connectionEventData.EventType != ConnectionEvent.ClientDisconnected) return;
+
+            if (connectionEventData.ClientId == NetworkManager.Singleton.LocalClientId)
+            {
+                var sceneName = BootstrapManager.Instance.gameObject.scene.name;
+                var scene = SceneManager.GetSceneByName(sceneName);
+
+                await SceneManager.UnloadSceneAsync(sceneName);
+                await Task.Delay(100);
+                await SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Single);
+
                 return;
 
-            Debug.Log($"<color={LogColours.Lobby}>[LOBBY]</color> {clientId} has left!");
+            }
+
+            if (!IsServer) return;
+            Debug.Log($"<color={LogColours.Lobby}>[LOBBY]</color> {connectionEventData.ClientId} has left!");
             Refresh();
 
         }
@@ -205,14 +219,8 @@ namespace PTB.Networking.Menus
             if (_steamManager.connectedToSteam) { _eventManager.OnSteamClientDisconnect?.Invoke(); return; }
 
             // !! Unity handling
-            if (IsServer) BootstrapNetworkManager.Instance.ChangeNetworkScene(BootstrapManager.Instance.mainMenuScene, BootstrapManager.Instance.lobbyScene);
-            if (!IsServer)
-            {
-                SceneManager.LoadScene(BootstrapManager.Instance.mainMenuScene, LoadSceneMode.Additive);
-                SceneManager.UnloadSceneAsync(gameObject.scene);
-                _eventManager.OnStopUnityClient?.Invoke();
+            _eventManager.OnStopUnityClient?.Invoke();
 
-            }
 
         }
 

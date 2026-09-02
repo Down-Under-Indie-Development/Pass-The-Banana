@@ -30,13 +30,18 @@ namespace PTB.Client.Menus
 
         public void ReturnToMainMenu()
         {
-            _eventManager.OnSteamClientDisconnect?.Invoke();
+            if (SteamManager.Instance.connectedToSteam) { _eventManager.OnSteamClientDisconnect?.Invoke(); return; }
+            // !! Unity handling
+            if (BootstrapManager.Instance.selectedTransport == BootstrapManager.Transport.Unity) _eventManager.OnStopUnityClient?.Invoke();
 
         }
 
         public void QuitGame()
         {
-            _eventManager.OnQuitGame?.Invoke();
+            if (SteamManager.Instance.connectedToSteam) _eventManager.OnSteamClientDisconnect?.Invoke();
+
+            // !! Unity handling
+            if (BootstrapManager.Instance.selectedTransport == BootstrapManager.Transport.Unity) _eventManager.OnStopUnityClient?.Invoke();
 
 #if UNITY_EDITOR
             Debug.Log($"<color={LogColours.Unity}>[UNITY]</color> Sike this is the editor!</color>");
@@ -46,5 +51,7 @@ namespace PTB.Client.Menus
             Application.Quit();
 
         }
+
+
     }
 }

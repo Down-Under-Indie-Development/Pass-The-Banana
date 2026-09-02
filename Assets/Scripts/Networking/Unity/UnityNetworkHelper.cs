@@ -67,6 +67,8 @@ public class UnityNetworkHelper : Singleton<UnityNetworkHelper>
         {
             networkManager.Shutdown();
             await Task.Delay(100);
+            Destroy(networkManager.gameObject);
+
         }
         catch (System.Exception ex)
         {

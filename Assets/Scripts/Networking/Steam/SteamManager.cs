@@ -225,8 +225,6 @@ namespace PTB.Networking
             RoomEnter joinedLobby = await lobby.Join();
             if (joinedLobby != RoomEnter.Success) { Debug.LogError($"Failed to join {lobby}"); return; }
 
-            // myLobby = lobby;
-
         }
 
         private async void OnGameRichPresenceJoinRequested(Friend friend, string s)
@@ -236,8 +234,6 @@ namespace PTB.Networking
             if (!ulong.TryParse(s, out ulong seshID)) return;
             Lobby? joinedLobby = await SteamMatchmaking.JoinLobbyAsync(seshID);
             if (joinedLobby == null) { Debug.LogError($"Failed to join lobby!"); return; }
-
-            // myLobby = joinedLobby;
 
 
         }

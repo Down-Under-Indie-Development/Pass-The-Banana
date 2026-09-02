@@ -8,6 +8,9 @@ using HealthSystem;
 using Unity.VisualScripting;
 using System.Collections;
 using System.Linq;
+using UnityEngine.SceneManagement;
+using System.Threading.Tasks;
+using PTB.Networking;
 
 
 /// <summary>
@@ -32,6 +35,19 @@ public class PlayerManager : NetworkedSingleton<PlayerManager>
     [SerializeField] private AudioClip _bombExplodeSFX;
 
     private PlayerAnimationHandler _playerAnimationHandler => PlayerAnimationHandler.Instance;
+
+    #region Events
+    private void OnEnable()
+    {
+        NetworkManager.Singleton.OnConnectionEvent += OnUnityClientDisconnect;
+    }
+
+    private void OnDisable()
+    {
+        NetworkManager.Singleton.OnConnectionEvent -= OnUnityClientDisconnect;
+
+    }
+    #endregion
 
     #region Spawn Players
     public void SpawnPlayers()
@@ -109,13 +125,36 @@ public class PlayerManager : NetworkedSingleton<PlayerManager>
     }
     #endregion
 
+    #region Player Leave 
+    private async void OnUnityClientDisconnect(NetworkManager networkManager, ConnectionEventData connectionEventData)
+    {
+        if (connectionEventData.EventType != ConnectionEvent.ClientDisconnected) return;
+
+        if (connectionEventData.ClientId == networkManager.LocalClientId)
+        {
+            var sceneName = BootstrapManager.Instance.gameObject.scene.name;
+
+            await SceneManager.UnloadSceneAsync(sceneName);
+            await Task.Delay(100);
+            await SceneManager.LoadSceneAsync(sceneName);
+            return;
+
+        }
+
+        if (!networkManager.IsServer) return;
+        Debug.Log($"<color={LogColours.Lobby}>[LOBBY]</color> {connectionEventData.ClientId} has left!");
+
+    }
+    #endregion
+
+
+    #region Utility
     [Rpc(SendTo.ClientsAndHost)]
     public void HandleChangePodiumColorRPC(ulong client, Color colour)
     {
         NetworkManager.ConnectedClients[client].PlayerObject.GetComponent<PlayerNetworkedController>().podium.transform.GetChild(1).GetComponent<MeshRenderer>().material.color = colour;
     }
 
-    #region Utility
     public bool IsPlayerActive(ulong clientId)
     {
         return NetworkManager.ConnectedClients.ContainsKey(clientId) && !_eliminatedPlayers.Contains(clientId);
