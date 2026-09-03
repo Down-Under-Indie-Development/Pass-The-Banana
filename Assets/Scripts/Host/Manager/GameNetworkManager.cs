@@ -68,7 +68,7 @@ public class GameNetworkManager : NetworkedSingleton<GameNetworkManager>
            .ToList();
 
         playerManager.SpawnPlayers();
-        // roundManager.StartRound();
+        roundManager.StartRound();
 
     }
 
