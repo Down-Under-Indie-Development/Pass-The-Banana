@@ -39,14 +39,14 @@ public class PlayerManager : NetworkedSingleton<PlayerManager>
     #region Events
     private void OnEnable()
     {
-        NetworkManager.OnConnectionEvent += OnUnityClientDisconnect;
+        NetworkManager.Singleton.OnConnectionEvent += OnUnityClientDisconnect;
 
     }
 
     private void OnDisable()
     {
         if (NetworkManager == null) return;
-        NetworkManager.OnConnectionEvent -= OnUnityClientDisconnect;
+        NetworkManager.Singleton.OnConnectionEvent -= OnUnityClientDisconnect;
 
     }
     #endregion
@@ -57,11 +57,11 @@ public class PlayerManager : NetworkedSingleton<PlayerManager>
         if (!IsServer) return;
         if (_playerPrefab == null) { Debug.LogError($"Player prefab is null, cannot spawn!"); return; }
 
-        Debug.Log($"[SERVER] Spawning {NetworkManager.ConnectedClientsIds.Count} players");
+        Debug.Log($"[SERVER] Spawning {NetworkManager.Singleton.ConnectedClientsIds.Count} players");
 
-        for (int i = 0; i < NetworkManager.ConnectedClientsIds.Count; i++)
+        for (int i = 0; i < NetworkManager.Singleton.ConnectedClientsIds.Count; i++)
         {
-            ulong currentClient = NetworkManager.ConnectedClientsIds[i];
+            ulong currentClient = NetworkManager.Singleton.ConnectedClientsIds[i];
             GameObject instance = Instantiate(_playerPrefab);
             instance.transform.position = _spawnPositions[i].position;
 
@@ -72,7 +72,7 @@ public class PlayerManager : NetworkedSingleton<PlayerManager>
             netObj.SpawnAsPlayerObject(currentClient, true);
         }
 
-        InitializePlayers(NetworkManager.ConnectedClients.Count);
+        InitializePlayers(NetworkManager.Singleton.ConnectedClients.Count);
     }
     #endregion
 
@@ -98,7 +98,7 @@ public class PlayerManager : NetworkedSingleton<PlayerManager>
     public Coroutine MoveToHotSeat(ulong clientId, bool reverse = false)
     {
         if (_hotSeat == null) { Debug.LogWarning($"Hot seat transform is null, cannot move player!"); return null; }
-        NetworkObject playerObj = NetworkManager.ConnectedClients[clientId].PlayerObject;
+        NetworkObject playerObj = NetworkManager.Singleton.ConnectedClients[clientId].PlayerObject;
         _playerAnimationHandler.SetAnimator(playerObj.GetComponent<Animator>(), "inHotSeat", !reverse);
         return StartCoroutine(MoveToHotSeatCoroutine(playerObj.transform, .5f, reverse, clientId));
 
@@ -152,12 +152,12 @@ public class PlayerManager : NetworkedSingleton<PlayerManager>
     [Rpc(SendTo.ClientsAndHost)]
     public void HandleChangePodiumColorRPC(ulong clientId, Color colour)
     {
-        NetworkManager.ConnectedClients[clientId].PlayerObject.GetComponent<PlayerNetworkedController>().podium.transform.GetChild(1).GetComponent<MeshRenderer>().material.color = colour;
+        NetworkManager.Singleton.ConnectedClients[clientId].PlayerObject.GetComponent<PlayerNetworkedController>().podium.transform.GetChild(1).GetComponent<MeshRenderer>().material.color = colour;
     }
 
     public bool IsPlayerActive(ulong clientId)
     {
-        return NetworkManager.ConnectedClients.ContainsKey(clientId) && !_eliminatedPlayers.Contains(clientId);
+        return NetworkManager.Singleton.ConnectedClients.ContainsKey(clientId) && !_eliminatedPlayers.Contains(clientId);
     }
 
     public void InitializePlayers(int playerCount)

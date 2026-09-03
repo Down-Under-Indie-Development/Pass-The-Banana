@@ -22,7 +22,7 @@ public class CategorySelection : NetworkBehaviour
         base.OnNetworkSpawn();
 
         #region Client Menu
-        if (!GameNetworkManager.Instance.bombManager.IsPlayerWithBomb(NetworkManager.LocalClientId)) return;
+        if (!GameNetworkManager.Instance.bombManager.IsPlayerWithBomb(NetworkManager.Singleton.LocalClientId)) return;
 
         #endregion
 

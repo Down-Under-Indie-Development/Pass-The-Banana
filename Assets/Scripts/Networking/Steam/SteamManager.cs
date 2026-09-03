@@ -25,8 +25,8 @@ namespace PTB.Networking
 
 
         #region Networking
-        protected NetworkManager _networkManager => NetworkManager.Singleton;
-        protected FacepunchTransport _networkTransport => _networkManager.GetComponent<FacepunchTransport>();
+        // protected NetworkManager _networkManager => NetworkManager.Singleton;
+        protected FacepunchTransport _networkTransport => NetworkManager.Singleton.GetComponent<FacepunchTransport>();
         #endregion
 
         #region Events
@@ -330,7 +330,7 @@ namespace PTB.Networking
         {
             if (!connectedToSteam) return $"<color={LogColours.Steamworks}>[STEAM]</color>";
 
-            switch (_networkManager.IsHost)
+            switch (NetworkManager.Singleton.IsHost)
             {
                 case true:
                     return $"<color={LogColours.Steamworks}>[STEAM]</color> <color={LogColours.Host}>[HOST]</color>";

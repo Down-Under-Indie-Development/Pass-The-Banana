@@ -40,7 +40,7 @@ public class BombManager : NetworkedSingleton<BombManager>
 
     public ulong SelectStartingPlayer()
     {
-        return playerWithBanana.Value = (ulong)Random.Range(0, NetworkManager.ConnectedClientsIds.Count - 1);
+        return playerWithBanana.Value = (ulong)Random.Range(0, NetworkManager.Singleton.ConnectedClientsIds.Count - 1);
 
     }
 

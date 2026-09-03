@@ -36,7 +36,7 @@ namespace PTB.Networking.Menus
         private void OnEnable()
         {
             SteamMatchmaking.OnLobbyEntered += OnLobbyEntered;
-            NetworkManager.OnConnectionEvent += OnUnityClientDisconnect;
+            NetworkManager.Singleton.OnConnectionEvent += OnUnityClientDisconnect;
 
         }
 
@@ -44,15 +44,15 @@ namespace PTB.Networking.Menus
         {
             SteamMatchmaking.OnLobbyEntered -= OnLobbyEntered;
 
-            if (NetworkManager == null) return;
-            NetworkManager.OnConnectionEvent -= OnUnityClientDisconnect;
+            if (NetworkManager.Singleton == null) return;
+            NetworkManager.Singleton.OnConnectionEvent -= OnUnityClientDisconnect;
 
         }
         #endregion
 
         public override void OnNetworkSpawn()
         {
-            if (!_networkHelper.networkManager.IsServer && _startGameBTN != null) _startGameBTN.interactable = false;
+            if (!NetworkManager.Singleton.IsServer && _startGameBTN != null) _startGameBTN.interactable = false;
             Refresh();
 
         }
@@ -154,7 +154,7 @@ namespace PTB.Networking.Menus
         {
 
             // Display all connected members
-            foreach (ulong clientId in NetworkManager.ConnectedClientsIds)
+            foreach (ulong clientId in NetworkManager.Singleton.ConnectedClientsIds)
             {
                 bool isHost = clientId == 0;
 
@@ -206,7 +206,7 @@ namespace PTB.Networking.Menus
         public void StartGame()
         {
             BootstrapManager bootstrapManager = BootstrapManager.Instance;
-            if (NetworkManager.ConnectedClients.Count < bootstrapManager.minimumPlayers && bootstrapManager.selectedTransport == BootstrapManager.Transport.Facepunch) { Debug.LogWarning($"Need {bootstrapManager.minimumPlayers} players to start"); return; }
+            if (NetworkManager.Singleton.ConnectedClients.Count < bootstrapManager.minimumPlayers && bootstrapManager.selectedTransport == BootstrapManager.Transport.Facepunch) { Debug.LogWarning($"Need {bootstrapManager.minimumPlayers} players to start"); return; }
             Debug.Log($"{_networkHelper.CheckPrivilege()} Started the game!");
             BootstrapNetworkManager.Instance.ChangeNetworkScene(bootstrapManager.gameplayScenes[0], bootstrapManager.lobbyScene);
         }

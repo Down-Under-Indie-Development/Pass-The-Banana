@@ -38,7 +38,7 @@ public class RoundManger : NetworkedSingleton<RoundManger>
     private void InitialiseRoundTracker()
     {
         if (!currentRoundData.ContainsKey(currentRound)) currentRoundData[currentRound] = new Dictionary<ulong, ScoreData>();
-        foreach (ulong clientId in NetworkManager.ConnectedClientsIds)
+        foreach (ulong clientId in NetworkManager.Singleton.ConnectedClientsIds)
         {
             currentRoundData[currentRound][clientId] = ScoreData.Empty();
         }
@@ -56,9 +56,9 @@ public class RoundManger : NetworkedSingleton<RoundManger>
     #region Category Selection
     private void ShowCategorySelection()
     {
-        NetworkObject selectionScreen = NetworkManager.SpawnManager.InstantiateAndSpawn(
+        NetworkObject selectionScreen = NetworkManager.Singleton.SpawnManager.InstantiateAndSpawn(
            _categorySelectionGO.GetComponent<NetworkObject>(),
-           NetworkManager.LocalClientId);
+           NetworkManager.Singleton.LocalClientId);
     }
 
     public void ProcessChosenCategory(string selectedCategory)

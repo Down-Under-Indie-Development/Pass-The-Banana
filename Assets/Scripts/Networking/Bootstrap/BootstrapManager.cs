@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using Netcode.Transports.Facepunch;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
-using Unity.Services.Matchmaker.Models;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Utility;
@@ -57,7 +56,7 @@ namespace PTB.Networking
         private void EnableUnityTransport()
         {
             if (selectedTransport != Transport.Unity) return;
-            unityNetworkHelper.networkManager.GetComponent<FacepunchTransport>().enabled = false;
+            NetworkManager.Singleton.GetComponent<FacepunchTransport>().enabled = false;
             Destroy(steamManager.gameObject);
 
             #region Create Unity Transport Object
@@ -69,7 +68,7 @@ namespace PTB.Networking
 
 
             // INFO: Update the network manager
-            unityNetworkHelper.networkManager.NetworkConfig.NetworkTransport = _unityTransport;
+            NetworkManager.Singleton.NetworkConfig.NetworkTransport = _unityTransport;
             Debug.Log($"<color={LogColours.Debug}>[DEBUG]</color> <color={LogColours.Unity}>[UNITY]</color> Using Unity Transport (Switch transport to use facepunch!)");
 
             GoToMenu();

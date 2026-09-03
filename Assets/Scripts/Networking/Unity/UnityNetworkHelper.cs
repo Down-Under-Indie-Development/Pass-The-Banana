@@ -12,7 +12,7 @@ using Utility;
 /// </summary>
 public class UnityNetworkHelper : Singleton<UnityNetworkHelper>
 {
-    public virtual NetworkManager networkManager => NetworkManager.Singleton;
+    // public virtual NetworkManager networkManager => NetworkManager.Singleton;
 
     #region Events
     protected virtual void OnEnable()
@@ -44,10 +44,10 @@ public class UnityNetworkHelper : Singleton<UnityNetworkHelper>
     // INFO: Start Client Connection 
     protected virtual async void OnStartUnityClient()
     {
-        if (networkManager.IsHost) return;
+        if (NetworkManager.Singleton.IsHost) return;
         try
         {
-            networkManager.StartClient();
+            NetworkManager.Singleton.StartClient();
             await SceneManager.UnloadSceneAsync(BootstrapManager.Instance.mainMenuScene);
 
             Debug.Log($"{CheckPrivilege()} Client has started");
@@ -67,11 +67,11 @@ public class UnityNetworkHelper : Singleton<UnityNetworkHelper>
     {
         try
         {
-            string privilege = networkManager.IsServer ? "host" : "client";
-            string color = networkManager.IsServer ? LogColours.Host : LogColours.Client;
+            string privilege = NetworkManager.Singleton.IsServer ? "host" : "client";
+            string color = NetworkManager.Singleton.IsServer ? LogColours.Host : LogColours.Client;
 
             Debug.Log($"<color={LogColours.Unity}>[UNITY]</color> <color={color}>[{privilege.ToUpper()}]</color> Shutting down {privilege}...");
-            networkManager.Shutdown();
+            NetworkManager.Singleton.Shutdown();
             // Destroy(networkManager.gameObject);
 
             _eventManager.OnUnityClientDisconnected?.Invoke(); // INFO: Client stopped let other scripts know
@@ -92,12 +92,12 @@ public class UnityNetworkHelper : Singleton<UnityNetworkHelper>
     {
         try
         {
-            networkManager.StartHost();
+            NetworkManager.Singleton.StartHost();
 
             // INFO: Configure Network Manager
-            networkManager.SceneManager.ActiveSceneSynchronizationEnabled = true;
-            networkManager.SceneManager.PostSynchronizationSceneUnloading = true;
-            networkManager.SceneManager.SetClientSynchronizationMode(LoadSceneMode.Additive);
+            NetworkManager.Singleton.SceneManager.ActiveSceneSynchronizationEnabled = true;
+            NetworkManager.Singleton.SceneManager.PostSynchronizationSceneUnloading = true;
+            NetworkManager.Singleton.SceneManager.SetClientSynchronizationMode(LoadSceneMode.Additive);
 
             Debug.Log($"{CheckPrivilege()} Unity Server has started");
             _eventManager.OnStartUnityHost?.Invoke(); // INFO: Host started let other scripts know
@@ -113,7 +113,7 @@ public class UnityNetworkHelper : Singleton<UnityNetworkHelper>
 
     protected virtual void OnStopUnityHost()
     {
-        if (!networkManager.IsServer) return;
+        if (!NetworkManager.Singleton.IsServer) return;
         StopUnityClient(); // INFO: Stop host client
 
     }
@@ -123,9 +123,9 @@ public class UnityNetworkHelper : Singleton<UnityNetworkHelper>
     #region Utility
     public virtual string CheckPrivilege()
     {
-        if (networkManager == null || networkManager.IsHost == default) return $"<color={LogColours.Unity}>[UNITY]</color>";
+        if (!NetworkManager.Singleton.IsListening) return $"<color={LogColours.Unity}>[UNITY]</color>";
 
-        switch (networkManager.IsHost)
+        switch (NetworkManager.Singleton.IsHost)
         {
             case true:
                 return $"<color={LogColours.Unity}>[UNITY]</color> <color={LogColours.Host}>[HOST]</color>";

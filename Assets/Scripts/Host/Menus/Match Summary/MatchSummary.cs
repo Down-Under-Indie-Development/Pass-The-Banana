@@ -30,7 +30,7 @@ public class MatchSummary : NetworkBehaviour
         if (_nextRoundTxt != null) _nextRoundTxt.text = nextRound < _gameManager.currentGameLobbyData.numberOfRounds ? $"ROUND {nextRound}" : _nextRoundTxt.text = "LOBBY";
 
 
-        List<ulong> clientIds = new(NetworkManager.ConnectedClientsIds);
+        List<ulong> clientIds = new(NetworkManager.Singleton.ConnectedClientsIds);
         clientIds.Sort((a, b) =>
             _gameManager.scoreManager.GetPlayerPlace(a, dataSet)
                 .CompareTo(_gameManager.scoreManager.GetPlayerPlace(b, dataSet))
@@ -51,9 +51,9 @@ public class MatchSummary : NetworkBehaviour
     // INFO: Animation per player card
     private IEnumerator ShowPlayerStats(ulong clientId, Dictionary<ulong, ScoreData> dataSet, float perPlayerDelay)
     {
-        NetworkObject playerCardNetObj = NetworkManager.SpawnManager.InstantiateAndSpawn(
+        NetworkObject playerCardNetObj = NetworkManager.Singleton.SpawnManager.InstantiateAndSpawn(
             _playerCardPrefab.GetComponent<NetworkObject>(),
-            NetworkManager.LocalClientId
+            NetworkManager.Singleton.LocalClientId
         );
 
         ScoreData playerScore = dataSet[clientId];
@@ -70,7 +70,7 @@ public class MatchSummary : NetworkBehaviour
     [Rpc(SendTo.ClientsAndHost)]
     private void ParentPlayerCardRPC(ulong cardNetworkObjectId, int score, int fails, int passes, ulong clientId, int place)
     {
-        if (!NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(cardNetworkObjectId, out NetworkObject cardNetObj))
+        if (!NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(cardNetworkObjectId, out NetworkObject cardNetObj))
         {
             Debug.LogWarning($"Could not find card with ID {cardNetworkObjectId}");
             return;

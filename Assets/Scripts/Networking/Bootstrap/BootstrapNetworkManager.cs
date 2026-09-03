@@ -10,7 +10,6 @@ using PTB.Networking;
 
 public class BootstrapNetworkManager : NetworkedSingleton<BootstrapNetworkManager>
 {
-
     public LobbyData lobbyData { get; private set; }
 
     #region Change Scene
@@ -25,7 +24,7 @@ public class BootstrapNetworkManager : NetworkedSingleton<BootstrapNetworkManage
 
     public SceneEventProgressStatus ChangeNetworkScene(string sceneToLoad, List<string> scenesToClose)
     {
-        if (!NetworkManager.IsServer) return SceneEventProgressStatus.None; // INFO: Ensure server is running this
+        if (!NetworkManager.Singleton.IsServer) return SceneEventProgressStatus.None; // INFO: Ensure server is running this
         if (sceneToLoad == null) { Debug.LogError($"Scene to load is null!"); return SceneEventProgressStatus.None; }
 
         foreach (string sceneName in scenesToClose)
@@ -35,7 +34,7 @@ public class BootstrapNetworkManager : NetworkedSingleton<BootstrapNetworkManage
 
         }
 
-        SceneEventProgressStatus sceneLoadStatus = NetworkManager.SceneManager.LoadScene(sceneToLoad, LoadSceneMode.Additive);
+        SceneEventProgressStatus sceneLoadStatus = NetworkManager.Singleton.SceneManager.LoadScene(sceneToLoad, LoadSceneMode.Additive);
         if (sceneLoadStatus == SceneEventProgressStatus.Started) Debug.Log($"<color={LogColours.Unity}>[NETWORK]</color> Scene transition complete: {sceneToLoad}");
         return sceneLoadStatus;
 
@@ -57,7 +56,7 @@ public class BootstrapNetworkManager : NetworkedSingleton<BootstrapNetworkManage
     #region Return To Lobby
     public void ReturnToLobby()
     {
-        if (!NetworkManager.IsServer) return;
+        if (!NetworkManager.Singleton.IsServer) return;
 
         SceneEventProgressStatus status = ChangeNetworkScene(BootstrapManager.Instance.lobbyScene, BootstrapManager.Instance.gameplayScenes);
         if (status == SceneEventProgressStatus.Started) Invoke(nameof(OpenLobbyMenuClientRPC), 0.1f);
@@ -75,7 +74,7 @@ public class BootstrapNetworkManager : NetworkedSingleton<BootstrapNetworkManage
 
     public void ForEachPlayer(Action<PlayerNetworkedController> action, bool includeHost = true)
     {
-        foreach (NetworkClient netObj in NetworkManager.ConnectedClients.Values)
+        foreach (NetworkClient netObj in NetworkManager.Singleton.ConnectedClients.Values)
         {
             PlayerNetworkedController playerController = netObj.PlayerObject.GetComponent<PlayerNetworkedController>();
             if (playerController == null) continue;
