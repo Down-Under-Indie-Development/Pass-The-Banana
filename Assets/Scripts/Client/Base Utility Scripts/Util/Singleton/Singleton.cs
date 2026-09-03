@@ -2,6 +2,7 @@ using Unity.Netcode;
 using Unity.Services.Matchmaker.Models;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using Unity.Scripting.LifecycleManagement;
 
 /// <summary>
 /// Creates a singleton in the scene when called to allow for public static access to 
@@ -10,9 +11,9 @@ using UnityEngine.EventSystems;
 namespace Utility
 {
     #region Singleton
-    public abstract class Singleton<T> : CustomMonoBehaviour where T : MonoBehaviour
+    public partial class Singleton<T> : CustomMonoBehaviour where T : MonoBehaviour
     {
-        private static T instance;
+        [AutoStaticsCleanup] private static T instance;
         public static bool hasInstance => instance != null;
 
         // INFO: Set the instance
@@ -93,10 +94,10 @@ namespace Utility
 
     #region Network Singleton
     #region Networked Singleton
-    public abstract class NetworkedSingleton<T> : NetworkBehaviour where T : MonoBehaviour
+    public partial class NetworkedSingleton<T> : NetworkBehaviour where T : MonoBehaviour
     {
         protected virtual EventManager _eventManager => EventManager.Instance;
-        private static T instance = null;
+        [AutoStaticsCleanup] private static T instance = null;
         public static bool hasInstance => instance != null;
 
         public static T Instance => instance;
