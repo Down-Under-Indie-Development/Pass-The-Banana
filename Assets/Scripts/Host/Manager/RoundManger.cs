@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Metadata.Ecma335;
 using System.Text.RegularExpressions;
+using Netcode.Transports.Facepunch;
 using Unity.Netcode;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -32,21 +33,27 @@ public class RoundManger : NetworkedSingleton<RoundManger>
 
     // INFO: Current round tracking
     public int currentRound { get; private set; } = 1;
-    public Dictionary<int, Dictionary<ulong, ScoreData>> currentRoundData { get; private set; } = new();
+
+    [field: SerializeField] public Dictionary<int, Dictionary<ulong, ScoreData>> currentRoundData { get; private set; } = new();
 
     // INFO: Create the round tracking dictionary
     private void InitialiseRoundTracker()
     {
-        if (!currentRoundData.ContainsKey(currentRound)) currentRoundData[currentRound] = new Dictionary<ulong, ScoreData>();
-        foreach (ulong clientId in NetworkManager.Singleton.ConnectedClientsIds)
+        for (int i = 1; i < _gameManager.bootstrapNetworkManager.lobbyData.numberOfRounds + 1; i++)
         {
-            currentRoundData[currentRound][clientId] = ScoreData.Empty();
+            if (!currentRoundData.ContainsKey(i)) currentRoundData[i] = new Dictionary<ulong, ScoreData>();
+            foreach (ulong clientId in NetworkManager.Singleton.ConnectedClientsIds)
+            {
+                currentRoundData[i][clientId] = ScoreData.Empty();
+            }
         }
+
     }
 
     public void StartRound()
     {
-        InitialiseRoundTracker();
+        if (currentRound == 1) InitialiseRoundTracker();
+
         Debug.Log($"Starting Round {currentRound}/{_gameManager.currentGameLobbyData.numberOfRounds}");
         _gameManager.bombManager.SelectStartingPlayer();
         Invoke(nameof(ShowCategorySelection), .1f); // INFO: Allow time for syncing
@@ -109,7 +116,6 @@ public class RoundManger : NetworkedSingleton<RoundManger>
         // if (_gameManager.playerManager.PlayersRemaining <= 1) { HandleGameOver(); return; }
         NotifyAnswerResultRpc(true);
         _gameManager.scoreManager.AwardPoints(clientId); // INFO: Score
-        currentRoundData[currentRound][clientId].points += 1;
         _gameManager.bombManager.ProcessPassTheBomb();
 
     }
@@ -118,7 +124,6 @@ public class RoundManger : NetworkedSingleton<RoundManger>
     {
         NotifyAnswerResultRpc(false);
         _gameManager.scoreManager.AwardFail(clientId);
-        currentRoundData[currentRound][clientId].fails++;
         _gameManager.bombManager.ProcessExplode();
 
     }
@@ -141,6 +146,12 @@ public class RoundManger : NetworkedSingleton<RoundManger>
     {
         HandleServerEndOfRound();
         if (IsGameOver()) { HandleGameOver(); return; }
+
+        foreach (ulong clientId in NetworkManager.Singleton.ConnectedClientsIds)
+        {
+            currentRoundData[currentRound][clientId] = _gameManager.scoreManager.GetPlayerScore(clientId);
+        }
+
         NetworkObject networkObject = SpawnMatchSummary(_gameManager.roundManager.currentRoundData[currentRound], ProgressToNextRound);
 
     }

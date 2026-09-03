@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -91,6 +92,7 @@ public class ScoreManager : NetworkedSingleton<ScoreManager>
 
 }
 
+[Serializable]
 public class ScoreData
 {
     public int points;

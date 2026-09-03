@@ -58,7 +58,6 @@ public class BombManager : NetworkedSingleton<BombManager>
         if (_gameManager.activePlayers.Count == 1)
         {
             Debug.Log($"<color={LogColours.Unity}>[BOMB MANAGER]</color> We have a winner!");
-            _gameManager.scoreManager.AwardPoints(_gameManager.activePlayers[0]);
             _gameManager.questionManager.ProcessNextQuestion(); return;
 
         }
