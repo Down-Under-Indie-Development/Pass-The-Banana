@@ -47,10 +47,10 @@ public class EventManager : Singleton<EventManager>
     #endregion
 
     #region Client
-    public NoArgs OnStopUnityClient;
     public NoArgs OnStartUnityClient;
-    public NoArgs OnUnityClientDisconnected;
-    public OneArg<string> OnQuestionSelected;
+    public NoArgs OnStopUnityClient;
+    // public NoArgs OnUnityClientDisconnected;
+    // public OneArg<string> OnQuestionSelected;
     #endregion
     #endregion
 

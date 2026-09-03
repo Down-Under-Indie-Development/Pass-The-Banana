@@ -12,7 +12,6 @@ using Utility;
 /// </summary>
 public class UnityNetworkHelper : Singleton<UnityNetworkHelper>
 {
-    // public virtual NetworkManager networkManager => NetworkManager.Singleton;
 
     #region Events
     protected virtual void OnEnable()
@@ -72,9 +71,6 @@ public class UnityNetworkHelper : Singleton<UnityNetworkHelper>
 
             Debug.Log($"<color={LogColours.Unity}>[UNITY]</color> <color={color}>[{privilege.ToUpper()}]</color> Shutting down {privilege}...");
             NetworkManager.Singleton.Shutdown();
-            // Destroy(networkManager.gameObject);
-
-            _eventManager.OnUnityClientDisconnected?.Invoke(); // INFO: Client stopped let other scripts know
 
         }
         catch (System.Exception ex)

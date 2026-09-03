@@ -43,7 +43,7 @@ public class BootstrapNetworkManager : NetworkedSingleton<BootstrapNetworkManage
 
     #region CLIENT 
 
-    [Rpc(SendTo.Everyone)]
+    [Rpc(SendTo.ClientsAndHost)]
     private void CloseSceneObserverRPC(string scenesToClose)
     {
         SceneManager.UnloadSceneAsync(scenesToClose);

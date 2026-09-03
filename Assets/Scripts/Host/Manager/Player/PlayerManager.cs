@@ -45,7 +45,6 @@ public class PlayerManager : NetworkedSingleton<PlayerManager>
 
     private void OnDisable()
     {
-        if (NetworkManager == null) return;
         NetworkManager.Singleton.OnConnectionEvent -= OnUnityClientDisconnect;
 
     }

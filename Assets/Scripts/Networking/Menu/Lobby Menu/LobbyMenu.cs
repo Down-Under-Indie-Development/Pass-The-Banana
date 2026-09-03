@@ -43,8 +43,6 @@ namespace PTB.Networking.Menus
         private void OnDisable()
         {
             SteamMatchmaking.OnLobbyEntered -= OnLobbyEntered;
-
-            if (NetworkManager.Singleton == null) return;
             NetworkManager.Singleton.OnConnectionEvent -= OnUnityClientDisconnect;
 
         }

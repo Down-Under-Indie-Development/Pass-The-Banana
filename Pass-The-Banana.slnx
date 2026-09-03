@@ -78,6 +78,7 @@
   <Project Path="Unity.Multiplayer.Center.Common.csproj" />
   <Project Path="UnityEditor.UI.csproj" />
   <Project Path="Unity.Netcode.Editor.csproj" />
+  <Project Path="ProjectAuditorRules.ModuleAnalyzers.csproj" />
   <Project Path="Unity.RenderPipelines.Universal.2D.Editor.Overrides.csproj" />
   <Project Path="Unity.2D.Animation.Profiler.Editor.csproj" />
   <Project Path="Unity.Networking.Editor.csproj" />
@@ -164,6 +165,7 @@
   <Project Path="Unity.Mathematics.csproj" />
   <Project Path="Unity.2D.Triangulation.Runtime.csproj" />
   <Project Path="Unity.RenderPipelines.Universal.Config.Runtime.csproj" />
+  <Project Path="Domain_Reload.csproj" />
   <Project Path="Unity.RenderPipelines.ShaderGraph.ShaderGraphLibrary.csproj" />
   <Project Path="Unity.RenderPipelines.Core.ShaderLibrary.csproj" />
   <Project Path="Unity.Timeline.Player.csproj" />
@@ -250,6 +252,7 @@
   <Project Path="Unity.Services.Core.Environments.Player.csproj" />
   <Project Path="Unity.Mathematics.Player.csproj" />
   <Project Path="Unity.RenderPipelines.Universal.Config.Runtime.Player.csproj" />
+  <Project Path="Domain_Reload.Player.csproj" />
   <Project Path="Unity.RenderPipelines.ShaderGraph.ShaderGraphLibrary.Player.csproj" />
   <Project Path="Unity.RenderPipelines.Core.ShaderLibrary.Player.csproj" />
 </Solution>
