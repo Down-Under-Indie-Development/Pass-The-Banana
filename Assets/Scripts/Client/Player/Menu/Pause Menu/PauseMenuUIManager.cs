@@ -12,6 +12,18 @@ namespace PTB.Client.Menus
     {
         [SerializeField] private GameObject _optionsMenu;
 
+        #region Events
+        private void OnEnable()
+        {
+
+        }
+
+        private void OnDisable()
+        {
+            Time.timeScale = 1f;
+        }
+        #endregion
+
         public void ResumeGame()
         {
             if (NetworkManager.Singleton.IsServer) gameObject.transform.root.GetComponent<PlayerNetworkedController>().AskTogglePauseRPC(); // TODO: Make this an event?
@@ -33,6 +45,7 @@ namespace PTB.Client.Menus
             if (SteamManager.Instance.connectedToSteam) { _eventManager.OnSteamClientDisconnect?.Invoke(); return; }
             // !! Unity handling
             if (BootstrapManager.Instance.selectedTransport == BootstrapManager.Transport.Unity) _eventManager.OnStopUnityClient?.Invoke();
+            Time.timeScale = 1;
 
         }
 
