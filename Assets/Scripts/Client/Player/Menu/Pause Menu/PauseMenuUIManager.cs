@@ -14,7 +14,7 @@ namespace PTB.Client.Menus
 
         public void ResumeGame()
         {
-            if (NetworkManager.Singleton.IsServer) gameObject.transform.root.GetComponent<PlayerNetworkedController>().RequestTogglePauseRPC(); // TODO: Make this an event?
+            if (NetworkManager.Singleton.IsServer) gameObject.transform.root.GetComponent<PlayerNetworkedController>().AskTogglePauseRPC(); // TODO: Make this an event?
             if (gameObject.transform.root.GetComponent<PlayerNetworkedController>().hostForcedPause) return;
             gameObject.SetActive(false);
 

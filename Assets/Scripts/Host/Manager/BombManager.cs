@@ -24,6 +24,20 @@ public class BombManager : NetworkedSingleton<BombManager>
     [Header("Audio Settings")]
     [SerializeField] private AudioClip _bombExplodeSFX;
 
+    #region Events
+    private void OnEnable()
+    {
+        _eventManager.OnCountdownFinished += ProcessExplode;
+
+    }
+
+    private void OnDisable()
+    {
+        _eventManager.OnCountdownFinished -= ProcessExplode;
+    }
+    #endregion
+
+
     public ulong SelectStartingPlayer()
     {
         return playerWithBanana.Value = (ulong)Random.Range(0, NetworkManager.ConnectedClientsIds.Count - 1);
@@ -35,7 +49,7 @@ public class BombManager : NetworkedSingleton<BombManager>
         if (playerWithBanana == null) return;
         _gameManager.playerManager.EliminatePlayerRPC(playerWithBanana.Value);
         AudioManager.Instance.PlayerAudio(_bombExplodeSFX);
-        StartCoroutine(_gameManager.DelayCoroutine(.2f, ProcessPassTheBomb)); // INFO: Add delay for explosion animation
+        Invoke(nameof(ProcessPassTheBomb), .2f); // INFO: Add delay for explosion animation
 
     }
 
@@ -56,7 +70,7 @@ public class BombManager : NetworkedSingleton<BombManager>
         playerWithBanana.Value = _gameManager.activePlayers[nextIndex];
 
         Debug.Log($"<color={LogColours.Unity}>[BOMB MANAGER]</color> Bomb passed to player {playerWithBanana.Value}");
-        StartCoroutine(_gameManager.DelayCoroutine(.1f, _gameManager.questionManager.ProcessNextQuestion));
+        _gameManager.questionManager.ProcessNextQuestion();
 
     }
 

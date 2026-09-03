@@ -39,12 +39,14 @@ public class PlayerManager : NetworkedSingleton<PlayerManager>
     #region Events
     private void OnEnable()
     {
-        NetworkManager.Singleton.OnConnectionEvent += OnUnityClientDisconnect;
+        NetworkManager.OnConnectionEvent += OnUnityClientDisconnect;
+
     }
 
     private void OnDisable()
     {
-        NetworkManager.Singleton.OnConnectionEvent -= OnUnityClientDisconnect;
+        if (NetworkManager == null) return;
+        NetworkManager.OnConnectionEvent -= OnUnityClientDisconnect;
 
     }
     #endregion
@@ -132,20 +134,15 @@ public class PlayerManager : NetworkedSingleton<PlayerManager>
 
         if (connectionEventData.ClientId == networkManager.LocalClientId)
         {
-            string sceneName = BootstrapManager.Instance.gameObject.scene.name;
-
-            // await SceneManager.UnloadSceneAsync(sceneName);
-            // await Task.Delay(100);
-            // await SceneManager.UnloadSceneAsync(gameObject.scene.name);
-            // await Task.Delay(100);
-
-            await SceneManager.LoadSceneAsync(sceneName);
+            await SceneManager.UnloadSceneAsync(BootstrapManager.Instance.gameplayScenes[0]);
+            await SceneManager.LoadSceneAsync(BootstrapManager.Instance.mainMenuScene, LoadSceneMode.Additive);
+            Debug.Log($"<color={LogColours.Unity}>[PLAYER MANAGER]</color> You left the game!");
             return;
 
         }
 
         if (!networkManager.IsServer) return;
-        Debug.Log($"<color={LogColours.Lobby}>[LOBBY]</color> {connectionEventData.ClientId} has left!");
+        Debug.Log($"<color={LogColours.Unity}>[PLAYER MANAGER]</color> {connectionEventData.ClientId} has left!");
 
     }
     #endregion
@@ -153,9 +150,9 @@ public class PlayerManager : NetworkedSingleton<PlayerManager>
 
     #region Utility
     [Rpc(SendTo.ClientsAndHost)]
-    public void HandleChangePodiumColorRPC(ulong client, Color colour)
+    public void HandleChangePodiumColorRPC(ulong clientId, Color colour)
     {
-        NetworkManager.ConnectedClients[client].PlayerObject.GetComponent<PlayerNetworkedController>().podium.transform.GetChild(1).GetComponent<MeshRenderer>().material.color = colour;
+        NetworkManager.ConnectedClients[clientId].PlayerObject.GetComponent<PlayerNetworkedController>().podium.transform.GetChild(1).GetComponent<MeshRenderer>().material.color = colour;
     }
 
     public bool IsPlayerActive(ulong clientId)

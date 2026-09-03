@@ -52,7 +52,6 @@ namespace PTB.Networking.Menus
 
         public override void OnNetworkSpawn()
         {
-            base.OnNetworkSpawn();
             if (!_networkHelper.networkManager.IsServer && _startGameBTN != null) _startGameBTN.interactable = false;
             Refresh();
 
@@ -103,6 +102,7 @@ namespace PTB.Networking.Menus
         }
 
         [Rpc(SendTo.ClientsAndHost)]
+        // INFO: Tell the client the lobby info
         private void TellLobbyInfoRPC(string lobbyCode, string numberOfRounds)
         {
             // GUARD: Prevent unnecessary refresh
@@ -110,7 +110,6 @@ namespace PTB.Networking.Menus
 
             if (_lobbyCodeTxt != null) _lobbyCodeTxt.text = lobbyCode;
             if (_roundsTxt != null) _roundsTxt.text = numberOfRounds;
-            Debug.Log($"Refresh Test");
 
         }
 
@@ -163,15 +162,17 @@ namespace PTB.Networking.Menus
                 CreatePlayerCard($"{clientId}", isHost, $"{0}ms");
             }
         }
+        #endregion
 
         private async void OnUnityClientDisconnect(NetworkManager networkManager, ConnectionEventData connectionEventData)
         {
             if (connectionEventData.EventType != ConnectionEvent.ClientDisconnected) return;
 
-            if (connectionEventData.ClientId == NetworkManager.Singleton.LocalClientId)
+            if (connectionEventData.ClientId == networkManager.LocalClientId)
             {
-                var sceneName = BootstrapManager.Instance.gameObject.scene.name;
-                await SceneManager.LoadSceneAsync(sceneName);
+                await SceneManager.UnloadSceneAsync(BootstrapManager.Instance.lobbyScene);
+                await SceneManager.LoadSceneAsync(BootstrapManager.Instance.mainMenuScene, LoadSceneMode.Additive);
+                Debug.Log($"<color={LogColours.Lobby}>[LOBBY]</color> You left the lobby!");
                 return;
 
             }
@@ -182,7 +183,6 @@ namespace PTB.Networking.Menus
 
         }
 
-        #endregion
 
         #endregion
 
@@ -206,7 +206,7 @@ namespace PTB.Networking.Menus
         public void StartGame()
         {
             BootstrapManager bootstrapManager = BootstrapManager.Instance;
-            if (NetworkManager.Singleton.ConnectedClients.Count < bootstrapManager.minimumPlayers && bootstrapManager.selectedTransport == BootstrapManager.Transport.Facepunch) { Debug.LogWarning($"Need {bootstrapManager.minimumPlayers} players to start"); return; }
+            if (NetworkManager.ConnectedClients.Count < bootstrapManager.minimumPlayers && bootstrapManager.selectedTransport == BootstrapManager.Transport.Facepunch) { Debug.LogWarning($"Need {bootstrapManager.minimumPlayers} players to start"); return; }
             Debug.Log($"{_networkHelper.CheckPrivilege()} Started the game!");
             BootstrapNetworkManager.Instance.ChangeNetworkScene(bootstrapManager.gameplayScenes[0], bootstrapManager.lobbyScene);
         }
@@ -217,7 +217,6 @@ namespace PTB.Networking.Menus
 
             // !! Unity handling
             _eventManager.OnStopUnityClient?.Invoke();
-
 
         }
 

@@ -1,3 +1,4 @@
+using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
 using UnityEngine;
 using UnityEngine.UI;
@@ -5,6 +6,8 @@ using Utility;
 
 public class HostGame : CustomMonoBehaviour
 {
+    private BootstrapNetworkManager _bootstrapNetworkManager => BootstrapNetworkManager.Instance;
+
     [Header("Menu Components")]
     [SerializeField] private Slider _maxPlayerSlider;
     [SerializeField] private Slider _numberOfRoundsSlide;
@@ -22,8 +25,8 @@ public class HostGame : CustomMonoBehaviour
 
         Debug.Log(lobbyData);
 
-        BootstrapNetworkManager.Instance.SetLobbyData(lobbyData);
-        if (BootstrapNetworkManager.Instance.NetworkManager.NetworkConfig.NetworkTransport is UnityTransport)
+        _bootstrapNetworkManager.SetLobbyData(lobbyData);
+        if (NetworkManager.Singleton.NetworkConfig.NetworkTransport is UnityTransport)
         {
             Debug.Log($"<color={LogColours.Debug}>[DEBUG]</color> <color={LogColours.Unity}>[UNITY]</color> Bypassing Facepunch transport, starting host!");
             _eventManager.OnSteamHostConnect?.Invoke();

@@ -34,19 +34,6 @@ public class RoundManger : NetworkedSingleton<RoundManger>
     public int currentRound { get; private set; } = 1;
     public Dictionary<int, Dictionary<ulong, ScoreData>> currentRoundData { get; private set; } = new();
 
-    #region Events
-    private void OnEnable()
-    {
-        _eventManager.OnCountdownFinished += _gameManager.bombManager.ProcessExplode;
-
-    }
-
-    private void OnDisable()
-    {
-        _eventManager.OnCountdownFinished -= _gameManager.bombManager.ProcessExplode;
-    }
-    #endregion
-
     // INFO: Create the round tracking dictionary
     private void InitialiseRoundTracker()
     {
@@ -62,7 +49,7 @@ public class RoundManger : NetworkedSingleton<RoundManger>
         InitialiseRoundTracker();
         Debug.Log($"Starting Round {currentRound}/{_gameManager.currentGameLobbyData.numberOfRounds}");
         _gameManager.bombManager.SelectStartingPlayer();
-        StartCoroutine(_gameManager.DelayCoroutine(.1f, ShowCategorySelection)); // INFO: Allow time for syncing
+        Invoke(nameof(ShowCategorySelection), .1f); // INFO: Allow time for syncing
 
     }
 

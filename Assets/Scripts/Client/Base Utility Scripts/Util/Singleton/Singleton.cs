@@ -102,7 +102,8 @@ namespace Utility
         public static T Instance => instance;
         protected virtual void Awake()
         {
-            SetSingleton();
+            if (instance == null)
+                SetSingleton();
             OnInstanceCreated();
 
         }

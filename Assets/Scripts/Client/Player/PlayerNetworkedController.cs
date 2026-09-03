@@ -35,7 +35,7 @@ namespace PTB.Client.Player
                 TogglePauseMenu(); return;
             }
 
-            RequestTogglePauseRPC();
+            if (IsServer) AskTogglePauseRPC();
 
 
         }
@@ -47,10 +47,11 @@ namespace PTB.Client.Player
         }
 
         [Rpc(SendTo.Server)]
-        public void RequestTogglePauseRPC()
+        public void AskTogglePauseRPC()
         {
             // Tell the server to broadcast pause state to all clients (including itself)
-            GameNetworkManager.Instance.BroadcastPauseStateRPC();
+            GameNetworkManager.Instance.TellPauseStateRPC();
+
         }
 
         // Called from GameManager via RPC - applies pause state to this player
@@ -62,15 +63,6 @@ namespace PTB.Client.Player
 
         }
         #endregion
-
-        // INFO: Get the podium
-        // private void OnTriggerEnter(Collider other)
-        // {
-
-        //     if (!other.transform.CompareTag("Podium")) return;
-        //     podium = other.gameObject;
-
-        // }
 
     }
 }

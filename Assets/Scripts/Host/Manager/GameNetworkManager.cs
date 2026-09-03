@@ -39,43 +39,37 @@ public class GameNetworkManager : NetworkedSingleton<GameNetworkManager>
 
     public List<ulong> activePlayers;
 
-    #region Events
-    private void OnEnable()
-    {
-
-    }
-
-    private void OnDisable()
-    {
-        _eventManager.OnCountdownFinished -= bombManager.ProcessExplode;
-
-
-    }
-    #endregion
-
     #region Networking
     public override void OnNetworkSpawn()
     {
-        base.OnNetworkSpawn();
-        if (IsServer) StartCoroutine(DelayCoroutine(.1f, HandleStartGameRPC));
+        if (IsServer) Invoke(nameof(HandleStartGame), 0.1f);
 
     }
+
     #endregion
 
     // INFO: All players spawn now do shit!
-    [Rpc(SendTo.Server)]
-    public void HandleStartGameRPC()
+    private void HandleStartGame()
     {
+        Debug.Log($"HandleStartGame called - IsServer: {IsServer}");
+        if (!IsServer) return;
+
         currentGameLobbyData = bootstrapNetworkManager.lobbyData;
-        BootstrapManager.Instance.sessionStateManager.UpdateSessionState(GameState.Playing);
-        if (BootstrapManager.Instance.sessionStateManager.currentSessionState.Value != GameState.Playing) return;
+
+        sessionStateManager.UpdateSessionState(GameState.Playing);
+        if (sessionStateManager.currentSessionState.Value != GameState.Playing)
+        {
+            Debug.LogError($"Game state isn't set to playing {sessionStateManager.currentSessionState.Value}");
+            return;
+
+        }
 
         activePlayers = NetworkManager.Singleton.ConnectedClientsIds
            .Where(clientId => playerManager.IsPlayerActive(clientId))
            .ToList();
 
         playerManager.SpawnPlayers();
-        roundManager.StartRound();
+        // roundManager.StartRound();
 
     }
 
@@ -83,7 +77,7 @@ public class GameNetworkManager : NetworkedSingleton<GameNetworkManager>
     private bool _gamePaused = false;
 
     [Rpc(SendTo.ClientsAndHost)]  // INFO: Send to all clients AND the host
-    public void BroadcastPauseStateRPC()
+    public void TellPauseStateRPC()
     {
         // INFO: Toggle the pause state
         _gamePaused = !_gamePaused;
@@ -92,17 +86,19 @@ public class GameNetworkManager : NetworkedSingleton<GameNetworkManager>
 
         // INFO: Apply pause state to all connected players (including host)
         // bootstrapNetworkManager.ForEachPlayer(player => player._pauseMenuGO.SetActive(false), false);
-        bootstrapNetworkManager.ForEachPlayer(player => player.ApplyPauseState(_gamePaused), false);
+        bootstrapNetworkManager.ForEachPlayer(player => player.ApplyPauseState(_gamePaused));
 
     }
     #endregion
 
-    public IEnumerator DelayCoroutine(float seconds, Action onCompleted = null)
-    {
-        yield return new WaitForSeconds(seconds);
-        onCompleted?.Invoke();
+    // public IEnumerator DelayCoroutine(float seconds, Action onCompleted = null)
+    // {
+    //     yield return new WaitForSeconds(seconds);
+    //     Debug.Log("Wait complete, about to invoke callback");
+    //     onCompleted?.Invoke();
+    //     Debug.Log("Callback invoked");
 
-    }
+    // }
 
 }
 

@@ -41,41 +41,46 @@ public class UnityNetworkHelper : Singleton<UnityNetworkHelper>
     #endregion
 
     #region Unity Client
-    // INFO: Start client connection 
+    // INFO: Start Client Connection 
     protected virtual async void OnStartUnityClient()
     {
         if (networkManager.IsHost) return;
-        if (!networkManager.StartClient()) { Debug.LogError($"{CheckPrivilege()} Client failed to start!"); return; }
+        try
+        {
+            networkManager.StartClient();
+            await SceneManager.UnloadSceneAsync(BootstrapManager.Instance.mainMenuScene);
 
-        Debug.Log($"{CheckPrivilege()} Client has started");
+            Debug.Log($"{CheckPrivilege()} Client has started");
+            _eventManager.OnStartUnityClient?.Invoke(); // INFO: Client started let other scripts know
 
-        await SceneManager.UnloadSceneAsync(BootstrapManager.Instance.mainMenuScene);
-        _eventManager.OnStartUnityClient?.Invoke(); // INFO: Client started let other scripts know
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogError($"{ex.Message}");
+
+        }
 
     }
 
+    // INFO: Stop Client Connection
     protected virtual async void StopUnityClient()
     {
-        if (networkManager == null) return;
-
-        string privilege = networkManager.IsServer ? "host" : "client";
-        string color = networkManager.IsServer ? LogColours.Host : LogColours.Client;
-
-        Debug.Log($"<color={LogColours.Unity}>[UNITY]</color> <color={color}>[{privilege.ToUpper()}]</color> Shutting down {privilege}...");
-
         try
         {
+            string privilege = networkManager.IsServer ? "host" : "client";
+            string color = networkManager.IsServer ? LogColours.Host : LogColours.Client;
+
+            Debug.Log($"<color={LogColours.Unity}>[UNITY]</color> <color={color}>[{privilege.ToUpper()}]</color> Shutting down {privilege}...");
             networkManager.Shutdown();
-            Destroy(networkManager.gameObject);
+            // Destroy(networkManager.gameObject);
+
+            _eventManager.OnUnityClientDisconnected?.Invoke(); // INFO: Client stopped let other scripts know
 
         }
         catch (System.Exception ex)
         {
             Debug.LogError($"Shutdown error: {ex.Message}");
         }
-
-        _eventManager.OnUnityClientDisconnected?.Invoke(); // INFO: Client stopped let other scripts know
-
 
     }
 
@@ -85,18 +90,24 @@ public class UnityNetworkHelper : Singleton<UnityNetworkHelper>
     // INFO: Start host connection
     protected virtual void OnStartUnityHost()
     {
+        try
+        {
+            networkManager.StartHost();
 
-        // GUARD: Ensure server started
-        // RegisterNetworkPrefabs();
-        if (!networkManager.StartHost()) return;
+            // INFO: Configure Network Manager
+            networkManager.SceneManager.ActiveSceneSynchronizationEnabled = true;
+            networkManager.SceneManager.PostSynchronizationSceneUnloading = true;
+            networkManager.SceneManager.SetClientSynchronizationMode(LoadSceneMode.Additive);
 
-        // INFO: Configure Network Manager
-        networkManager.SceneManager.ActiveSceneSynchronizationEnabled = true;
-        networkManager.SceneManager.PostSynchronizationSceneUnloading = true;
-        // networkManager.SceneManager.SetClientSynchronizationMode(LoadSceneMode.Additive);
+            Debug.Log($"{CheckPrivilege()} Unity Server has started");
+            _eventManager.OnStartUnityHost?.Invoke(); // INFO: Host started let other scripts know
 
-        Debug.Log($"{CheckPrivilege()} Unity Server has started");
-        _eventManager.OnStartUnityHost?.Invoke(); // INFO: Host started let other scripts know
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogError($"{ex.Message}");
+
+        }
 
     }
 

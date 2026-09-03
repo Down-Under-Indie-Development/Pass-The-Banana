@@ -45,19 +45,5 @@ NetworkVariableWritePermission.Server
 
         }
 
-        // public override void OnNetworkSpawn()
-        // {
-        //     base.OnNetworkSpawn();
-
-        //     Debug.Log($"SessionStateManager OnNetworkSpawn | IsServer: {IsServer} | Value: {currentSessionState.Value}");
-
-        //     // Force callback to fire
-        //     currentSessionState.OnValueChanged += SessionStateChanged;
-
-        //     if (!IsServer)
-        //     {
-        //         Debug.Log($"Client: explicitly re-registered OnValueChanged callback");
-        //     }
-        // }
     }
 }
