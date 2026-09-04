@@ -280,7 +280,7 @@ MonoBehaviour:
   <gameplayScenes>k__BackingField:
   - TestScene
   <minimumPlayers>k__BackingField: 2
-  <selectedTransport>k__BackingField: 1
+  <selectedTransport>k__BackingField: 0
 --- !u!1001 &623514394
 PrefabInstance:
   m_ObjectHideFlags: 0
