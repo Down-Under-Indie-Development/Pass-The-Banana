@@ -4,17 +4,13 @@ using UnityEngine.UI;
 using Unity.Netcode;
 using TMPro;
 using PTB.Networking.Menus.Interfaces;
-using System.Collections.Generic;
-using Unity.Netcode.Transports.UTP;
-using Steamworks.Data;
+using PTB.Enums;
 
 namespace PTB.Networking.Menus
 {
     public class MainMenu : Singleton<MainMenu>, IMenu
     {
-
-        // INFO: Networking Components
-        // private UnityNetworkHelper _unityNetworkHelper => UnityNetworkHelper.Instance;
+        private EventManager _eventManager => EventManager.Instance;
         private BootstrapManager _bootstrapManager => BootstrapManager.Instance;
 
         [Header("Sub Menus")]

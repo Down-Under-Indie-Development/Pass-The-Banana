@@ -12,6 +12,7 @@ using Utility;
 /// </summary>
 public class UnityNetworkHelper : Singleton<UnityNetworkHelper>
 {
+    private EventManager _eventManager => EventManager.Instance;
 
     #region Events
     protected virtual void OnEnable()

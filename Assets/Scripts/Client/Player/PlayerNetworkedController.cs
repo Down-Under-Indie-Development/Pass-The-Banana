@@ -1,10 +1,7 @@
-using Utility;
 using UnityEngine;
 using Unity.Netcode;
-using Unity.VisualScripting;
 using UnityEngine.InputSystem;
-using Netcode.Transports.Facepunch;
-
+using PTB.Managers;
 namespace PTB.Client.Player
 {
     [RequireComponent(typeof(NetworkObject))]

@@ -4,8 +4,9 @@ using UnityEngine;
 using UnityEngine.UI;
 using Utility;
 
-public class HostGame : CustomMonoBehaviour
+public class HostGame : MonoBehaviour
 {
+    private EventManager _eventManager => EventManager.Instance;
     private BootstrapNetworkManager _bootstrapNetworkManager => BootstrapNetworkManager.Instance;
 
     [Header("Menu Components")]

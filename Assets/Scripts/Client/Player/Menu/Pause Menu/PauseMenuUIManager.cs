@@ -8,8 +8,10 @@ using Unity.Netcode;
 
 namespace PTB.Client.Menus
 {
-    public class PauseMenuUIManager : CustomMonoBehaviour
+    public class PauseMenuUIManager : MonoBehaviour
     {
+        private EventManager _eventManager => EventManager.Instance;
+
         [SerializeField] private GameObject _optionsMenu;
 
         #region Events

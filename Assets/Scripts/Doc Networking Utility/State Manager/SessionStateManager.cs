@@ -2,6 +2,7 @@ using System;
 using Unity.Netcode;
 using UnityEngine;
 using Utility;
+using PTB.Enums;
 
 namespace PTB.Networking
 {

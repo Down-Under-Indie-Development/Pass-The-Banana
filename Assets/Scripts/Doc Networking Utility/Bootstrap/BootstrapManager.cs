@@ -8,7 +8,6 @@ using Utility;
 
 namespace PTB.Networking
 {
-
     public class BootstrapManager : Singleton<BootstrapManager>
     {
         [Header("Default Menu")]

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 
 public class Timer : Singleton<Timer>
 {
+    private EventManager _eventManager => EventManager.Instance;
 
     [Header("Audio Settings")]
     [SerializeField] private List<AudioClip> _timerCountdownSFX;

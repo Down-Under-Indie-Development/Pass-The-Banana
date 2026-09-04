@@ -6,73 +6,76 @@ using Unity.Services.Lobbies.Models;
 using UnityEngine;
 using Utility;
 
-public class QuestionManager : NetworkedSingleton<QuestionManager>
+namespace PTB.Managers
 {
-    private GameNetworkManager _gameManager => GameNetworkManager.Instance;
-
-    // Fields
-    private AnswerMenuUIManger _answerUIManager => AnswerMenuUIManger.Instance;
-    private CategorySO _currentCategory;
-    private QuestionData _currentQuestion;
-    private int _currentQuestionIndex = 0;
-    [field: SerializeField] public CategoriesContainerSO categoryContainer { get; private set; }
-
-    // Functions
-    public void SelectCategory(string selectedCategory)
+    public class QuestionManager : NetworkedSingleton<QuestionManager>
     {
-        _currentCategory = categoryContainer.categories.FirstOrDefault(category => category.categoryName == selectedCategory);
-        _currentQuestionIndex = 0;
-        _currentQuestion = _currentCategory.questions[_currentQuestionIndex];
-        StartCoroutine(HandleSpawnAnswers());
+        private GameNetworkManager _gameManager => GameNetworkManager.Instance;
 
-    }
+        // Fields
+        private AnswerMenuUIManger _answerUIManager => AnswerMenuUIManger.Instance;
+        private CategorySO _currentCategory;
+        private QuestionData _currentQuestion;
+        private int _currentQuestionIndex = 0;
+        [field: SerializeField] public CategoriesContainerSO categoryContainer { get; private set; }
 
-    public void ProcessNextQuestion()
-    {
-        _currentQuestionIndex++;
-
-        if (_currentQuestionIndex > _currentCategory.questions.Count - 1 || _gameManager.playerManager.playersRemaining.Count <= 1)
+        // Functions
+        public void SelectCategory(string selectedCategory)
         {
-            _gameManager.roundManager.ProcessNextRound();
-            return;
+            _currentCategory = categoryContainer.categories.FirstOrDefault(category => category.categoryName == selectedCategory);
+            _currentQuestionIndex = 0;
+            _currentQuestion = _currentCategory.questions[_currentQuestionIndex];
+            StartCoroutine(HandleSpawnAnswers());
+
         }
 
-        _currentQuestion = _currentCategory.questions[_currentQuestionIndex];
-        StartCoroutine(HandleSpawnAnswers());
-
-    }
-
-    public void ClearAnswers()
-    {
-        _answerUIManager.ClearPreviousAnswersRPC();
-    }
-
-    public IEnumerator HandleSpawnAnswers()
-    {
-        ClearAnswers();
-        _gameManager.bombManager.TellChangePodiumRPC();
-        yield return new WaitForSeconds(.55f);
-
-        _answerUIManager.SetQuestionTextRPC(GetCurrentQuestion().question);
-
-        // INFO: RPC no like complex data structures 🥹
-        foreach (AnswerData answerData in GetCurrentQuestion().answers)
+        public void ProcessNextQuestion()
         {
-            AnswerMenuUIManger.Instance.AddAnswerRPC(answerData.answer);
+            _currentQuestionIndex++;
+
+            if (_currentQuestionIndex > _currentCategory.questions.Count - 1 || _gameManager.playerManager.playersRemaining.Count <= 1)
+            {
+                _gameManager.roundManager.ProcessNextRound();
+                return;
+            }
+
+            _currentQuestion = _currentCategory.questions[_currentQuestionIndex];
+            StartCoroutine(HandleSpawnAnswers());
+
+        }
+
+        public void ClearAnswers()
+        {
+            _answerUIManager.ClearPreviousAnswersRPC();
+        }
+
+        public IEnumerator HandleSpawnAnswers()
+        {
+            ClearAnswers();
+            _gameManager.bombManager.TellChangePodiumRPC();
+            yield return new WaitForSeconds(.55f);
+
+            _answerUIManager.SetQuestionTextRPC(GetCurrentQuestion().question);
+
+            // INFO: RPC no like complex data structures 🥹
+            foreach (AnswerData answerData in GetCurrentQuestion().answers)
+            {
+                AnswerMenuUIManger.Instance.AddAnswerRPC(answerData.answer);
+            }
+
+
         }
 
 
+        public bool ValidateAnswer(string answer)
+        {
+            return _currentQuestion.answers.Any(a => a.correctAnswer && a.answer == answer);
+        }
+
+        public QuestionData GetCurrentQuestion() => _currentQuestion;
+        public CategorySO GetCurrentCategory() => _currentCategory;
+        public float GetTimeLimit() => _currentCategory.GetTimeLimit();
+
+
     }
-
-
-    public bool ValidateAnswer(string answer)
-    {
-        return _currentQuestion.answers.Any(a => a.correctAnswer && a.answer == answer);
-    }
-
-    public QuestionData GetCurrentQuestion() => _currentQuestion;
-    public CategorySO GetCurrentCategory() => _currentCategory;
-    public float GetTimeLimit() => _currentCategory.GetTimeLimit();
-
-
 }

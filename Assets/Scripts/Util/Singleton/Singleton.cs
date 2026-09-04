@@ -11,7 +11,7 @@ using Unity.Scripting.LifecycleManagement;
 namespace Utility
 {
     #region Singleton
-    public partial class Singleton<T> : CustomMonoBehaviour where T : MonoBehaviour
+    public partial class Singleton<T> : MonoBehaviour where T : Component
     {
         [AutoStaticsCleanup] private static T instance;
         public static bool hasInstance => instance != null;

@@ -12,8 +12,10 @@ using Utility;
 
 namespace PTB.Networking.Menus
 {
-    public class JoinGameMenu : CustomMonoBehaviour, IMenu
+    public class JoinGameMenu : MonoBehaviour, IMenu
     {
+        private EventManager _eventManager => EventManager.Instance;
+
         [SerializeField] private TMP_InputField _joinCodeInputField;
         [SerializeField] private TextMeshProUGUI _errorTXT;
 

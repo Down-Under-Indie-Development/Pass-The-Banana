@@ -47,6 +47,7 @@
   <Project Path="Unity.Services.Deployment.csproj" />
   <Project Path="Unity.UnifiedRayTracing.Runtime.csproj" />
   <Project Path="Unity.VisualScripting.State.Editor.csproj" />
+  <Project Path="Assembly-CSharp.csproj" />
   <Project Path="Unity.Services.Deployment.Core.csproj" />
   <Project Path="unity-websocket-sharp.csproj" />
   <Project Path="Unity.Services.Core.Editor.csproj" />
@@ -82,7 +83,6 @@
   <Project Path="Unity.RenderPipelines.Universal.2D.Editor.Overrides.csproj" />
   <Project Path="Unity.2D.Animation.Profiler.Editor.csproj" />
   <Project Path="Unity.Networking.Editor.csproj" />
-  <Project Path="Assembly-CSharp.csproj" />
   <Project Path="Unity.Services.Authentication.PlayerAccounts.Editor.csproj" />
   <Project Path="Unity.PlasticSCM.Editor.Assistant.csproj" />
   <Project Path="Unity.2D.Sprite.Editor.csproj" />
@@ -132,7 +132,6 @@
   <Project Path="Unity.Multiplayer.Tools.MetricEvents.csproj" />
   <Project Path="Unity.SurfaceCache.Runtime.csproj" />
   <Project Path="Unity.InternalAPIEngineBridge.RenderPipelines.Core.Runtime.Shared.csproj" />
-  <Project Path="Assembly-CSharp-Editor.csproj" />
   <Project Path="Unity.2D.Animation.Profiler.csproj" />
   <Project Path="Unity.InputSystem.ForUI.Editor.csproj" />
   <Project Path="Unity.Collections.Tests.CoreCLR.InternalJobNestedPrivate.csproj" />
@@ -140,6 +139,7 @@
   <Project Path="Unity.RenderPipeline.Universal.ShaderLibrary.csproj" />
   <Project Path="Unity.InternalAPIEngineBridge.ObjectDispatcher.Runtime.csproj" />
   <Project Path="Unity.Services.Core.Registration.csproj" />
+  <Project Path="Assembly-CSharp-Editor.csproj" />
   <Project Path="Unity.InternalAPIEngineBridge.RenderPipelines.Core.Editor.csproj" />
   <Project Path="Unity.InternalAPIEngineBridge.004.csproj" />
   <Project Path="Unity.Multiplayer.Tools.Editor.csproj" />
@@ -193,6 +193,7 @@
   <Project Path="Unity.2D.SpriteShape.Runtime.Player.csproj" />
   <Project Path="Unity.VisualScripting.Core.Player.csproj" />
   <Project Path="Unity.UnifiedRayTracing.Runtime.Player.csproj" />
+  <Project Path="Assembly-CSharp.Player.csproj" />
   <Project Path="unity-websocket-sharp.Player.csproj" />
   <Project Path="Unity.Services.Core.Player.csproj" />
   <Project Path="Unity.Multiplayer.Tools.Common.Player.csproj" />
@@ -205,7 +206,6 @@
   <Project Path="Unity.InternalAPIEngineBridge.001.Player.csproj" />
   <Project Path="Unity.Multiplayer.Tools.Initialization.Player.csproj" />
   <Project Path="Unity.VisualScripting.State.Player.csproj" />
-  <Project Path="Assembly-CSharp.Player.csproj" />
   <Project Path="Unity.Multiplayer.Tools.NetworkSimulator.Runtime.Player.csproj" />
   <Project Path="Unity.Multiplayer.Tools.MetricTestData.Player.csproj" />
   <Project Path="Unity.Multiplayer.Center.NetcodeForGameObjectsExample.Player.csproj" />

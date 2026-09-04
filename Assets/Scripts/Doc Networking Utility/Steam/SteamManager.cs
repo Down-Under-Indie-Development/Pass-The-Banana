@@ -11,6 +11,7 @@ namespace PTB.Networking
 
     public class SteamManager : Singleton<SteamManager>
     {
+        private EventManager _eventManager => EventManager.Instance;
 
         [field: Header("Steam Settings")]
         [field: SerializeField] public uint appID { get; protected set; } = 480;
