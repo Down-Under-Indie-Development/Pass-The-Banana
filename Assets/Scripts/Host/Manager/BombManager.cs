@@ -33,10 +33,15 @@ namespace PTB.Managers
         }
         #endregion
 
+        public override void OnNetworkSpawn()
+        {
+            if (!IsServer) { enabled = false; return; }
+        }
+
         public void ProcessExplode()
         {
             if (playerWithBanana == null) return;
-            _gameManager.playerManager.EliminatePlayerRPC(playerWithBanana.Value);
+            _gameManager.playerManager.AskEliminatePlayerRPC(playerWithBanana.Value);
             Invoke(nameof(ProcessPassTheBomb), .2f); // INFO: Add delay for explosion animation
 
         }

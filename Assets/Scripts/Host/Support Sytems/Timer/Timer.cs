@@ -1,11 +1,11 @@
 using Utility;
 using UnityEngine;
 using System.Collections.Generic;
+using Unity.Netcode;
 
 
-public class Timer : Singleton<Timer>
+public class Timer : NetworkedSingleton<Timer>
 {
-    private EventManager _eventManager => EventManager.Instance;
 
     [Header("Audio Settings")]
     [SerializeField] private List<AudioClip> _timerCountdownSFX;
@@ -37,8 +37,7 @@ public class Timer : Singleton<Timer>
         float roundedTime = Mathf.Round(_currentTime);
 
         // INFO: SFX
-        if (roundedTime != _lastLoggedSecond) AudioManager.Instance.PlayAudio(_timerCountdownSFX[0]);
-
+        if (roundedTime != _lastLoggedSecond) TellClientPlayerAudioRPC();
 
         if (_currentTime <= 0)
         {
@@ -50,8 +49,15 @@ public class Timer : Singleton<Timer>
 
         _currentTime -= Time.deltaTime;
 
-        if (showCountdown) Debug.Log($"<color={LogColours.Debug}>[DEBUG]</color> <color={LogColours.Unity}>[TIMER]</color> {_lastLoggedSecond} second(s) remaining"); ;
+        if (showCountdown && roundedTime != _lastLoggedSecond) Debug.Log($"<color={LogColours.Debug}>[DEBUG]</color> <color={LogColours.Unity}>[TIMER]</color> {_lastLoggedSecond} second(s) remaining"); ;
         _lastLoggedSecond = roundedTime;
+
+    }
+
+    [Rpc(SendTo.ClientsAndHost)]
+    private void TellClientPlayerAudioRPC()
+    {
+        AudioManager.Instance.PlayAudio(_timerCountdownSFX[0]);
 
     }
 

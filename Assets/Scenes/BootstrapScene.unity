@@ -213,7 +213,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ae6c7745fc0177a4da81ee06c9653ea5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UnityNetworkHelper
-  _debug: 0
 --- !u!4 &463640316
 Transform:
   m_ObjectHideFlags: 0
@@ -273,7 +272,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ac29776b0437f3948ab3a36f0c559a7c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BootstrapManager
-  _debug: 1
   defaultSceneToOpen: MainMenuScene
   <mainMenuScene>k__BackingField: MainMenuScene
   <lobbyScene>k__BackingField: LobbyScene
@@ -466,7 +464,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 60c50a79ff9ba864da8593dd44d1f871, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PTB.Networking.SteamManager
-  _debug: 0
   <appID>k__BackingField: 480
   EvtSteamInitialised:
     m_PersistentCalls:

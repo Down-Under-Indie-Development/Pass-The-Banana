@@ -54,6 +54,11 @@ namespace PTB.Managers
         }
         #endregion
 
+        public override void OnNetworkSpawn()
+        {
+            if (!IsServer) { enabled = false; return; }
+        }
+
         #region Spawn Players
         public void HandleSpawnPlayers()
         {
@@ -93,16 +98,22 @@ namespace PTB.Managers
 
         #region Eliminate Player
         [Rpc(SendTo.Server)]
-        public void EliminatePlayerRPC(ulong clientId)
+        public void AskEliminatePlayerRPC(ulong clientId)
         {
             _gameManager.scoreManager.AwardFail(clientId);
-            AudioManager.Instance.PlayerRandomClip(GetAudioClip(PlayerSFXType.Eliminated));
-
+            TellEliminatePlayerRPC();
             NetworkManager.ConnectedClients[clientId].PlayerObject
                 .GetComponent<IDamageable>()
                 .Die();
 
             activePlayers[clientId] = true;
+
+        }
+
+        [Rpc(SendTo.ClientsAndHost)]
+        private void TellEliminatePlayerRPC()
+        {
+            AudioManager.Instance.PlayerRandomClip(GetAudioClip(PlayerSFXType.Eliminated));
 
         }
         #endregion
@@ -158,7 +169,11 @@ namespace PTB.Managers
         [Rpc(SendTo.ClientsAndHost)]
         public void HandleChangePodiumColorRPC(ulong clientId, Color colour)
         {
-            NetworkManager.ConnectedClients[clientId].PlayerObject.GetComponent<PlayerNetworkedController>().podium.transform.GetChild(1).GetComponent<MeshRenderer>().material.color = colour;
+            GameObject podium = NetworkManager.ConnectedClients[clientId].PlayerObject.GetComponent<PlayerNetworkedController>().podium;
+            if (podium == null) { Debug.LogError($"Player's Podium is null!"); return; }
+
+            podium.transform.GetChild(1).GetComponent<MeshRenderer>().material.color = colour;
+
         }
 
         public bool IsPlayerActive(ulong clientId)

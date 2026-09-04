@@ -11,13 +11,19 @@ namespace PTB.Client.Player
         [Header("Menus")]
         [SerializeField] public GameObject _pauseMenuGO;
         public bool hostForcedPause { get; private set; } = false;
-
-        [SerializeField] private int _correctAnswers;
         [field: SerializeField] public GameObject podium { get; private set; }
+
 
         private void Start()
         {
-            if (!IsOwner) { GetComponent<PlayerNetworkedController>().enabled = false; return; }
+            if (!IsOwner)
+            {
+                GetComponent<PlayerNetworkedController>().enabled = false;
+                GetComponent<AudioListener>().enabled = false;
+                return;
+
+            }
+
             _pauseMenuGO?.SetActive(false);
 
         }

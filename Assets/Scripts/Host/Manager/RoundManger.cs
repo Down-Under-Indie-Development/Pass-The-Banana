@@ -40,6 +40,11 @@ namespace PTB.Managers
         [field: Header("Round Score Tracking")]
         [field: SerializeField, DictionaryDisplay(keyLabel = "Round #", valueLabel = "Player Stats")] public Dictionary<int, Dictionary<ulong, ScoreData>> currentRoundData { get; private set; } = new();
 
+        public override void OnNetworkSpawn()
+        {
+            if (!IsServer) { enabled = false; return; }
+        }
+
         public void StartRound()
         {
             if (currentRound == 1) InitialiseRoundScoreTracker();

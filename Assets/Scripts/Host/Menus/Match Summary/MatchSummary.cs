@@ -6,6 +6,7 @@ using Unity.Netcode;
 using UnityEngine;
 using PTB.Enums;
 using PTB.Managers;
+using Steamworks;
 
 namespace PTB.Menus
 {
@@ -84,7 +85,9 @@ namespace PTB.Menus
             scoreData.fails = fails;
             scoreData.passes = passes;
 
-            playerCard.SetPlayerCardStats(scoreData, clientId, place);
+            string steamName = SteamClient.IsValid ? SteamClient.Name : "";
+
+            playerCard.SetPlayerCardStats(scoreData, clientId, place, steamName);
             cardNetObj.transform.SetParent(_playerContentGO.transform);
 
             cardNetObj.transform.localPosition = Vector3.zero;

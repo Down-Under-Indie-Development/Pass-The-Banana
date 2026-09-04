@@ -4,6 +4,7 @@ using TMPro;
 using Unity.Netcode;
 using UnityEngine;
 using PTB.Enums;
+using PTB.Networking;
 
 namespace PTB.Menus
 {
@@ -27,11 +28,11 @@ namespace PTB.Menus
             };
         }
 
-        public void SetPlayerCardStats(ScoreData scoreData, ulong clientId, int playerPlace)
+        public void SetPlayerCardStats(ScoreData scoreData, ulong clientId, int playerPlace, string steamName)
         {
             if (_placeTxt == null || _playerNameTxt == null || _passesTxt == null || _failsTxt == null || _scoreTxt == null) { Debug.LogError($"One or more text object are null!"); return; }
 
-            string name = SteamClient.IsValid ? SteamClient.Name : clientId.ToString();
+            string name = SteamClient.IsValid ? steamName : clientId.ToString();
             string place = GetPlaceOrdinal(playerPlace);
 
             _placeTxt.text = place;

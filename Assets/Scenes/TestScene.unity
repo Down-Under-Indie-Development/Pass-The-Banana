@@ -395,7 +395,7 @@ AudioListener:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 407055575}
-  m_Enabled: 1
+  m_Enabled: 0
 --- !u!20 &407055580
 Camera:
   m_ObjectHideFlags: 0
@@ -1567,6 +1567,14 @@ PrefabInstance:
     - target: {fileID: 5893354376587521780, guid: 2ffda40d38f1aa948af6c692190f3323, type: 3}
       propertyPath: GlobalObjectIdHash
       value: 1301832107
+      objectReference: {fileID: 0}
+    - target: {fileID: 6084738905725010957, guid: 2ffda40d38f1aa948af6c692190f3323, type: 3}
+      propertyPath: m_InScenePlaced
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6084738905725010957, guid: 2ffda40d38f1aa948af6c692190f3323, type: 3}
+      propertyPath: GlobalObjectIdHash
+      value: 1638273783
       objectReference: {fileID: 0}
     - target: {fileID: 6245959355923438904, guid: 2ffda40d38f1aa948af6c692190f3323, type: 3}
       propertyPath: m_LocalPosition.x

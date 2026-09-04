@@ -18,14 +18,13 @@ namespace PTB.Managers
 
         public override void OnNetworkSpawn()
         {
-            base.OnNetworkSpawn();
-
             foreach (ulong client in NetworkManager.ConnectedClientsIds)
             {
                 _playerScores[client] = ScoreData.Empty();
 
             }
 
+            if (!IsServer) { enabled = false; return; }
         }
 
         #region Points

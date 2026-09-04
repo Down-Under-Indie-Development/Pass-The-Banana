@@ -26,7 +26,8 @@ namespace PTB.Managers
         #region Networking
         public override void OnNetworkSpawn()
         {
-            if (IsServer) Invoke(nameof(HandleStartGame), 0.1f);
+            if (!IsServer) { enabled = false; return; }
+            Invoke(nameof(HandleStartGame), 0.1f);
 
         }
 

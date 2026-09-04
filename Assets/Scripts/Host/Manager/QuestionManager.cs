@@ -19,6 +19,11 @@ namespace PTB.Managers
         private int _currentQuestionIndex = 0;
         [field: SerializeField] public CategoriesContainerSO categoryContainer { get; private set; }
 
+        public override void OnNetworkSpawn()
+        {
+            if (!IsServer) { enabled = false; return; }
+        }
+
         // Functions
         public void SelectCategory(string selectedCategory)
         {
