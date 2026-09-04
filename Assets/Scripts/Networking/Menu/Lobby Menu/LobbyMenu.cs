@@ -43,6 +43,9 @@ namespace PTB.Networking.Menus
         private void OnDisable()
         {
             SteamMatchmaking.OnLobbyEntered -= OnLobbyEntered;
+
+            if (NetworkManager.Singleton == null) return;
+
             NetworkManager.Singleton.OnConnectionEvent -= OnUnityClientDisconnect;
 
         }
@@ -167,13 +170,7 @@ namespace PTB.Networking.Menus
             if (connectionEventData.EventType != ConnectionEvent.ClientDisconnected) return;
 
             if (connectionEventData.ClientId == networkManager.LocalClientId)
-            {
-                await SceneManager.UnloadSceneAsync(BootstrapManager.Instance.lobbyScene);
-                await SceneManager.LoadSceneAsync(BootstrapManager.Instance.mainMenuScene, LoadSceneMode.Additive);
-                Debug.Log($"<color={LogColours.Lobby}>[LOBBY]</color> You left the lobby!");
                 return;
-
-            }
 
             if (!IsServer) return;
             Debug.Log($"<color={LogColours.Lobby}>[LOBBY]</color> {connectionEventData.ClientId} has left!");

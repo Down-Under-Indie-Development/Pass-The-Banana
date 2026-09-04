@@ -42,10 +42,11 @@ namespace PTB.Client.Menus
 
         public void ReturnToMainMenu()
         {
+            Time.timeScale = 1;
+
             if (SteamManager.Instance.connectedToSteam) { _eventManager.OnSteamClientDisconnect?.Invoke(); return; }
             // !! Unity handling
             if (BootstrapManager.Instance.selectedTransport == BootstrapManager.Transport.Unity) _eventManager.OnStopUnityClient?.Invoke();
-            Time.timeScale = 1;
 
         }
 

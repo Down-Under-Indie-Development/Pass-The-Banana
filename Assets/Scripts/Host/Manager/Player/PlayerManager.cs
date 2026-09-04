@@ -45,6 +45,7 @@ public class PlayerManager : NetworkedSingleton<PlayerManager>
 
     private void OnDisable()
     {
+        if (NetworkManager.Singleton == null) return;
         NetworkManager.Singleton.OnConnectionEvent -= OnUnityClientDisconnect;
 
     }
@@ -130,15 +131,6 @@ public class PlayerManager : NetworkedSingleton<PlayerManager>
     private async void OnUnityClientDisconnect(NetworkManager networkManager, ConnectionEventData connectionEventData)
     {
         if (connectionEventData.EventType != ConnectionEvent.ClientDisconnected) return;
-
-        if (connectionEventData.ClientId == networkManager.LocalClientId)
-        {
-            await SceneManager.UnloadSceneAsync(BootstrapManager.Instance.gameplayScenes[0]);
-            await SceneManager.LoadSceneAsync(BootstrapManager.Instance.mainMenuScene, LoadSceneMode.Additive);
-            Debug.Log($"<color={LogColours.Unity}>[PLAYER MANAGER]</color> You left the game!");
-            return;
-
-        }
 
         if (!networkManager.IsServer) return;
         Debug.Log($"<color={LogColours.Unity}>[PLAYER MANAGER]</color> {connectionEventData.ClientId} has left!");

@@ -36,6 +36,7 @@ public class UnityNetworkHelper : Singleton<UnityNetworkHelper>
         _eventManager.OnSteamClientConnect -= OnStartUnityClient;
         _eventManager.OnStopUnityClient -= StopUnityClient;
 
+
     }
     #endregion
 
@@ -44,12 +45,16 @@ public class UnityNetworkHelper : Singleton<UnityNetworkHelper>
     protected virtual async void OnStartUnityClient()
     {
         if (NetworkManager.Singleton.IsHost) return;
+
         try
         {
             NetworkManager.Singleton.StartClient();
             await SceneManager.UnloadSceneAsync(BootstrapManager.Instance.mainMenuScene);
 
             Debug.Log($"{CheckPrivilege()} Client has started");
+
+            NetworkManager.Singleton.OnConnectionEvent += OnConnectionEvent;
+
             _eventManager.OnStartUnityClient?.Invoke(); // INFO: Client started let other scripts know
 
         }
@@ -70,7 +75,9 @@ public class UnityNetworkHelper : Singleton<UnityNetworkHelper>
             string color = NetworkManager.Singleton.IsServer ? LogColours.Host : LogColours.Client;
 
             Debug.Log($"<color={LogColours.Unity}>[UNITY]</color> <color={color}>[{privilege.ToUpper()}]</color> Shutting down {privilege}...");
+
             NetworkManager.Singleton.Shutdown();
+            Destroy(NetworkManager.Singleton.gameObject);
 
         }
         catch (System.Exception ex)
@@ -79,6 +86,28 @@ public class UnityNetworkHelper : Singleton<UnityNetworkHelper>
         }
 
     }
+
+    #region Connection Events
+    private void OnConnectionEvent(NetworkManager networkManager, ConnectionEventData connectionEventData)
+    {
+        switch (connectionEventData.EventType)
+        {
+            case ConnectionEvent.ClientDisconnected:
+                OnClientDisconnect(networkManager, connectionEventData);
+                break;
+        }
+    }
+
+    protected virtual async void OnClientDisconnect(NetworkManager networkManager, ConnectionEventData connectionEventData)
+    {
+        if (connectionEventData.ClientId != networkManager.LocalClientId) return;
+        NetworkManager.Singleton.OnConnectionEvent -= OnConnectionEvent;
+        await SceneManager.LoadSceneAsync(BootstrapManager.Instance.gameObject.scene.name);
+        Debug.Log($"<color={LogColours.Lobby}>[LOBBY]</color> You left the lobby!");
+
+
+    }
+    #endregion
 
     #endregion
 
@@ -89,6 +118,8 @@ public class UnityNetworkHelper : Singleton<UnityNetworkHelper>
         try
         {
             NetworkManager.Singleton.StartHost();
+
+            NetworkManager.Singleton.OnConnectionEvent += OnConnectionEvent;
 
             // INFO: Configure Network Manager
             NetworkManager.Singleton.SceneManager.ActiveSceneSynchronizationEnabled = true;
