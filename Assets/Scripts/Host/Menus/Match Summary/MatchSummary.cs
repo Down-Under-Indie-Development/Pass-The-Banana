@@ -27,7 +27,7 @@ public class MatchSummary : NetworkBehaviour
 
         int nextRound = _gameManager.roundManager.currentRound + 1;
         if (_roundStatusTxt != null) _roundStatusTxt.text = $"ROUND {_gameManager.roundManager.currentRound} DONE";
-        if (_nextRoundTxt != null) _nextRoundTxt.text = nextRound < _gameManager.currentGameLobbyData.numberOfRounds ? $"ROUND {nextRound}" : _nextRoundTxt.text = "LOBBY";
+        if (_nextRoundTxt != null) _nextRoundTxt.text = nextRound <= _gameManager.currentGameLobbyData.numberOfRounds ? $"ROUND {nextRound}" : "LOBBY";
 
 
         List<ulong> clientIds = new(NetworkManager.Singleton.ConnectedClientsIds);

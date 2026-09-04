@@ -21,9 +21,6 @@ public class BombManager : NetworkedSingleton<BombManager>
         NetworkVariableReadPermission.Everyone,
         NetworkVariableWritePermission.Server);
 
-    [Header("Audio Settings")]
-    [SerializeField] private AudioClip _bombExplodeSFX;
-
     #region Events
     private void OnEnable()
     {
@@ -37,47 +34,45 @@ public class BombManager : NetworkedSingleton<BombManager>
     }
     #endregion
 
-
-    public ulong SelectStartingPlayer()
-    {
-        return playerWithBanana.Value = (ulong)Random.Range(0, NetworkManager.Singleton.ConnectedClientsIds.Count - 1);
-
-    }
-
     public void ProcessExplode()
     {
         if (playerWithBanana == null) return;
         _gameManager.playerManager.EliminatePlayerRPC(playerWithBanana.Value);
-        AudioManager.Instance.PlayerAudio(_bombExplodeSFX);
+
         Invoke(nameof(ProcessPassTheBomb), .2f); // INFO: Add delay for explosion animation
 
     }
 
     public void ProcessPassTheBomb()
     {
-        if (_gameManager.activePlayers.Count == 1)
+        if (_gameManager.playerManager.activePlayers.Count <= 1)
         {
             Debug.Log($"<color={LogColours.Unity}>[BOMB MANAGER]</color> We have a winner!");
-            _gameManager.questionManager.ProcessNextQuestion(); return;
+            Timer.Instance.StopCountdown();
+            _gameManager.questionManager.ProcessNextQuestion();
+
+            return;
 
         }
 
-        if (_gameManager.activePlayers.Count <= 0) { _gameManager.roundManager.HandleGameOver(); return; }
+        // INFO: Get the next player
+        var alivePlayerIds = _gameManager.playerManager.activePlayers
+            .Where(kvp => kvp.Value == false) // Filters out eliminated players
+            .Select(kvp => kvp.Key)
+            .ToList();
 
-        int currentIndex = _gameManager.activePlayers.IndexOf(playerWithBanana.Value);
-        int nextIndex = (currentIndex + 1) % _gameManager.activePlayers.Count;
-        playerWithBanana.Value = _gameManager.activePlayers[nextIndex];
+        int currentIndex = alivePlayerIds.IndexOf(playerWithBanana.Value);
+        int nextIndex = (currentIndex + 1) % alivePlayerIds.Count;
+        playerWithBanana.Value = alivePlayerIds[nextIndex];
 
         Debug.Log($"<color={LogColours.Unity}>[BOMB MANAGER]</color> Bomb passed to player {playerWithBanana.Value}");
         _gameManager.questionManager.ProcessNextQuestion();
 
     }
 
-
-
     public ulong previousPlayerWithBanana { get; private set; } = 420;
     [Rpc(SendTo.ClientsAndHost)]
-    public void NotifyChangePodiumRPC()
+    public void TellChangePodiumRPC()
     {
         _gameManager.playerManager.HandleChangePodiumColorRPC(playerWithBanana.Value, Color.red);
         if (playerWithBanana.Value != previousPlayerWithBanana && previousPlayerWithBanana != 420)
@@ -95,6 +90,11 @@ public class BombManager : NetworkedSingleton<BombManager>
 
     }
 
+    #region Utility
     public bool IsPlayerWithBomb(ulong clientId) => playerWithBanana.Value == clientId;
+
+    public ulong SelectStartingPlayer() => playerWithBanana.Value = (ulong)Random.Range(0, NetworkManager.Singleton.ConnectedClientsIds.Count - 1);
+
+    #endregion
 
 }

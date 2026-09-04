@@ -17,10 +17,6 @@ using HealthSystem;
 
 public class GameNetworkManager : NetworkedSingleton<GameNetworkManager>
 {
-
-    [field: Header("Game Settings")]
-    [SerializeField, ReadOnly] private float _answerTime;
-
     public BombManager bombManager => BombManager.Instance;
     public PlayerManager playerManager => PlayerManager.Instance;
     public QuestionManager questionManager => QuestionManager.Instance;
@@ -35,8 +31,6 @@ public class GameNetworkManager : NetworkedSingleton<GameNetworkManager>
     #endregion
 
     public LobbyData currentGameLobbyData { get; private set; }
-
-    public List<ulong> activePlayers;
 
     #region Networking
     public override void OnNetworkSpawn()
@@ -63,11 +57,7 @@ public class GameNetworkManager : NetworkedSingleton<GameNetworkManager>
 
         }
 
-        activePlayers = NetworkManager.Singleton.ConnectedClientsIds
-           .Where(clientId => playerManager.IsPlayerActive(clientId))
-           .ToList();
-
-        playerManager.SpawnPlayers();
+        playerManager.HandleSpawnPlayers();
         roundManager.StartRound();
 
     }

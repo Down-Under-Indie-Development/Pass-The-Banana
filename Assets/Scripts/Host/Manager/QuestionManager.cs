@@ -31,7 +31,7 @@ public class QuestionManager : NetworkedSingleton<QuestionManager>
     {
         _currentQuestionIndex += 1;
 
-        if (_currentQuestionIndex > _currentCategory.questions.Count - 1 || _gameManager.playerManager.PlayersRemaining <= 1)
+        if (_currentQuestionIndex > _currentCategory.questions.Count - 1 || _gameManager.playerManager.playersRemaining <= 1)
         {
             _gameManager.roundManager.ProcessNextRound();
             return;
@@ -50,7 +50,7 @@ public class QuestionManager : NetworkedSingleton<QuestionManager>
     public IEnumerator HandleSpawnAnswers()
     {
         ClearAnswers();
-        _gameManager.bombManager.NotifyChangePodiumRPC();
+        _gameManager.bombManager.TellChangePodiumRPC();
         yield return new WaitForSeconds(.55f);
 
         _answerUIManager.SetQuestionTextRPC(GetCurrentQuestion().question);

@@ -84,11 +84,25 @@ public class ScoreManager : NetworkedSingleton<ScoreManager>
 
     public int GetPlayerPlace(ulong clientId, Dictionary<ulong, ScoreData> dataSet)
     {
+        // Guard: Return a fallback value if the player isn't in the dataset
         if (!dataSet.ContainsKey(clientId))
             return -69;
 
-        return dataSet.Values.Count(s => s.points > dataSet[clientId].points) + 1;
+        ScoreData targetPlayer = dataSet[clientId];
+
+        // INFO: Count how many players performed better than player
+        int playersAhead = dataSet.Values.Count(other =>
+            // INFO: Condition 1: They have more points
+            other.points > targetPlayer.points ||
+
+            // INFO: Condition 2: They have the same points, but fewer fails (better performance)
+            (other.points == targetPlayer.points && other.fails < targetPlayer.fails)
+        );
+
+        // INFo: Placement is 1 + the number of players ahead of them
+        return playersAhead + 1;
     }
+
 
 }
 

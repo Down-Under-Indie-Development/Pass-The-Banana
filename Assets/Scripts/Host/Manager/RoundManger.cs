@@ -1,28 +1,31 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection.Metadata.Ecma335;
-using System.Text.RegularExpressions;
 using Netcode.Transports.Facepunch;
 using Unity.Netcode;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.SceneManagement;
-using UnityEngine.SocialPlatforms.Impl;
 using Utility;
+
+#region Our Little Secret
+[assembly: DictionaryDisplayForType(
+    typeof(Dictionary<ulong, ScoreData>),
+    keyLabel = "ID",
+    valueLabel = "Stats"
+
+)]
+#endregion
 
 public class RoundManger : NetworkedSingleton<RoundManger>
 {
     private GameNetworkManager _gameManager => GameNetworkManager.Instance;
-    private float _fuseTime;
+
+    // INFO: Current round tracking
+    public int currentRound { get; private set; } = 1;
 
     [Header("Category Selection")]
     [SerializeField] private GameObject _categorySelectionGO;
 
     [Header("Round End Screens")]
-    // [SerializeField] private GameObject _winScreenGO;
-    [SerializeField] private GameObject _endOfRoundSummaryGO;
+    [SerializeField] private GameObject _summaryGO;
 
     [Header("Match Summary Settings")]
     [SerializeField] private float _perPlayerTimer = 0.25f;
@@ -31,34 +34,35 @@ public class RoundManger : NetworkedSingleton<RoundManger>
     [Header("Timer Settings")]
     [SerializeField] private bool showCountdown;
 
-    // INFO: Current round tracking
-    public int currentRound { get; private set; } = 1;
-
-    [field: SerializeField] public Dictionary<int, Dictionary<ulong, ScoreData>> currentRoundData { get; private set; } = new();
-
-    // INFO: Create the round tracking dictionary
-    private void InitialiseRoundTracker()
-    {
-        for (int i = 1; i < _gameManager.bootstrapNetworkManager.lobbyData.numberOfRounds + 1; i++)
-        {
-            if (!currentRoundData.ContainsKey(i)) currentRoundData[i] = new Dictionary<ulong, ScoreData>();
-            foreach (ulong clientId in NetworkManager.Singleton.ConnectedClientsIds)
-            {
-                currentRoundData[i][clientId] = ScoreData.Empty();
-            }
-        }
-
-    }
+    [field: Header("Round Score Tracking")]
+    [field: SerializeField, DictionaryDisplay(keyLabel = "Round #", valueLabel = "Player Stats")] public Dictionary<int, Dictionary<ulong, ScoreData>> currentRoundData { get; private set; } = new();
 
     public void StartRound()
     {
-        if (currentRound == 1) InitialiseRoundTracker();
+        if (currentRound == 1) InitialiseRoundScoreTracker();
 
         Debug.Log($"Starting Round {currentRound}/{_gameManager.currentGameLobbyData.numberOfRounds}");
         _gameManager.bombManager.SelectStartingPlayer();
         Invoke(nameof(ShowCategorySelection), .1f); // INFO: Allow time for syncing
 
     }
+
+    #region Round Score Tracking
+    // INFO: Create the round tracking dictionary
+    private void InitialiseRoundScoreTracker()
+    {
+        for (int i = 1; i < _gameManager.bootstrapNetworkManager.lobbyData.numberOfRounds + 1; i++)
+        {
+            if (!currentRoundData.ContainsKey(i)) currentRoundData[i] = new();
+            foreach (ulong clientId in NetworkManager.Singleton.ConnectedClientsIds)
+            {
+                currentRoundData[i][clientId] = ScoreData.Empty();
+            }
+
+        }
+
+    }
+    #endregion
 
     #region Category Selection
     private void ShowCategorySelection()
@@ -72,11 +76,8 @@ public class RoundManger : NetworkedSingleton<RoundManger>
     {
         _gameManager.questionManager.SelectCategory(selectedCategory);
 
-        // INFO: Intialise the timer
-        _fuseTime = _gameManager.questionManager.GetCurrentCategory().GetTimeLimit();
-
         // INFO: Spawn the answers;
-        _eventManager.OnCountdownStarted?.Invoke(_fuseTime, showCountdown);
+        _eventManager.OnCountdownStarted?.Invoke(_gameManager.questionManager.GetCurrentCategory().GetTimeLimit(), showCountdown);
 
     }
     #endregion
@@ -116,6 +117,8 @@ public class RoundManger : NetworkedSingleton<RoundManger>
         // if (_gameManager.playerManager.PlayersRemaining <= 1) { HandleGameOver(); return; }
         NotifyAnswerResultRpc(true);
         _gameManager.scoreManager.AwardPoints(clientId); // INFO: Score
+        currentRoundData[currentRound][clientId].points++;
+
         _gameManager.bombManager.ProcessPassTheBomb();
 
     }
@@ -124,41 +127,24 @@ public class RoundManger : NetworkedSingleton<RoundManger>
     {
         NotifyAnswerResultRpc(false);
         _gameManager.scoreManager.AwardFail(clientId);
+        currentRoundData[currentRound][clientId].fails++;
         _gameManager.bombManager.ProcessExplode();
 
     }
     #endregion
 
-
     #region End Of Round
-    private NetworkObject SpawnMatchSummary(Dictionary<ulong, ScoreData> dataSet, Action onCompleted = null)
-    {
-        NetworkObject networkObject = NetworkManager.Singleton.SpawnManager.InstantiateAndSpawn(_endOfRoundSummaryGO.GetComponent<NetworkObject>(), NetworkManager.Singleton.LocalClientId);
-        MatchSummary matchSummary = networkObject.GetComponent<MatchSummary>();
-        matchSummary.StartCoroutine(matchSummary.MatchSummaryCoroutine(dataSet, _perPlayerTimer, _mathSummaryEndPause, onCompleted));
-
-        return networkObject;
-
-    }
-
     [ContextMenu("Start Next Round")]
     public void ProcessNextRound()
     {
         HandleServerEndOfRound();
         if (IsGameOver()) { HandleGameOver(); return; }
-
-        foreach (ulong clientId in NetworkManager.Singleton.ConnectedClientsIds)
-        {
-            currentRoundData[currentRound][clientId] = _gameManager.scoreManager.GetPlayerScore(clientId);
-        }
-
-        NetworkObject networkObject = SpawnMatchSummary(_gameManager.roundManager.currentRoundData[currentRound], ProgressToNextRound);
+        SpawnMatchSummary(_gameManager.roundManager.currentRoundData[currentRound], ProgressToNextRound);
 
     }
 
-    private void HandleServerEndOfRound()
+    private async void HandleServerEndOfRound()
     {
-
         Debug.Log($"<color={LogColours.Unity}>[ROUND MANAGER]</color> Round {currentRound} done, processing next round");
         Timer.Instance.StopCountdown();
 
@@ -170,23 +156,32 @@ public class RoundManger : NetworkedSingleton<RoundManger>
 
     }
 
-    public void ProgressToNextRound()
+    private NetworkObject SpawnMatchSummary(Dictionary<ulong, ScoreData> dataSet, Action onCompleted = null)
     {
-        currentRound++;
-        // currentRoundData.Clear();
-        StartRound();
+        NetworkObject networkObject = NetworkManager.Singleton.SpawnManager.InstantiateAndSpawn(_summaryGO.GetComponent<NetworkObject>(), NetworkManager.Singleton.LocalClientId);
+        MatchSummary matchSummary = networkObject.GetComponent<MatchSummary>();
+        matchSummary.StartCoroutine(matchSummary.MatchSummaryCoroutine(dataSet, _perPlayerTimer, _mathSummaryEndPause, onCompleted));
+
+        return networkObject;
 
     }
 
-    private bool IsGameOver() => currentRound >= _gameManager.currentGameLobbyData.numberOfRounds;
+    public void ProgressToNextRound()
+    {
+        currentRound++;
+        StartRound();
 
+    }
+    #endregion
+
+    #region Game Over
     public void HandleGameOver()
     {
         _gameManager.questionManager.ClearAnswers();
 
-        if (_gameManager.activePlayers.Count <= 0)
+        if (_gameManager.playerManager.activePlayers.Count <= 0)
         {
-            Debug.Log($"<color={LogColours.Unity}>[ROUND MANAGER]</color> ALL PLAYERS ELIMINATED ({_gameManager.activePlayers.Count})");
+            Debug.Log($"<color={LogColours.Unity}>[ROUND MANAGER]</color> ALL PLAYERS ELIMINATED ({_gameManager.playerManager.activePlayers.Count})");
 
         }
         else
@@ -195,20 +190,18 @@ public class RoundManger : NetworkedSingleton<RoundManger>
 
         }
 
+        // INFO: Show all players score
         SpawnMatchSummary(_gameManager.scoreManager.GetAllPlayerScores(), ReturnToLobby);
 
         // INFO: Destroy player game objects
         _gameManager.bootstrapNetworkManager.ForEachPlayer(p => Destroy(p.gameObject));
 
     }
+    #endregion
 
-
-    private void ReturnToLobby()
-    {
-        _gameManager.bootstrapNetworkManager.ReturnToLobby();
-
-
-    }
+    #region Utility
+    private void ReturnToLobby() => _gameManager.bootstrapNetworkManager.ReturnToLobby();
+    private bool IsGameOver() => currentRound >= _gameManager.currentGameLobbyData.numberOfRounds;
 
     #endregion
 

@@ -13,17 +13,21 @@ using System.Threading.Tasks;
 using PTB.Networking;
 
 
+
 /// <summary>
 /// Holds and handles all logic regarding players
 /// </summary>
 public class PlayerManager : NetworkedSingleton<PlayerManager>
 {
+    // INFO: Singletons
     private GameNetworkManager _gameManager => GameNetworkManager.Instance;
-    private Dictionary<ulong, Vector3> _originalPodiumPositions = new Dictionary<ulong, Vector3>();
-    private HashSet<ulong> _eliminatedPlayers = new HashSet<ulong>(); // Track eliminated players
+    private PlayerAnimationHandler _playerAnimationHandler => PlayerAnimationHandler.Instance;
 
     [field: Header("Player Tracking")]
-    [field: SerializeField, ReadOnly] public int PlayersRemaining { get; private set; }
+    [field: SerializeField, DictionaryDisplay(keyLabel = "ID", valueLabel = "Eliminated")] public Dictionary<ulong, bool> activePlayers { get; private set; } = new();
+    public int playersRemaining { get; private set; }
+    private Dictionary<ulong, Vector3> _originalPodiumPositions = new();
+    // private List<ulong> _eliminatedPlayers = new();
 
     [Space()]
     [Header("Player Settings")]
@@ -31,10 +35,9 @@ public class PlayerManager : NetworkedSingleton<PlayerManager>
     [SerializeField] private List<Transform> _spawnPositions = new();
     [SerializeField] private Transform _hotSeat;
 
-    [Header("Audio Settings")]
-    [SerializeField] private AudioClip _bombExplodeSFX;
+    [Header("Audio Clips")]
+    [SerializeField] private Dictionary<PlayerState, AudioClip> _playerSFX;
 
-    private PlayerAnimationHandler _playerAnimationHandler => PlayerAnimationHandler.Instance;
 
     #region Events
     private void OnEnable()
@@ -52,7 +55,7 @@ public class PlayerManager : NetworkedSingleton<PlayerManager>
     #endregion
 
     #region Spawn Players
-    public void SpawnPlayers()
+    public void HandleSpawnPlayers()
     {
         if (!IsServer) return;
         if (_playerPrefab == null) { Debug.LogError($"Player prefab is null, cannot spawn!"); return; }
@@ -72,27 +75,38 @@ public class PlayerManager : NetworkedSingleton<PlayerManager>
             netObj.SpawnAsPlayerObject(currentClient, true);
         }
 
-        InitializePlayers(NetworkManager.Singleton.ConnectedClients.Count);
+        InitializePlayers();
     }
+
+    public void InitializePlayers()
+    {
+        activePlayers = NetworkManager.Singleton.ConnectedClientsIds
+          .ToDictionary(clientId => clientId, clientId => false);
+
+        playersRemaining = activePlayers.Count;
+        Debug.Log($"<color={LogColours.Unity}>[ROUND MANAGER]</color> Game initialized with {playersRemaining} players");
+
+    }
+
     #endregion
 
+    #region Eliminate Player
     [Rpc(SendTo.Server)]
     public void EliminatePlayerRPC(ulong clientId)
     {
+        _gameManager.scoreManager.AwardFail(clientId);
+        AudioManager.Instance.PlayerAudio(_playerSFX[PlayerState.Eliminated]);
+
         NetworkManager.Singleton.ConnectedClients[clientId].PlayerObject
-            .GetComponent<PlayerNetworkedController>()
             .GetComponent<IDamageable>()
             .Die();
 
-        _eliminatedPlayers.Add(clientId); // Track as eliminated
+        activePlayers[clientId] = true;
+        playersRemaining--;
 
-        for (int i = 0; i < _gameManager.activePlayers.Count; i++)
-        {
-            if (_gameManager.activePlayers[i] != clientId) continue;
-            _gameManager.activePlayers.Remove(clientId);
-        }
 
     }
+    #endregion
 
     #region Move To Hot Seat
     public Coroutine MoveToHotSeat(ulong clientId, bool reverse = false)
@@ -138,7 +152,6 @@ public class PlayerManager : NetworkedSingleton<PlayerManager>
     }
     #endregion
 
-
     #region Utility
     [Rpc(SendTo.ClientsAndHost)]
     public void HandleChangePodiumColorRPC(ulong clientId, Color colour)
@@ -148,20 +161,23 @@ public class PlayerManager : NetworkedSingleton<PlayerManager>
 
     public bool IsPlayerActive(ulong clientId)
     {
-        return NetworkManager.Singleton.ConnectedClients.ContainsKey(clientId) && !_eliminatedPlayers.Contains(clientId);
-    }
-
-    public void InitializePlayers(int playerCount)
-    {
-        PlayersRemaining = playerCount;
-        Debug.Log($"<color={LogColours.Unity}>[ROUND MANAGER]</color> Game initialized with {PlayersRemaining} players");
-
+        return NetworkManager.Singleton.ConnectedClients.ContainsKey(clientId) && activePlayers[clientId] == false;
     }
 
     public void UpdatePlayerRemaining(int newValue)
     {
-        if (PlayersRemaining - newValue <= 0) { PlayersRemaining = 0; return; }
-        PlayersRemaining += newValue;
+        if (playersRemaining - newValue <= 0) { playersRemaining = 0; return; }
+        playersRemaining += newValue;
+    }
+    #endregion
+
+    #region Enum
+    private enum PlayerState
+    {
+        Eliminated,
+        CorrectGuess,
+        IncorrectGuess,
+
     }
     #endregion
 
