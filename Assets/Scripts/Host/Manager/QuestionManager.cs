@@ -29,15 +29,15 @@ public class QuestionManager : NetworkedSingleton<QuestionManager>
 
     public void ProcessNextQuestion()
     {
-        _currentQuestionIndex += 1;
+        _currentQuestionIndex++;
 
-        if (_currentQuestionIndex > _currentCategory.questions.Count - 1 || _gameManager.playerManager.playersRemaining <= 1)
+        if (_currentQuestionIndex > _currentCategory.questions.Count - 1 || _gameManager.playerManager.playersRemaining.Count <= 1)
         {
             _gameManager.roundManager.ProcessNextRound();
             return;
         }
-        _currentQuestion = _currentCategory.questions[_currentQuestionIndex];
 
+        _currentQuestion = _currentCategory.questions[_currentQuestionIndex];
         StartCoroutine(HandleSpawnAnswers());
 
     }

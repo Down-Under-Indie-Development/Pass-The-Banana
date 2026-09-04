@@ -165,7 +165,7 @@ namespace PTB.Networking.Menus
         }
         #endregion
 
-        private async void OnUnityClientDisconnect(NetworkManager networkManager, ConnectionEventData connectionEventData)
+        private void OnUnityClientDisconnect(NetworkManager networkManager, ConnectionEventData connectionEventData)
         {
             if (connectionEventData.EventType != ConnectionEvent.ClientDisconnected) return;
 

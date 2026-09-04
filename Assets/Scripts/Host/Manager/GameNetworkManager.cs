@@ -1,19 +1,7 @@
 using Utility;
 using UnityEngine;
-using System.Collections.Generic;
-using PTB.Client.Player;
 using Unity.Netcode;
 using PTB.Networking;
-using System.Collections;
-using System;
-using System.Data;
-using Unity.VisualScripting;
-using UnityEngine.UI;
-using Steamworks;
-using UnityEngine.SceneManagement;
-using System.Linq;
-using Netcode.Transports.Facepunch;
-using HealthSystem;
 
 public class GameNetworkManager : NetworkedSingleton<GameNetworkManager>
 {
@@ -44,7 +32,6 @@ public class GameNetworkManager : NetworkedSingleton<GameNetworkManager>
     // INFO: All players spawn now do shit!
     private void HandleStartGame()
     {
-        Debug.Log($"HandleStartGame called - IsServer: {IsServer}");
         if (!IsServer) return;
 
         currentGameLobbyData = bootstrapNetworkManager.lobbyData;

@@ -114,7 +114,6 @@ public class RoundManger : NetworkedSingleton<RoundManger>
 
     public void ProcessCorrectGuess(ulong clientId)
     {
-        // if (_gameManager.playerManager.PlayersRemaining <= 1) { HandleGameOver(); return; }
         NotifyAnswerResultRpc(true);
         _gameManager.scoreManager.AwardPoints(clientId); // INFO: Score
         currentRoundData[currentRound][clientId].points++;
@@ -126,7 +125,6 @@ public class RoundManger : NetworkedSingleton<RoundManger>
     public void ProcessIncorrectGuess(ulong clientId)
     {
         NotifyAnswerResultRpc(false);
-        _gameManager.scoreManager.AwardFail(clientId);
         currentRoundData[currentRound][clientId].fails++;
         _gameManager.bombManager.ProcessExplode();
 
@@ -143,7 +141,7 @@ public class RoundManger : NetworkedSingleton<RoundManger>
 
     }
 
-    private async void HandleServerEndOfRound()
+    private void HandleServerEndOfRound()
     {
         Debug.Log($"<color={LogColours.Unity}>[ROUND MANAGER]</color> Round {currentRound} done, processing next round");
         Timer.Instance.StopCountdown();

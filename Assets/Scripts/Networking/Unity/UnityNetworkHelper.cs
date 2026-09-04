@@ -67,7 +67,7 @@ public class UnityNetworkHelper : Singleton<UnityNetworkHelper>
     }
 
     // INFO: Stop Client Connection
-    protected virtual async void StopUnityClient()
+    protected virtual void StopUnityClient()
     {
         try
         {

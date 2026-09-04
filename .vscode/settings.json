@@ -67,5 +67,8 @@
         "*.sln": "*.csproj",
         "*.slnx": "*.csproj"
     },
-    "dotnet.defaultSolution": "Pass-The-Banana.slnx"
+    "dotnet.defaultSolution": "Pass-The-Banana.slnx",
+    "cSpell.words": [
+        "Lerp"
+    ]
 }

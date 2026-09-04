@@ -1493,6 +1493,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 163143632}
     - target: {fileID: 4272008405397784298, guid: 2ffda40d38f1aa948af6c692190f3323, type: 3}
+      propertyPath: _hotSeatTransform
+      value: 
+      objectReference: {fileID: 163143632}
+    - target: {fileID: 4272008405397784298, guid: 2ffda40d38f1aa948af6c692190f3323, type: 3}
       propertyPath: '_spawnPositions.Array.data[0]'
       value: 
       objectReference: {fileID: 1990390856}

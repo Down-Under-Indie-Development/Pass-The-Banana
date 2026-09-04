@@ -12,7 +12,7 @@ public class ScoreManager : NetworkedSingleton<ScoreManager>
 {
     private GameNetworkManager _gameManager => GameNetworkManager.Instance;
 
-    private Dictionary<ulong, ScoreData> playerScores = new();
+    [SerializeField] private Dictionary<ulong, ScoreData> _playerScores = new();
 
     public override void OnNetworkSpawn()
     {
@@ -20,7 +20,7 @@ public class ScoreManager : NetworkedSingleton<ScoreManager>
 
         foreach (ulong client in NetworkManager.ConnectedClientsIds)
         {
-            playerScores[client] = ScoreData.Empty();
+            _playerScores[client] = ScoreData.Empty();
 
         }
 
@@ -29,9 +29,9 @@ public class ScoreManager : NetworkedSingleton<ScoreManager>
     #region Points
     public ScoreData GetPlayerScore(ulong clientId)
     {
-        if (!playerScores.TryGetValue(clientId, out ScoreData scoreData))
+        if (!_playerScores.TryGetValue(clientId, out ScoreData scoreData))
         {
-            Debug.LogWarning($"No score found for clientId {clientId}. Available clients: {string.Join(", ", playerScores.Keys)}");
+            Debug.LogWarning($"No score found for clientId {clientId}. Available clients: {string.Join(", ", _playerScores.Keys)}");
             return ScoreData.Empty();
         }
 
@@ -45,8 +45,8 @@ public class ScoreManager : NetworkedSingleton<ScoreManager>
         if (!EnsurePlayerScoreExists(clientId))
             return;
 
-        playerScores[clientId].points += points;
-        Debug.Log($"<color={LogColours.Unity}>[SCORE MANAGER]</color> Player {clientId} now has {playerScores[clientId].points} point(s)");
+        _playerScores[clientId].points += points;
+        Debug.Log($"<color={LogColours.Unity}>[SCORE MANAGER]</color> Player {clientId} now has {_playerScores[clientId].points} point(s)");
     }
 
     #endregion
@@ -57,29 +57,30 @@ public class ScoreManager : NetworkedSingleton<ScoreManager>
         if (!EnsurePlayerScoreExists(clientId))
             return;
 
-        playerScores[clientId].passes++;
+        _playerScores[clientId].passes++;
     }
     #endregion
 
     #region Fails
     public void AwardFail(ulong clientId, int amount = 1)
     {
-        EnsurePlayerScoreExists(clientId);
-        playerScores[clientId].fails += amount;
+        if (EnsurePlayerScoreExists(clientId))
+            _playerScores[clientId].fails += amount;
 
     }
     #endregion
 
-    public Dictionary<ulong, ScoreData> GetAllPlayerScores() => playerScores;
-    public void ResetAllScores() => playerScores.Clear();
+    public Dictionary<ulong, ScoreData> GetAllPlayerScores() => _playerScores;
+    public void ResetAllScores() => _playerScores.Clear();
 
     private bool EnsurePlayerScoreExists(ulong clientId)
     {
-        if (playerScores.ContainsKey(clientId))
+        if (_playerScores.ContainsKey(clientId))
             return true;
 
-        playerScores[clientId] = new ScoreData();
+        _playerScores[clientId] = ScoreData.Empty();
         return true;
+
     }
 
     public int GetPlayerPlace(ulong clientId, Dictionary<ulong, ScoreData> dataSet)

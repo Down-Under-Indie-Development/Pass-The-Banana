@@ -36,7 +36,7 @@ public class Timer : Singleton<Timer>
         float roundedTime = Mathf.Round(_currentTime);
 
         // INFO: SFX
-        if (roundedTime != _lastLoggedSecond) AudioManager.Instance.PlayerAudio(_timerCountdownSFX[0]);
+        if (roundedTime != _lastLoggedSecond) AudioManager.Instance.PlayAudio(_timerCountdownSFX[0]);
 
 
         if (_currentTime <= 0)
