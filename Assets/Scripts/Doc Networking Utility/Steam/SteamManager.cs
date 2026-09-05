@@ -303,7 +303,7 @@ namespace PTB.Networking
 
         protected virtual void OnSteamClientLeave()
         {
-            if (!connectedToSteam) return;
+            if (!connectedToSteam) { Debug.LogError($"Client is not connected, cannot disconnect!"); return; }
             _networkTransport.targetSteamId = 0;
 
             // INFO: Leave the lobby

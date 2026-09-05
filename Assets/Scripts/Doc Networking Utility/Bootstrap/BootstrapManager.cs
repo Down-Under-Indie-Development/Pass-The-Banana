@@ -38,6 +38,7 @@ namespace PTB.Networking
 
         private void Start()
         {
+            Application.targetFrameRate = 60; // INFO: Fixes High GPU Usage
 
             if (selectedTransport == Transport.Unity) { EnableUnityTransport(); return; }
             SteamManager.Instance.EstablishSteamConnection();

@@ -153,14 +153,13 @@ namespace PTB.Networking.Menus
         [Rpc(SendTo.ClientsAndHost)]
         private void TellUnityPlayerListRPC()
         {
-
             // Display all connected members
             foreach (ulong clientId in NetworkManager.Singleton.ConnectedClientsIds)
             {
                 bool isHost = clientId == 0;
 
                 // INFO: Set Display
-                CreatePlayerCard($"{clientId}", isHost, $"{0}ms");
+                CreatePlayerCard($"{clientId}", isHost, $"{-1}ms");
             }
         }
         #endregion
@@ -187,7 +186,7 @@ namespace PTB.Networking.Menus
         private PlayerUIInfo CreatePlayerCard(string playerName, bool host, string playerPing)
         {
             GameObject playerInfoGO = Instantiate(_playerInfoPanelPrefab);
-            playerInfoGO.transform.SetParent(_playerPanelContentGO.transform, false);
+            playerInfoGO.transform.SetParent(_playerPanelContentGO.transform);
 
             // INFO: Set Display
             PlayerUIInfo playerInfo = playerInfoGO.GetComponent<PlayerUIInfo>();
@@ -195,6 +194,7 @@ namespace PTB.Networking.Menus
             playerInfo.playerPing = playerPing;
 
             return playerInfo;
+
         }
 
         #region Buttons
@@ -204,11 +204,16 @@ namespace PTB.Networking.Menus
             if (NetworkManager.Singleton.ConnectedClients.Count < bootstrapManager.minimumPlayers && bootstrapManager.selectedTransport == BootstrapManager.Transport.Facepunch) { Debug.LogWarning($"Need {bootstrapManager.minimumPlayers} players to start"); return; }
             Debug.Log($"{_networkHelper.CheckPrivilege()} Started the game!");
             BootstrapNetworkManager.Instance.ChangeNetworkScene(bootstrapManager.gameplayScenes[0], bootstrapManager.lobbyScene);
+
         }
 
         public void LeaveGame()
         {
-            if (_steamManager.connectedToSteam) { _eventManager.OnSteamClientDisconnect?.Invoke(); return; }
+            if (_steamManager.connectedToSteam)
+            {
+                _eventManager.OnSteamClientDisconnect?.Invoke();
+                return;
+            }
 
             // !! Unity handling
             _eventManager.OnStopUnityClient?.Invoke();
