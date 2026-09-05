@@ -8,7 +8,7 @@ using PTB.Enums;
 
 namespace PTB.Networking.Menus
 {
-    public class MainMenu : Singleton<MainMenu>, IMenu
+    public class MainMenu : MonoBehaviour, IMenu
     {
         private EventManager _eventManager => EventManager.Instance;
         private BootstrapManager _bootstrapManager => BootstrapManager.Instance;

@@ -29,7 +29,6 @@ namespace PTB.Networking.Menus
         [SerializeField] private TextMeshProUGUI _roundsTxt;
         [SerializeField] private TextMeshProUGUI _lobbyCodeTxt;
 
-        private UnityNetworkHelper _networkHelper => UnityNetworkHelper.Instance;
         private SteamManager _steamManager => SteamManager.Instance;
 
         #region Events
@@ -202,7 +201,6 @@ namespace PTB.Networking.Menus
         {
             BootstrapManager bootstrapManager = BootstrapManager.Instance;
             if (NetworkManager.Singleton.ConnectedClients.Count < bootstrapManager.minimumPlayers && bootstrapManager.selectedTransport == BootstrapManager.Transport.Facepunch) { Debug.LogWarning($"Need {bootstrapManager.minimumPlayers} players to start"); return; }
-            Debug.Log($"{_networkHelper.CheckPrivilege()} Started the game!");
             BootstrapNetworkManager.Instance.ChangeNetworkScene(bootstrapManager.gameplayScenes[0], bootstrapManager.lobbyScene);
 
         }

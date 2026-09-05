@@ -10,7 +10,7 @@ using Utility;
 /// <summary>
 /// Handles Unity Netcode side for connecting and disconnecting clients
 /// </summary>
-public class UnityNetworkHelper : Singleton<UnityNetworkHelper>
+public class UnityNetworkHelper : MonoBehaviour
 {
     private EventManager _eventManager => EventManager.Instance;
 
