@@ -156,6 +156,9 @@ namespace PTB.Managers
         {
             if (connectionEventData.EventType != ConnectionEvent.ClientDisconnected) return;
 
+            if (connectionEventData.ClientId == networkManager.LocalClientId)
+                return;
+
             if (!networkManager.IsServer) return;
             Debug.Log($"<color={LogColours.Unity}>[PLAYER MANAGER]</color> {connectionEventData.ClientId} has left!");
 

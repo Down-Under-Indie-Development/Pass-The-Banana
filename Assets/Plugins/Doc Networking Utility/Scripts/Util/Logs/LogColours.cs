@@ -1,6 +1,6 @@
 using UnityEngine;
 
-internal static class LogColours
+public static class LogColours
 {
     public const string Host = "#4FC3F7";
     public const string Client = "#FF8A65";
