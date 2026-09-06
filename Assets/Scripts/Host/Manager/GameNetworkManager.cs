@@ -1,8 +1,12 @@
 using Utility;
 using UnityEngine;
 using Unity.Netcode;
-using PTB.Networking;
-using PTB.Enums;
+using Doc.Networking;
+using Doc.Networking.Unity;
+using Doc.Networking.Session;
+using Doc.Networking.Enums;
+using Doc.Networking.Data;
+using PTB.Client.Player;
 
 namespace PTB.Managers
 {
@@ -16,12 +20,11 @@ namespace PTB.Managers
 
         #region Networking Components
         // INFO: Network Components
-        public UnityNetworkHelper _networkHelper => UnityNetworkHelper.Instance;
         public SessionStateManager sessionStateManager => SessionStateManager.Instance;
         public BootstrapNetworkManager bootstrapNetworkManager => BootstrapNetworkManager.Instance;
         #endregion
 
-        public LobbyData currentGameLobbyData { get; private set; }
+        public LobbyInfo currentGameLobbyData { get; private set; }
 
         #region Networking
         public override void OnNetworkSpawn()
@@ -66,7 +69,7 @@ namespace PTB.Managers
 
             // INFO: Apply pause state to all connected players (including host)
             // bootstrapNetworkManager.ForEachPlayer(player => player._pauseMenuGO.SetActive(false), false);
-            bootstrapNetworkManager.ForEachPlayer(player => player.ApplyPauseState(_gamePaused));
+            bootstrapNetworkManager.ForEachPlayer(player => player.GetComponent<PlayerNetworkedController>().ApplyPauseState(_gamePaused));
 
         }
         #endregion

@@ -206,7 +206,7 @@ namespace PTB.Managers
         #endregion
 
         #region Utility
-        private void ReturnToLobby() => _gameManager.bootstrapNetworkManager.ReturnToLobby();
+        private void ReturnToLobby() => _gameManager.bootstrapNetworkManager.ReturnToLobbyRPC();
         private bool IsGameOver() => currentRound >= _gameManager.currentGameLobbyData.numberOfRounds;
 
         #endregion

@@ -25,6 +25,7 @@
   <Project Path="Unity.RenderPipelines.Universal.Editor.csproj" />
   <Project Path="Unity.PerformanceTesting.Editor.csproj" />
   <Project Path="UnityEngine.TestRunner.csproj" />
+  <Project Path="Assembly-CSharp.csproj" />
   <Project Path="Unity.2D.Tilemap.Editor.csproj" />
   <Project Path="Unity.Services.Core.Environments.Editor.csproj" />
   <Project Path="Unity.Multiplayer.Tools.NetworkProfiler.Editor.csproj" />
@@ -47,7 +48,6 @@
   <Project Path="Unity.Services.Deployment.csproj" />
   <Project Path="Unity.UnifiedRayTracing.Runtime.csproj" />
   <Project Path="Unity.VisualScripting.State.Editor.csproj" />
-  <Project Path="Assembly-CSharp.csproj" />
   <Project Path="Unity.Services.Deployment.Core.csproj" />
   <Project Path="unity-websocket-sharp.csproj" />
   <Project Path="Unity.Services.Core.Editor.csproj" />
@@ -183,6 +183,7 @@
   <Project Path="Unity.Collections.Player.csproj" />
   <Project Path="Unity.2D.IK.Runtime.Player.csproj" />
   <Project Path="UnityEngine.TestRunner.Player.csproj" />
+  <Project Path="Assembly-CSharp.Player.csproj" />
   <Project Path="Unity.Netcode.Runtime.Player.csproj" />
   <Project Path="Unity.Networking.Transport.Player.csproj" />
   <Project Path="Unity.Services.Authentication.Player.csproj" />
@@ -193,7 +194,6 @@
   <Project Path="Unity.2D.SpriteShape.Runtime.Player.csproj" />
   <Project Path="Unity.VisualScripting.Core.Player.csproj" />
   <Project Path="Unity.UnifiedRayTracing.Runtime.Player.csproj" />
-  <Project Path="Assembly-CSharp.Player.csproj" />
   <Project Path="unity-websocket-sharp.Player.csproj" />
   <Project Path="Unity.Services.Core.Player.csproj" />
   <Project Path="Unity.Multiplayer.Tools.Common.Player.csproj" />
