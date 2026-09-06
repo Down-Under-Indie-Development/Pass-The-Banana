@@ -7,6 +7,11 @@ using UnityEngine;
 using PTB.Enums;
 using PTB.Managers;
 using Steamworks;
+using Doc.Networking.Unity;
+using Doc.Networking.Steam;
+using System.Runtime.ExceptionServices;
+using Doc.Networking;
+using System.Linq;
 
 namespace PTB.Menus
 {
@@ -39,10 +44,26 @@ namespace PTB.Menus
                     .CompareTo(_gameManager.scoreManager.GetPlayerPlace(b, dataSet))
             );
 
-            // INFO: Show all player cards
-            foreach (ulong clientId in clientIds)
-                yield return ShowPlayerStats(clientId, dataSet, perPlayerDelay);
 
+
+            // INFO: Show all player cards
+            // var playerIds = BootstrapNetworkManager.Instance.connectedPlayers.Keys.ToList();
+
+            foreach (KeyValuePair<ulong, ulong> kvp in BootstrapNetworkManager.Instance.connectedPlayers)
+            {
+                ulong playerId = kvp.Key;
+                ulong playerValue = kvp.Value;
+
+                List<Friend> test = SteamManager.Instance.myLobby.Value.Members.ToList();
+
+                for (int i = 0; i < NetworkManager.Singleton.ConnectedClients.Count; i++)
+                {
+
+                    if (test[i].Id == playerValue) yield return ShowPlayerStats(playerId, dataSet, perPlayerDelay, test[i].Name); // or use the value
+
+                }
+
+            }
             // INFO: Last player delay
             yield return new WaitForSeconds(endPause);
 
@@ -52,7 +73,7 @@ namespace PTB.Menus
         }
 
         // INFO: Animation per player card
-        private IEnumerator ShowPlayerStats(ulong clientId, Dictionary<ulong, ScoreData> dataSet, float perPlayerDelay)
+        private IEnumerator ShowPlayerStats(ulong clientId, Dictionary<ulong, ScoreData> dataSet, float perPlayerDelay, string steamName = null)
         {
             NetworkObject playerCardNetObj = NetworkManager.Singleton.SpawnManager.InstantiateAndSpawn(
                 _playerCardPrefab.GetComponent<NetworkObject>(),
@@ -63,7 +84,7 @@ namespace PTB.Menus
             int playerPlace = _gameManager.scoreManager.GetPlayerPlace(clientId, dataSet);
 
             // Tell all clients to parent it
-            ParentPlayerCardRPC(playerCardNetObj.NetworkObjectId, playerScore.points, playerScore.fails, playerScore.passes, clientId, playerPlace);
+            ParentPlayerCardRPC(playerCardNetObj.NetworkObjectId, clientId.ToString(), playerScore.points, playerScore.fails, playerScore.passes, playerPlace, steamName);
 
             // INFO: Delay for each player
             yield return new WaitForSeconds(perPlayerDelay);
@@ -71,7 +92,7 @@ namespace PTB.Menus
         }
 
         [Rpc(SendTo.ClientsAndHost)]
-        private void ParentPlayerCardRPC(ulong cardNetworkObjectId, int score, int fails, int passes, ulong clientId, int place)
+        private void ParentPlayerCardRPC(ulong cardNetworkObjectId, string clientId, int score, int fails, int passes, int place, string steamName = null)
         {
             if (!NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(cardNetworkObjectId, out NetworkObject cardNetObj))
             {
@@ -84,8 +105,6 @@ namespace PTB.Menus
             scoreData.points = score;
             scoreData.fails = fails;
             scoreData.passes = passes;
-
-            string steamName = SteamClient.IsValid ? SteamClient.Name : "";
 
             playerCard.SetPlayerCardStats(scoreData, clientId, place, steamName);
             cardNetObj.transform.SetParent(_playerContentGO.transform);

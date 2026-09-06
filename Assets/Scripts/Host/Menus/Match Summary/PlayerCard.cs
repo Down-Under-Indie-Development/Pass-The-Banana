@@ -25,12 +25,12 @@ namespace PTB.Menus
             };
         }
 
-        public void SetPlayerCardStats(ScoreData scoreData, ulong clientId, int playerPlace, string steamName)
+        public void SetPlayerCardStats(ScoreData scoreData, string clientId, int playerPlace, string steamName)
         {
             if (_placeTxt == null || _playerNameTxt == null || _passesTxt == null || _failsTxt == null || _scoreTxt == null) { Debug.LogError($"One or more text object are null!"); return; }
-
-            string name = SteamClient.IsValid ? steamName : clientId.ToString();
             string place = GetPlaceOrdinal(playerPlace);
+
+            name = string.IsNullOrEmpty(steamName) ? clientId : steamName;
 
             _placeTxt.text = place;
             _playerNameTxt.text = name;

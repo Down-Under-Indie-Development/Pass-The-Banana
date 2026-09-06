@@ -7,6 +7,7 @@ using System;
 using Doc.Networking.Events;
 using Doc.Networking.Data;
 using Doc.Networking.Session;
+using Steamworks;
 
 namespace Doc.Networking
 {
@@ -21,6 +22,9 @@ namespace Doc.Networking
         #endregion
 
         public LobbyInfo lobbyData { get; private set; }
+
+        [SerializeField]
+        public Dictionary<ulong, ulong> connectedPlayers = new();
 
         private void Awake()
         {

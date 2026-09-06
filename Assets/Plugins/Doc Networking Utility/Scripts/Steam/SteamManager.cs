@@ -206,16 +206,12 @@ namespace Doc.Networking.Steam
 
         private void OnLobbyCreated(Result result, Lobby lobby)
         {
-            try
-            {
-                Debug.Log($"<color={LogColours.Steamworks}>[STEAM]</color> Lobby created! | {lobby.Owner.Name} ({lobby.Id}) | {lobby.MemberCount}/{lobby.MaxMembers}");
-                GUIUtility.systemCopyBuffer = lobby.Id.ToString(); // INFO: Copies lobby code to peoples keyboard
+            Debug.Log($"<color={LogColours.Steamworks}>[STEAM]</color> Lobby created! | {lobby.Owner.Name} ({lobby.Id}) | {lobby.MemberCount}/{lobby.MaxMembers}");
+            GUIUtility.systemCopyBuffer = lobby.Id.ToString(); // INFO: Copies lobby code to peoples keyboard
+            myLobby = lobby;
 
-            }
-            catch (System.Exception e)
-            {
-                Debug.LogError($"{e.Message}");
-            }
+            BootstrapNetworkManager.Instance.connectedPlayers[(ulong)myLobby.Value.MemberCount - 1] = SteamClient.SteamId.Value;
+
         }
 
         #endregion
@@ -252,6 +248,7 @@ namespace Doc.Networking.Steam
         private void OnLobbyMemberJoined(Lobby lobby, Friend friend)
         {
             Debug.Log($"{friend.Name} is joining!");
+            BootstrapNetworkManager.Instance.connectedPlayers[(ulong)myLobby.Value.MemberCount - 1] = friend.Id.Value;
 
         }
 
