@@ -26,8 +26,6 @@ namespace Doc.Networking.Menus.Game
         [SerializeField] private TextMeshProUGUI _roundsTxt;
         [SerializeField] protected TextMeshProUGUI _lobbyCodeTxt;
 
-        protected SteamManager _steamManager => SteamManager.Instance;
-
         #region Events
         protected virtual void OnEnable()
         {
@@ -98,7 +96,7 @@ namespace Doc.Networking.Menus.Game
         protected virtual void AskForLobbyInfoRPC()
         {
             string code = "Code: ";
-            string lobby = _steamManager.myLobby.HasValue ? _steamManager.myLobby.Value.Id.ToString() : "UNITY (NO CODE)";
+            string lobby = SteamManager.myLobby.HasValue ? SteamManager.myLobby.Value.Id.ToString() : "UNITY (NO CODE)";
             string lobbyCode = code + lobby;
             string numberOfRounds = $"ROUND 1 OF {BootstrapNetworkManager.Instance.lobbyData.numberOfRounds}";
 
@@ -125,45 +123,21 @@ namespace Doc.Networking.Menus.Game
         protected virtual void AskForPlayerListRPC()
         {
             ClearPlayerPanel();
+            TellPlayerListRPC();
 
-            switch (BootstrapManager.Instance.selectedTransport)
-            {
-                case BootstrapManager.Transport.Facepunch:
-                    TellSteamPlayerListRPC();
-                    break;
-
-                case BootstrapManager.Transport.Unity:
-                    TellUnityPlayerListRPC();
-                    break;
-            }
         }
 
         [Rpc(SendTo.ClientsAndHost)]
-        protected virtual void TellSteamPlayerListRPC()
+        protected virtual void TellPlayerListRPC()
         {
-            if (!_steamManager.myLobby.HasValue) { Debug.LogError($"Steam lobby doesn't have a value, can't show player list!"); return; }
-
-            Lobby lobby = _steamManager.myLobby.Value;
-            foreach (Friend member in lobby.Members)
-            {
-                // INFO: Set Display
-                bool isHost = lobby.Owner.Id == member.Id;
-                CreatePlayerCard($"{member.Name}", isHost, $"{-1}ms");
-
-            }
-        }
-
-        #region Debugging
-        [Rpc(SendTo.ClientsAndHost)]
-        protected virtual void TellUnityPlayerListRPC()
-        {
-            // Display all connected members
+            // INFO: Display all connected members
             foreach (ulong clientId in NetworkManager.Singleton.ConnectedClientsIds)
             {
                 bool isHost = clientId == 0;
 
-                // INFO: Set Display
-                CreatePlayerCard($"{clientId}", isHost, $"{-1}ms");
+                string name = SteamManager.ConnectedToSteam ? BootstrapNetworkManager.GetPlayerSteamName(clientId) : clientId.ToString();
+                CreatePlayerCard($"{name}", isHost, $"{-1}ms");
+
             }
         }
         #endregion
@@ -180,9 +154,6 @@ namespace Doc.Networking.Menus.Game
             Refresh();
 
         }
-
-
-        #endregion
 
         #endregion
 
@@ -215,7 +186,7 @@ namespace Doc.Networking.Menus.Game
 
         protected virtual void LeaveGame()
         {
-            if (_steamManager.connectedToSteam)
+            if (SteamManager.ConnectedToSteam)
             {
                 NetworkUtilEventManager.OnSteamClientDisconnect?.Invoke();
                 return;

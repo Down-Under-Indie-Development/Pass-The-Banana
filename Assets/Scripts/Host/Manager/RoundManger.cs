@@ -124,7 +124,7 @@ namespace PTB.Managers
         {
             NotifyAnswerResultRpc(true);
             _gameManager.scoreManager.AwardPoints(clientId); // INFO: Score
-            currentRoundData[currentRound][clientId].points++;
+            currentRoundData[currentRound][clientId].correctGuesses++;
 
             _gameManager.bombManager.ProcessPassTheBomb();
 
@@ -133,7 +133,7 @@ namespace PTB.Managers
         public void ProcessIncorrectGuess(ulong clientId)
         {
             NotifyAnswerResultRpc(false);
-            currentRoundData[currentRound][clientId].fails++;
+            currentRoundData[currentRound][clientId].incorrectGuesses++;
             _gameManager.bombManager.ProcessExplode();
 
         }

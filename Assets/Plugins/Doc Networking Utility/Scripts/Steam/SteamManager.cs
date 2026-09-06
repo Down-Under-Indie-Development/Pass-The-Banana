@@ -20,9 +20,9 @@ namespace Doc.Networking.Steam
 
         [field: Header("Steam Settings")]
         [field: SerializeField] public uint appID { get; protected set; } = 480;
-        public bool connectedToSteam => SteamClient.IsValid;
 
-        public Lobby? myLobby { get; protected set; }
+        public static bool ConnectedToSteam => SteamClient.IsValid;
+        public static Lobby? myLobby { get; protected set; }
 
 
         [Header("Events")]
@@ -115,7 +115,7 @@ namespace Doc.Networking.Steam
         // INFO: Establish connection to steam servers
         public virtual bool EstablishSteamConnection()
         {
-            if (connectedToSteam) { Debug.Log($"Attempted to initialise Steam but already connected?"); return false; }
+            if (ConnectedToSteam) { Debug.Log($"Attempted to initialise Steam but already connected?"); return false; }
 
             try
             {
@@ -142,18 +142,18 @@ namespace Doc.Networking.Steam
         // INFO: Disconnect from steam
         protected virtual void TerminateSteamConnection()
         {
-            if (!connectedToSteam) return;
+            if (!ConnectedToSteam) return;
 
             try
             {
                 SteamFriends.SetRichPresence("connect", null);
                 SteamClient.Shutdown();
-                if (!connectedToSteam) Debug.Log($"<color={LogColours.Steamworks}>[STEAM]</color> Connection terminated successfully!");
+                if (!ConnectedToSteam) Debug.Log($"<color={LogColours.Steamworks}>[STEAM]</color> Connection terminated successfully!");
 
             }
             catch (System.Exception e)
             {
-                if (connectedToSteam) Debug.LogError($"{e.Message}");
+                if (ConnectedToSteam) Debug.LogError($"{e.Message}");
 
             }
         }
@@ -169,7 +169,7 @@ namespace Doc.Networking.Steam
 
         protected void CheckSteamConnection()
         {
-            if (connectedToSteam) return;
+            if (ConnectedToSteam) return;
 
             // INFO: Not Connected
             Debug.LogWarning($"Not connected to steam, disabling {name}");
@@ -185,7 +185,7 @@ namespace Doc.Networking.Steam
         #region Create Server
         private async void StartSteamServer(LobbyInfo lobbyData)
         {
-            if (!connectedToSteam) EstablishSteamConnection();
+            if (!ConnectedToSteam) EstablishSteamConnection();
             Debug.Log($"<color={LogColours.Steamworks}>[STEAM]</color> Lobby request received creating lobby!");
             Lobby? lobby = await SteamMatchmaking.CreateLobbyAsync(lobbyData.maxPlayers);
             lobby.Value.SetGameServer(lobby.Value.Owner.Id);
@@ -210,7 +210,7 @@ namespace Doc.Networking.Steam
             GUIUtility.systemCopyBuffer = lobby.Id.ToString(); // INFO: Copies lobby code to peoples keyboard
             myLobby = lobby;
 
-            BootstrapNetworkManager.Instance.connectedPlayers[(ulong)myLobby.Value.MemberCount - 1] = SteamClient.SteamId.Value;
+            BootstrapNetworkManager.ConnectedPlayers[(ulong)myLobby.Value.MemberCount - 1] = SteamClient.SteamId.Value;
 
         }
 
@@ -248,7 +248,7 @@ namespace Doc.Networking.Steam
         private void OnLobbyMemberJoined(Lobby lobby, Friend friend)
         {
             Debug.Log($"{friend.Name} is joining!");
-            BootstrapNetworkManager.Instance.connectedPlayers[(ulong)myLobby.Value.MemberCount - 1] = friend.Id.Value;
+            BootstrapNetworkManager.ConnectedPlayers[(ulong)myLobby.Value.MemberCount - 1] = friend.Id.Value;
 
         }
 
@@ -308,7 +308,7 @@ namespace Doc.Networking.Steam
 
         protected virtual void OnSteamClientLeave()
         {
-            if (!connectedToSteam) { Debug.LogError($"Client is not connected, cannot disconnect!"); return; }
+            if (!ConnectedToSteam) { Debug.LogError($"Client is not connected, cannot disconnect!"); return; }
             if (_facepunchTransport != null) _facepunchTransport.targetSteamId = 0;
 
             // INFO: Leave the lobby
@@ -334,7 +334,7 @@ namespace Doc.Networking.Steam
         #region Utility
         protected virtual string CheckPrivilege()
         {
-            if (!connectedToSteam) return $"<color={LogColours.Steamworks}>[STEAM]</color>";
+            if (!ConnectedToSteam) return $"<color={LogColours.Steamworks}>[STEAM]</color>";
 
             switch (NetworkManager.Singleton.IsHost)
             {

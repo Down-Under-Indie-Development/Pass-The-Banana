@@ -6,12 +6,12 @@ namespace PTB.Enums
     [Serializable]
     public class ScoreData
     {
-        public int points;
+        public int correctGuesses;
         public int passes;
-        public int fails;
+        public int incorrectGuesses;
 
         public static ScoreData Empty() => new();
 
-        public override string ToString() => $"Points: {points} | Passes: {passes} | Fails: {fails}";
+        public override string ToString() => $"Points: {correctGuesses} | Passes: {passes} | Fails: {incorrectGuesses}";
     }
 }

@@ -12,7 +12,7 @@ namespace PTB.Menus
         [SerializeField] private TextMeshProUGUI _playerNameTxt;
         [SerializeField] private TextMeshProUGUI _passesTxt;
         [SerializeField] private TextMeshProUGUI _failsTxt;
-        [SerializeField] private TextMeshProUGUI _scoreTxt;
+        [SerializeField] private TextMeshProUGUI _pointsTxt;
 
         private string GetPlaceOrdinal(int place)
         {
@@ -25,18 +25,15 @@ namespace PTB.Menus
             };
         }
 
-        public void SetPlayerCardStats(ScoreData scoreData, string clientId, int playerPlace, string steamName)
+        public void SetPlayerCardStats(string name, ScoreData scoreData, int playerPlace)
         {
-            if (_placeTxt == null || _playerNameTxt == null || _passesTxt == null || _failsTxt == null || _scoreTxt == null) { Debug.LogError($"One or more text object are null!"); return; }
             string place = GetPlaceOrdinal(playerPlace);
 
-            name = string.IsNullOrEmpty(steamName) ? clientId : steamName;
-
-            _placeTxt.text = place;
-            _playerNameTxt.text = name;
-            _passesTxt.text = scoreData.passes.ToString();
-            _failsTxt.text = scoreData.fails.ToString();
-            _scoreTxt.text = scoreData.points.ToString();
+            if (_placeTxt != null) _placeTxt.text = place;
+            if (_playerNameTxt != null) _playerNameTxt.text = name;
+            if (_passesTxt != null) _passesTxt.text = scoreData.passes.ToString();
+            if (_failsTxt != null) _failsTxt.text = scoreData.incorrectGuesses.ToString();
+            if (_pointsTxt != null) _pointsTxt.text = scoreData.correctGuesses.ToString();
 
         }
     }

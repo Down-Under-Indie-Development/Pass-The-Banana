@@ -8,6 +8,8 @@ using Doc.Networking.Events;
 using Doc.Networking.Data;
 using Doc.Networking.Session;
 using Steamworks;
+using Unity.Collections;
+using Doc.Networking.Steam;
 
 namespace Doc.Networking
 {
@@ -22,9 +24,7 @@ namespace Doc.Networking
         #endregion
 
         public LobbyInfo lobbyData { get; private set; }
-
-        [SerializeField]
-        public Dictionary<ulong, ulong> connectedPlayers = new();
+        public static Dictionary<ulong, ulong> ConnectedPlayers = new();
 
         private void Awake()
         {
@@ -144,6 +144,39 @@ namespace Doc.Networking
             return isValid;
         }
 
+        #endregion
+
+        #region Players
+        public static string GetPlayerSteamName(ulong clientId)
+        {
+            if (!SteamManager.ConnectedToSteam) return null;
+
+            List<Friend> lobbyMembers = SteamManager.myLobby.Value.Members.ToList();
+            for (int i = 0; i < NetworkManager.Singleton.ConnectedClients.Count; i++)
+            {
+                if (lobbyMembers[i].Id == ConnectedPlayers[clientId])
+                    return lobbyMembers[i].Name;
+
+            }
+
+            return null;
+
+        }
+
+        public static ulong GetPlayerUnityId(ulong steamId)
+        {
+            foreach (var player in ConnectedPlayers)
+            {
+                ulong playerId = player.Key;
+                ulong playerSteamId = player.Value;
+
+                if (playerSteamId == steamId) return playerId;
+
+            }
+
+            return 69;
+
+        }
         #endregion
 
     }

@@ -18,6 +18,7 @@ namespace PTB.Menus
     public class MatchSummary : NetworkBehaviour
     {
         private GameNetworkManager _gameManager => GameNetworkManager.Instance;
+        private ScoreManager _scoreManager => ScoreManager.Instance;
 
         [Header("Round Info")]
         [SerializeField] private TextMeshProUGUI _roundStatusTxt;
@@ -38,32 +39,20 @@ namespace PTB.Menus
             if (_nextRoundTxt != null) _nextRoundTxt.text = nextRound <= _gameManager.currentGameLobbyData.numberOfRounds ? $"ROUND {nextRound}" : "LOBBY";
 
 
-            List<ulong> clientIds = new(NetworkManager.Singleton.ConnectedClientsIds);
-            clientIds.Sort((a, b) =>
+            List<ulong> connectedClientIds = new(NetworkManager.Singleton.ConnectedClientsIds);
+            connectedClientIds.Sort((a, b) =>
                 _gameManager.scoreManager.GetPlayerPlace(a, dataSet)
                     .CompareTo(_gameManager.scoreManager.GetPlayerPlace(b, dataSet))
             );
 
-
-
             // INFO: Show all player cards
-            // var playerIds = BootstrapNetworkManager.Instance.connectedPlayers.Keys.ToList();
-
-            foreach (KeyValuePair<ulong, ulong> kvp in BootstrapNetworkManager.Instance.connectedPlayers)
+            foreach (ulong clientId in connectedClientIds)
             {
-                ulong playerId = kvp.Key;
-                ulong playerValue = kvp.Value;
-
-                List<Friend> test = SteamManager.Instance.myLobby.Value.Members.ToList();
-
-                for (int i = 0; i < NetworkManager.Singleton.ConnectedClients.Count; i++)
-                {
-
-                    if (test[i].Id == playerValue) yield return ShowPlayerStats(playerId, dataSet, perPlayerDelay, test[i].Name); // or use the value
-
-                }
+                string steamName = BootstrapNetworkManager.GetPlayerSteamName(clientId);
+                yield return ShowPlayerStats(clientId, dataSet, perPlayerDelay, steamName); // or use the value
 
             }
+
             // INFO: Last player delay
             yield return new WaitForSeconds(endPause);
 
@@ -80,11 +69,12 @@ namespace PTB.Menus
                 NetworkManager.Singleton.LocalClientId
             );
 
-            ScoreData playerScore = dataSet[clientId];
+            ScoreData playerStats = dataSet[clientId];
             int playerPlace = _gameManager.scoreManager.GetPlayerPlace(clientId, dataSet);
+            int playerTotalScore = _gameManager.scoreManager.GetPlayerTotalScore(clientId);
 
-            // Tell all clients to parent it
-            ParentPlayerCardRPC(playerCardNetObj.NetworkObjectId, clientId.ToString(), playerScore.points, playerScore.fails, playerScore.passes, playerPlace, steamName);
+            // INFO: Tell all clients to parent it
+            ParentPlayerCardRPC(playerCardNetObj.NetworkObjectId, clientId.ToString(), playerTotalScore, playerStats.incorrectGuesses, playerStats.passes, playerPlace, steamName);
 
             // INFO: Delay for each player
             yield return new WaitForSeconds(perPlayerDelay);
@@ -92,7 +82,7 @@ namespace PTB.Menus
         }
 
         [Rpc(SendTo.ClientsAndHost)]
-        private void ParentPlayerCardRPC(ulong cardNetworkObjectId, string clientId, int score, int fails, int passes, int place, string steamName = null)
+        private void ParentPlayerCardRPC(ulong cardNetworkObjectId, string clientId, int points, int fails, int passes, int place, string steamName = null)
         {
             if (!NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(cardNetworkObjectId, out NetworkObject cardNetObj))
             {
@@ -101,12 +91,16 @@ namespace PTB.Menus
             }
 
             PlayerCard playerCard = cardNetObj.GetComponent<PlayerCard>();
-            ScoreData scoreData = new ScoreData();
-            scoreData.points = score;
-            scoreData.fails = fails;
-            scoreData.passes = passes;
+            ScoreData scoreData = new ScoreData
+            {
+                correctGuesses = points,
+                incorrectGuesses = fails,
+                passes = passes
+            };
 
-            playerCard.SetPlayerCardStats(scoreData, clientId, place, steamName);
+            string name = SteamManager.ConnectedToSteam ? steamName : clientId;
+
+            playerCard.SetPlayerCardStats(name, scoreData, place);
             cardNetObj.transform.SetParent(_playerContentGO.transform);
 
             cardNetObj.transform.localPosition = Vector3.zero;

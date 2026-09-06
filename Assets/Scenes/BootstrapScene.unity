@@ -213,7 +213,7 @@ MonoBehaviour:
   <gameplayScenes>k__BackingField:
   - TestScene
   <minimumPlayers>k__BackingField: 2
-  <selectedTransport>k__BackingField: 0
+  <selectedTransport>k__BackingField: 1
 --- !u!1 &1443685446
 GameObject:
   m_ObjectHideFlags: 0
@@ -584,7 +584,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BootstrapNetworkManager
   ShowTopMostFoldoutHeaderGroup: 1
-  connectedPlayers: []
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

@@ -12,7 +12,9 @@ namespace PTB.Managers
     /// </summary>
     public class ScoreManager : NetworkedSingleton<ScoreManager>
     {
-        private GameNetworkManager _gameManager => GameNetworkManager.Instance;
+        [field: Header("Scoring Settings")]
+        [field: SerializeField] public int correctGuessPoints { get; private set; } = 50;
+        [field: SerializeField] public int failPenalty { get; private set; } = 50;
 
         [SerializeField] private Dictionary<ulong, ScoreData> _playerScores = new();
 
@@ -27,8 +29,7 @@ namespace PTB.Managers
             if (!IsServer) { enabled = false; return; }
         }
 
-        #region Points
-        public ScoreData GetPlayerScore(ulong clientId)
+        public ScoreData GetPlayerScoreData(ulong clientId)
         {
             if (!_playerScores.TryGetValue(clientId, out ScoreData scoreData))
             {
@@ -41,13 +42,37 @@ namespace PTB.Managers
 
         }
 
-        public void AwardPoints(ulong clientId, int points = 1)
+        public int GetPlayerPlace(ulong clientId, Dictionary<ulong, ScoreData> dataSet)
+        {
+            if (!dataSet.ContainsKey(clientId))
+                return -69;
+
+            ScoreData targetPlayer = dataSet[clientId];
+            int targetScore = (targetPlayer.correctGuesses * correctGuessPoints) - (targetPlayer.incorrectGuesses * failPenalty);  // FIXED
+
+            int playersAhead = dataSet.Values.Count(other =>
+                (other.correctGuesses * correctGuessPoints) - (other.incorrectGuesses * failPenalty) > targetScore  // FIXED
+            );
+
+            return playersAhead + 1;
+        }
+
+        public int GetPlayerTotalScore(ulong clientId)
+        {
+            if (!_playerScores.ContainsKey(clientId)) { Debug.LogError($"No key found for {clientId}"); return -1; }
+            ScoreData playerScoreData = GetPlayerScoreData(clientId);
+            return (playerScoreData.correctGuesses * correctGuessPoints) - (playerScoreData.incorrectGuesses * failPenalty);
+
+        }
+
+        #region Points
+        public void AwardPoints(ulong clientId)
         {
             if (!EnsurePlayerScoreExists(clientId))
                 return;
 
-            _playerScores[clientId].points += points;
-            Debug.Log($"<color={LogColours.Unity}>[SCORE MANAGER]</color> Player {clientId} now has {_playerScores[clientId].points} point(s)");
+            _playerScores[clientId].correctGuesses++;
+            Debug.Log($"<color={LogColours.Unity}>[SCORE MANAGER]</color> Player {clientId} now has {_playerScores[clientId].correctGuesses} point(s)");
         }
 
         #endregion
@@ -63,17 +88,15 @@ namespace PTB.Managers
         #endregion
 
         #region Fails
-        public void AwardFail(ulong clientId, int amount = 1)
+        public void AwardFail(ulong clientId)
         {
             if (EnsurePlayerScoreExists(clientId))
-                _playerScores[clientId].fails += amount;
+                _playerScores[clientId].incorrectGuesses++;
 
         }
         #endregion
 
-        public Dictionary<ulong, ScoreData> GetAllPlayerScores() => _playerScores;
-        public void ResetAllScores() => _playerScores.Clear();
-
+        #region Utility
         private bool EnsurePlayerScoreExists(ulong clientId)
         {
             if (_playerScores.ContainsKey(clientId))
@@ -84,26 +107,10 @@ namespace PTB.Managers
 
         }
 
-        public int GetPlayerPlace(ulong clientId, Dictionary<ulong, ScoreData> dataSet)
-        {
-            // Guard: Return a fallback value if the player isn't in the dataset
-            if (!dataSet.ContainsKey(clientId))
-                return -69;
+        public Dictionary<ulong, ScoreData> GetAllPlayerScores() => _playerScores;
+        public void ResetAllScores() => _playerScores.Clear();
 
-            ScoreData targetPlayer = dataSet[clientId];
-
-            // INFO: Count how many players performed better than player
-            int playersAhead = dataSet.Values.Count(other =>
-                // INFO: Condition 1: They have more points
-                other.points > targetPlayer.points ||
-
-                // INFO: Condition 2: They have the same points, but fewer fails (better performance)
-                (other.points == targetPlayer.points && other.fails < targetPlayer.fails)
-            );
-
-            // INFo: Placement is 1 + the number of players ahead of them
-            return playersAhead + 1;
-        }
+        #endregion
 
 
     }
