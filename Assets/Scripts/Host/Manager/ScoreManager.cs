@@ -13,7 +13,6 @@ namespace PTB.Managers
     public class ScoreManager : NetworkedSingleton<ScoreManager>
     {
         [field: Header("Scoring Settings")]
-        [field: SerializeField] public int correctGuessPoints { get; private set; } = 50;
         [field: SerializeField] public int failPenalty { get; private set; } = 50;
 
         [SerializeField] private Dictionary<ulong, ScoreData> _playerScores = new();
@@ -48,10 +47,10 @@ namespace PTB.Managers
                 return -69;
 
             ScoreData targetPlayer = dataSet[clientId];
-            int targetScore = (targetPlayer.correctGuesses * correctGuessPoints) - (targetPlayer.incorrectGuesses * failPenalty);  // FIXED
+            int targetScore = targetPlayer.correctGuesses - (targetPlayer.incorrectGuesses * failPenalty);  // FIXED
 
             int playersAhead = dataSet.Values.Count(other =>
-                (other.correctGuesses * correctGuessPoints) - (other.incorrectGuesses * failPenalty) > targetScore  // FIXED
+                other.correctGuesses - (other.incorrectGuesses * failPenalty) > targetScore  // FIXED
             );
 
             return playersAhead + 1;
@@ -61,7 +60,7 @@ namespace PTB.Managers
         {
             if (!_playerScores.ContainsKey(clientId)) { Debug.LogError($"No key found for {clientId}"); return -1; }
             ScoreData playerScoreData = GetPlayerScoreData(clientId);
-            return (playerScoreData.correctGuesses * correctGuessPoints) - (playerScoreData.incorrectGuesses * failPenalty);
+            return playerScoreData.correctGuesses - (playerScoreData.incorrectGuesses * failPenalty);
 
         }
 

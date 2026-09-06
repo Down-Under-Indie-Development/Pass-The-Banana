@@ -14,4 +14,3 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CategoriesContainerSO
   <categories>k__BackingField:
   - {fileID: 11400000, guid: e0961b562aa64614a973998f695f1c6e, type: 2}
-  - {fileID: 11400000, guid: 524c448a7f380234cb98129b005e4454, type: 2}

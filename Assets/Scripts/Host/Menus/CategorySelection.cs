@@ -61,6 +61,7 @@ namespace PTB.Menus
         {
             foreach (CategorySO category in GameNetworkManager.Instance.questionManager.categoryContainer.categories)
             {
+                if (category == null) continue;
                 AddItemToDropDown(category.categoryName);
 
             }
