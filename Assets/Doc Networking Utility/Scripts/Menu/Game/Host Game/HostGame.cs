@@ -45,6 +45,7 @@ namespace Doc.Networking.Menus.Game
             Debug.Log(lobbyData);
 
             _bootstrapNetworkManager.SetLobbyData(lobbyData);
+
             if (NetworkManager.Singleton.NetworkConfig.NetworkTransport is UnityTransport)
             {
                 Debug.Log($"<color={LogColours.Debug}>[DEBUG]</color> <color={LogColours.Unity}>[UNITY]</color> Bypassing Facepunch transport, starting host!");
@@ -53,6 +54,7 @@ namespace Doc.Networking.Menus.Game
 
             }
 
+            NetworkUtilEventManager.OnSteamHostConnect?.Invoke();
             NetworkUtilEventManager.OnCreateLobbyRequest?.Invoke(lobbyData);
 
         }

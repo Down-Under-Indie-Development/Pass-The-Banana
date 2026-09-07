@@ -75,6 +75,7 @@ namespace Doc.Networking.Menus.Game
 
             _errorTXT?.gameObject.SetActive(false);
 
+            NetworkUtilEventManager.OnSteamClientConnect?.Invoke();
             Steamworks.Data.Lobby? lobby = await SteamMatchmaking.JoinLobbyAsync(lobbyId);
 
         }

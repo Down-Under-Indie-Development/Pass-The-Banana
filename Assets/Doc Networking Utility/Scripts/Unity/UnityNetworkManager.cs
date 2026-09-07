@@ -5,6 +5,10 @@ using UnityEngine.SceneManagement;
 using Doc.Networking.Events;
 using System.Threading.Tasks;
 using Steamworks;
+using Doc.Networking.Steam;
+using System.Linq;
+using Unity.VisualScripting;
+using System.Collections;
 
 /// <summary>
 /// Handles Unity Netcode side for connecting and disconnecting clients
@@ -45,11 +49,16 @@ namespace Doc.Networking.Unity
 
         #region Unity Client
         // INFO: Start Client Connection 
-        protected virtual async void OnStartUnityClient()
+        protected virtual void OnStartUnityClient()
         {
             try
             {
                 NetworkManager.Singleton.StartClient();
+                NetworkManager.Singleton.OnConnectionEvent += OnConnectionEvent;
+                NetworkManager.Singleton.OnClientStopped += OnClientStopped;
+                Debug.Log($"{CheckPrivilege()} Client has started");
+
+                SceneManager.UnloadSceneAsync(BootstrapManager.Instance.mainMenuScene);
 
             }
             catch (System.Exception ex)
@@ -58,17 +67,10 @@ namespace Doc.Networking.Unity
 
             }
 
-            NetworkManager.Singleton.OnConnectionEvent += OnConnectionEvent;
-            NetworkManager.Singleton.OnClientStopped += OnClientStopped;
-            Debug.Log($"{CheckPrivilege()} Client has started");
-            await SceneManager.UnloadSceneAsync(BootstrapManager.Instance.mainMenuScene);
-
-            NetworkUtilEventManager.OnStartUnityClient?.Invoke(); // INFO: Client started let other scripts know
-
         }
 
         // INFO: Stop Client Connection
-        protected virtual async void StopUnityClient()
+        protected virtual void StopUnityClient()
         {
             string privilege = NetworkManager.Singleton.IsServer ? "host" : "client";
             string color = NetworkManager.Singleton.IsServer ? LogColours.Host : LogColours.Client;
@@ -115,14 +117,13 @@ namespace Doc.Networking.Unity
             if (connectionEventData.EventType != ConnectionEvent.ClientConnected) return;
             if (!networkManager.IsServer) return;
 
-            BootstrapNetworkManager.AddPlayer(connectionEventData.ClientId, BootstrapNetworkManager.GetPlayerSteamClient(connectionEventData.ClientId).Id);
             Debug.Log($"<color={LogColours.Lobby}>[LOBBY]</color> {connectionEventData.ClientId} has joined!");
 
         }
 
         protected virtual void OnClientKicked(NetworkManager networkManager, ConnectionEventData connectionEventData)
         {
-            if (networkManager.IsServer && connectionEventData.ClientId != 0) BootstrapNetworkManager.RemovePlayer(connectionEventData.ClientId);
+            if (networkManager.IsServer && connectionEventData.ClientId != 0) BootstrapNetworkManager.Instance.RemovePlayer(connectionEventData.ClientId);
             if (connectionEventData.ClientId != networkManager.LocalClientId) return;
 
             StopUnityClient();
@@ -136,32 +137,42 @@ namespace Doc.Networking.Unity
 
         #region Unity Host
         // INFO: Start host connection
-        protected virtual void OnStartUnityHost()
+        private void OnStartUnityHost()
+        {
+            StartCoroutine(StartUnityHostCoroutine());
+
+        }
+
+        private IEnumerator StartUnityHostCoroutine()
+        {
+            yield return StartUnityHostAsync();
+        }
+
+
+        protected virtual async Task StartUnityHostAsync()
         {
             try
             {
-                NetworkManager.Singleton.StartHost();
 
+                NetworkManager.Singleton.StartHost();
+                NetworkManager.Singleton.OnConnectionEvent += OnConnectionEvent;
+                NetworkManager.Singleton.OnClientStopped += OnClientStopped;
+
+                // INFO: Configure Network Manager
+                NetworkManager.Singleton.SceneManager.ActiveSceneSynchronizationEnabled = true;
+                NetworkManager.Singleton.SceneManager.PostSynchronizationSceneUnloading = true;
+
+                if (SteamManager.Instance.connectedToSteam) await Task.Delay(500);
+                Debug.Log($"{CheckPrivilege()} Unity Host has started");
+
+                NetworkUtilEventManager.OnStartUnityHost?.Invoke(); // INFO: Host started let other scripts know
 
             }
             catch (System.Exception ex)
             {
-                Debug.LogError($"{ex.Message}");
+                Debug.LogError($"{ex}");
 
             }
-
-            BootstrapNetworkManager.AddPlayer(NetworkManager.Singleton.LocalClientId, SteamClient.SteamId);
-
-            NetworkManager.Singleton.OnConnectionEvent += OnConnectionEvent;
-            NetworkManager.Singleton.OnClientStopped += OnClientStopped;
-
-            // INFO: Configure Network Manager
-            NetworkManager.Singleton.SceneManager.ActiveSceneSynchronizationEnabled = true;
-            NetworkManager.Singleton.SceneManager.PostSynchronizationSceneUnloading = true;
-            NetworkManager.Singleton.SceneManager.SetClientSynchronizationMode(LoadSceneMode.Additive);
-
-            Debug.Log($"{CheckPrivilege()} Unity Server has started");
-            NetworkUtilEventManager.OnStartUnityHost?.Invoke(); // INFO: Host started let other scripts know
 
         }
 

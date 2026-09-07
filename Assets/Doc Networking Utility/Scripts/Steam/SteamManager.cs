@@ -7,11 +7,14 @@ using UnityEngine.Events;
 using Doc.Networking.Events;
 using Doc.Networking.Data;
 using Unity.Scripting.LifecycleManagement;
+using Unity.VisualScripting;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Doc.Networking.Steam
 {
 
-    public partial class SteamManager : MonoBehaviour
+    public partial class SteamManager : NetworkBehaviour
     {
 
         #region Singleton
@@ -51,16 +54,24 @@ namespace Doc.Networking.Steam
             #endregion
         }
 
+        private void OnNetworkClientConnected(ulong clientId)
+        {
+            if (IsClient && !IsServer) AskServerToRegisterRPC(SteamClient.SteamId);
+
+        }
+
         #region Events
         private void OnEnable()
         {
             SubscribeToEvents();
+            NetworkManager.Singleton.OnClientConnectedCallback += OnNetworkClientConnected;
 
         }
 
         private void OnDisable()
         {
             UnSubscribeToEvents();
+            NetworkManager.Singleton.OnClientConnectedCallback -= OnNetworkClientConnected;
 
         }
 
@@ -212,9 +223,13 @@ namespace Doc.Networking.Steam
 
         private void OnLobbyCreated(Result result, Lobby lobby)
         {
+            if (result != Result.OK) { Debug.LogError($"Lobby failed to create!"); return; }
+
             Debug.Log($"<color={LogColours.Steamworks}>[STEAM]</color> Lobby created! | {lobby.Owner.Name} ({lobby.Id}) | {lobby.MemberCount}/{lobby.MaxMembers}");
             GUIUtility.systemCopyBuffer = lobby.Id.ToString(); // INFO: Copies lobby code to peoples keyboard
             myLobby = lobby;
+
+            BootstrapNetworkManager.Instance.RegisterPlayer(NetworkManager.Singleton.ConnectedClientsIds.Last(), SteamClient.SteamId);
 
         }
 
@@ -258,11 +273,19 @@ namespace Doc.Networking.Steam
 
         private void OnLobbyEntered(Lobby lobby)
         {
-            OnSteamClientEntered(lobby, SteamClient.SteamId);
-            if (SteamClient.SteamId != lobby.Owner.Id) Debug.Log($"<color={LogColours.Steamworks}>[STEAM]</color> <color={LogColours.Client}>[CLIENT]</color> You entered {lobby.Owner.Name}'s lobby!");
+            if (SteamClient.SteamId == lobby.Owner.Id)
+            {
+                OnSteamHostEntered();
 
+            }
+            else
+            {
+                OnSteamClientEntered(lobby);
+                Debug.Log($"<color={LogColours.Steamworks}>[STEAM]</color> <color={LogColours.Client}>[CLIENT]</color> You entered {lobby.Owner.Name}'s lobby!");
 
+            }
         }
+
         #endregion
 
         #region Player Left/Disconnected
@@ -281,32 +304,38 @@ namespace Doc.Networking.Steam
         #endregion
 
         #region Host
-        protected virtual void OnSteamHostEntered(ulong steamId)
+        protected virtual void OnSteamHostEntered()
         {
-            NetworkUtilEventManager.OnSteamHostConnect?.Invoke();
             Debug.Log($"{CheckPrivilege()} Oh herro mister Host!");
             SteamFriends.SetRichPresence("connect", myLobby.Value.Id.ToString());
-
         }
 
         protected virtual void OnSteamHostLeave()
         {
             Debug.Log($"{CheckPrivilege()} Goodbye mister Host!");
-            BootstrapNetworkManager.ConnectedPlayers.Clear();
             NetworkUtilEventManager.OnStopUnityHost?.Invoke();
+
+        }
+
+        [Rpc(SendTo.Server)]
+        private void AskServerToRegisterRPC(ulong steamId, RpcParams rpcParams = default)
+        {
+            ulong clientId = rpcParams.Receive.SenderClientId;
+            BootstrapNetworkManager.Instance.RegisterPlayer(clientId, steamId); // INFO: Register Player
 
         }
         #endregion
 
         #region Client
-        protected virtual void OnSteamClientEntered(Lobby lobby, ulong steamId)
+        protected virtual async void OnSteamClientEntered(Lobby lobby)
         {
             // INFO: Client
             myLobby = lobby;
 
-            if (SteamClient.SteamId == lobby.Owner.Id) { OnSteamHostEntered(steamId); return; }
+            // INFO: Client
             _facepunchTransport.targetSteamId = lobby.Owner.Id;
-            NetworkUtilEventManager.OnSteamClientConnect?.Invoke();
+
+            if (!NetworkManager.IsListening) NetworkUtilEventManager.OnSteamClientConnect?.Invoke();
 
         }
 

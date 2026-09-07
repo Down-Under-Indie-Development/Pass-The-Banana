@@ -26,8 +26,7 @@ namespace Doc.Networking
 
         public LobbyInfo lobbyData { get; private set; }
 
-        [AutoStaticsCleanup]
-        public static Dictionary<ulong, ulong> ConnectedPlayers = new();
+        [field: SerializeField, DictionaryDisplay(keyLabel = "Client ID", valueLabel = "Steam ID")] public Dictionary<ulong, ulong> connectedPlayers { get; private set; } = new();
 
         private void Awake()
         {
@@ -114,7 +113,7 @@ namespace Doc.Networking
         [Rpc(SendTo.ClientsAndHost)]
         private void OpenLobbyMenuClientRPC()
         {
-            NetworkUtilEventManager.OnStartUnityClient?.Invoke();
+            // NetworkUtilEventManager.OnStartUnityClient?.Invoke();
 
         }
 
@@ -150,33 +149,41 @@ namespace Doc.Networking
         #endregion
 
         #region Player Tracking
-        public static void AddPlayer(ulong clientId, ulong steamId)
+        public void RegisterPlayer(ulong clientId, ulong steamId = default)
         {
-            if (ConnectedPlayers.ContainsKey(clientId)) { Debug.LogWarning($"Already contains key for: {clientId}"); return; }
-            ConnectedPlayers.Add(clientId, steamId);
+            if (connectedPlayers.ContainsKey(clientId))
+            {
+                ulong previousSteamId = connectedPlayers[clientId];
+                connectedPlayers[clientId] = steamId;
+                Debug.Log($"<color={LogColours.Unity}>[UNITY]</color>{clientId} edited {previousSteamId} -> {steamId}");
+                return;
 
+            }
+
+            connectedPlayers.Add(clientId, steamId);
             Debug.Log($"<color={LogColours.Unity}>[UNITY]</color> {clientId} ({steamId}) added");
+
 
         }
 
-        public static void RemovePlayer(ulong clientId)
+        public void RemovePlayer(ulong clientId)
         {
-            if (!ConnectedPlayers.ContainsKey(clientId)) { Debug.LogWarning($"Player: {clientId} is not in the list"); return; }
-            ConnectedPlayers.Remove(clientId);
+            if (!connectedPlayers.ContainsKey(clientId)) { Debug.LogWarning($"Player: {clientId} is not in the list"); return; }
+            connectedPlayers.Remove(clientId);
 
             Debug.Log($"<color={LogColours.Unity}>[UNITY]</color> {clientId} removed");
 
         }
 
 
-        public static Friend GetPlayerSteamClient(ulong clientId)
+        public Friend GetPlayerSteamClient(ulong clientId)
         {
             if (!SteamManager.Instance.connectedToSteam) return default;
 
             List<Friend> lobbyMembers = SteamManager.myLobby.Value.Members.ToList();
             for (int i = 0; i < NetworkManager.Singleton.ConnectedClients.Count; i++)
             {
-                if (lobbyMembers[i].Id == ConnectedPlayers[clientId])
+                if (lobbyMembers[i].Id == connectedPlayers[clientId])
                     return lobbyMembers[i];
 
             }
@@ -185,9 +192,9 @@ namespace Doc.Networking
 
         }
 
-        public static ulong GetPlayerUnityId(ulong steamId)
+        public ulong GetPlayerUnityId(ulong steamId)
         {
-            foreach (var player in ConnectedPlayers)
+            foreach (var player in connectedPlayers)
             {
                 ulong playerId = player.Key;
                 ulong playerSteamId = player.Value;

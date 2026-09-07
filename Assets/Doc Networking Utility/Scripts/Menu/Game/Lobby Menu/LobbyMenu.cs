@@ -8,6 +8,7 @@ using Unity.Netcode;
 using Doc.Networking.Events;
 using Doc.Networking.Steam;
 using Doc.Networking.Data;
+using System.Threading.Tasks;
 
 namespace Doc.Networking.Menus.Game
 {
@@ -69,7 +70,6 @@ namespace Doc.Networking.Menus.Game
             ClearPlayerPanel();
 
         }
-
         public void Refresh()
         {
             RefreshUI();
@@ -113,7 +113,7 @@ namespace Doc.Networking.Menus.Game
             foreach (ulong clientId in NetworkManager.Singleton.ConnectedClientsIds)
             {
                 bool isHost = clientId == 0;
-                string displayName = SteamManager.Instance.connectedToSteam ? BootstrapNetworkManager.GetPlayerSteamClient(clientId).Name : clientId.ToString();
+                string displayName = SteamManager.Instance.connectedToSteam ? BootstrapNetworkManager.Instance.GetPlayerSteamClient(clientId).Name : clientId.ToString();
                 TellPlayerListRPC(displayName, isHost);
 
             }
@@ -130,17 +130,23 @@ namespace Doc.Networking.Menus.Game
         }
         #endregion
 
-        protected virtual void OnUnityClientDisconnect(NetworkManager networkManager, ConnectionEventData connectionEventData)
+        protected virtual async void OnUnityClientDisconnect(NetworkManager networkManager, ConnectionEventData connectionEventData)
         {
+
             if (connectionEventData.EventType == ConnectionEvent.PeerConnected)
             {
-                Refresh();
+                if (networkManager.IsServer)
+                {
+                    await Task.Delay(500); // INFO: Allow time to info to update
+                    Refresh();
+
+                }
+
                 return;
 
             }
 
             if (connectionEventData.EventType != ConnectionEvent.ClientDisconnected) return;
-
             if (connectionEventData.ClientId == networkManager.LocalClientId)
                 return;
 
