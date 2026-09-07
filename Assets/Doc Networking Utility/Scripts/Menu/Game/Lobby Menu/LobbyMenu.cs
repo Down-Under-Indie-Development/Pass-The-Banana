@@ -123,22 +123,24 @@ namespace Doc.Networking.Menus.Game
         protected virtual void AskForPlayerListRPC()
         {
             ClearPlayerPanel();
-            TellPlayerListRPC();
+
+            foreach (ulong clientId in NetworkManager.Singleton.ConnectedClientsIds)
+            {
+                bool isHost = clientId == 0;
+                string displayName = SteamManager.Instance.connectedToSteam ? BootstrapNetworkManager.GetPlayerSteamName(clientId) : clientId.ToString();
+                TellPlayerListRPC(displayName, isHost);
+
+            }
 
         }
 
         [Rpc(SendTo.ClientsAndHost)]
-        protected virtual void TellPlayerListRPC()
+        protected virtual void TellPlayerListRPC(string playerName, bool isHost)
         {
             // INFO: Display all connected members
-            foreach (ulong clientId in NetworkManager.Singleton.ConnectedClientsIds)
-            {
-                bool isHost = clientId == 0;
+            CreatePlayerCard($"{playerName}", isHost, $"{-1}ms");
 
-                string name = SteamManager.ConnectedToSteam ? BootstrapNetworkManager.GetPlayerSteamName(clientId) : clientId.ToString();
-                CreatePlayerCard($"{name}", isHost, $"{-1}ms");
 
-            }
         }
         #endregion
 
@@ -186,7 +188,7 @@ namespace Doc.Networking.Menus.Game
 
         protected virtual void LeaveGame()
         {
-            if (SteamManager.ConnectedToSteam)
+            if (SteamManager.Instance.connectedToSteam)
             {
                 NetworkUtilEventManager.OnSteamClientDisconnect?.Invoke();
                 return;

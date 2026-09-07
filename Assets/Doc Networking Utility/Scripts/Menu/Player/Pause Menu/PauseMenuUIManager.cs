@@ -42,7 +42,7 @@ namespace Doc.Networking.Menus.Player
         {
             Time.timeScale = 1;
 
-            if (SteamManager.ConnectedToSteam) { NetworkUtilEventManager.OnSteamClientDisconnect?.Invoke(); return; }
+            if (SteamManager.Instance.connectedToSteam) { NetworkUtilEventManager.OnSteamClientDisconnect?.Invoke(); return; }
             // !! Unity handling
             if (BootstrapManager.Instance.selectedTransport == BootstrapManager.Transport.Unity) NetworkUtilEventManager.OnStopUnityClient?.Invoke();
 
@@ -50,7 +50,7 @@ namespace Doc.Networking.Menus.Player
 
         public void QuitGame()
         {
-            if (SteamManager.ConnectedToSteam) NetworkUtilEventManager.OnSteamClientDisconnect?.Invoke();
+            if (SteamManager.Instance.connectedToSteam) NetworkUtilEventManager.OnSteamClientDisconnect?.Invoke();
 
             // !! Unity handling
             if (BootstrapManager.Instance.selectedTransport == BootstrapManager.Transport.Unity) NetworkUtilEventManager.OnStopUnityClient?.Invoke();

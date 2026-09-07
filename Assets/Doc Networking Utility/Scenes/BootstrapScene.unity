@@ -213,7 +213,7 @@ MonoBehaviour:
   <gameplayScenes>k__BackingField:
   - TestScene
   <minimumPlayers>k__BackingField: 2
-  <selectedTransport>k__BackingField: 1
+  <selectedTransport>k__BackingField: 0
 --- !u!1 &1443685446
 GameObject:
   m_ObjectHideFlags: 0

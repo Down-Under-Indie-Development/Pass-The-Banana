@@ -3,6 +3,7 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Doc.Networking.Events;
+using System.Threading.Tasks;
 
 /// <summary>
 /// Handles Unity Netcode side for connecting and disconnecting clients
@@ -23,6 +24,7 @@ namespace Doc.Networking.Unity
             NetworkUtilEventManager.OnSteamClientConnect += OnStartUnityClient;
             NetworkUtilEventManager.OnStopUnityClient += StopUnityClient;
 
+
         }
 
         protected virtual void OnDisable()
@@ -36,6 +38,7 @@ namespace Doc.Networking.Unity
             NetworkUtilEventManager.OnStopUnityClient -= StopUnityClient;
 
 
+
         }
         #endregion
 
@@ -43,17 +46,11 @@ namespace Doc.Networking.Unity
         // INFO: Start Client Connection 
         protected virtual async void OnStartUnityClient()
         {
-
             try
             {
                 NetworkManager.Singleton.StartClient();
-                await SceneManager.UnloadSceneAsync(BootstrapManager.Instance.mainMenuScene);
-
-                Debug.Log($"{CheckPrivilege()} Client has started");
-
                 NetworkManager.Singleton.OnConnectionEvent += OnConnectionEvent;
-
-                NetworkUtilEventManager.OnStartUnityClient?.Invoke(); // INFO: Client started let other scripts know
+                NetworkManager.Singleton.OnClientStopped += OnClientStopped;
 
             }
             catch (System.Exception ex)
@@ -62,50 +59,62 @@ namespace Doc.Networking.Unity
 
             }
 
+            Debug.Log($"{CheckPrivilege()} Client has started");
+            NetworkUtilEventManager.OnStartUnityClient?.Invoke(); // INFO: Client started let other scripts know
+            await SceneManager.UnloadSceneAsync(BootstrapManager.Instance.mainMenuScene);
+
         }
 
         // INFO: Stop Client Connection
-        protected virtual void StopUnityClient()
+        protected virtual async void StopUnityClient()
         {
+            string privilege = NetworkManager.Singleton.IsServer ? "host" : "client";
+            string color = NetworkManager.Singleton.IsServer ? LogColours.Host : LogColours.Client;
+
+            Debug.Log($"<color={LogColours.Unity}>[UNITY]</color> <color={color}>[{privilege.ToUpper()}]</color> Shutting down {privilege}...");
+
             try
             {
-                string privilege = NetworkManager.Singleton.IsServer ? "host" : "client";
-                string color = NetworkManager.Singleton.IsServer ? LogColours.Host : LogColours.Client;
-
-                Debug.Log($"<color={LogColours.Unity}>[UNITY]</color> <color={color}>[{privilege.ToUpper()}]</color> Shutting down {privilege}...");
-
+                NetworkManager.Singleton.OnConnectionEvent -= OnConnectionEvent;
                 NetworkManager.Singleton.Shutdown();
-                Destroy(NetworkManager.Singleton.gameObject);
 
             }
             catch (System.Exception ex)
             {
                 Debug.LogError($"Shutdown error: {ex.Message}");
+
             }
+        }
+
+        private void OnClientStopped(bool isHost)
+        {
+            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+            Debug.Log($"<color={LogColours.Lobby}>[LOBBY]</color> You left the lobby!");
 
         }
 
         #region Connection Events
         private void OnConnectionEvent(NetworkManager networkManager, ConnectionEventData connectionEventData)
         {
+            Debug.Log($"{connectionEventData.EventType}");
             switch (connectionEventData.EventType)
             {
                 case ConnectionEvent.ClientDisconnected:
-                    OnClientDisconnect(networkManager, connectionEventData);
+                    OnClientKicked(networkManager, connectionEventData);
                     break;
             }
         }
 
-        protected virtual void OnClientDisconnect(NetworkManager networkManager, ConnectionEventData connectionEventData)
+        protected virtual void OnClientKicked(NetworkManager networkManager, ConnectionEventData connectionEventData)
         {
+            if (networkManager.IsServer && connectionEventData.ClientId != 0) BootstrapNetworkManager.RemovePlayer(connectionEventData.ClientId);
             if (connectionEventData.ClientId != networkManager.LocalClientId) return;
-            NetworkManager.Singleton.OnConnectionEvent -= OnConnectionEvent;
-            SceneManager.LoadScene(BootstrapManager.Instance.gameObject.scene.name);
 
-            Debug.Log($"<color={LogColours.Lobby}>[LOBBY]</color> You left the lobby!");
-
+            StopUnityClient();
+            Debug.Log($"<color={LogColours.Lobby}>[LOBBY]</color> You've been kicked from the lobby!");
 
         }
+
         #endregion
 
         #endregion
@@ -117,8 +126,7 @@ namespace Doc.Networking.Unity
             try
             {
                 NetworkManager.Singleton.StartHost();
-
-                NetworkManager.Singleton.OnConnectionEvent += OnConnectionEvent;
+                NetworkManager.Singleton.OnClientStopped += OnClientStopped;
 
                 // INFO: Configure Network Manager
                 NetworkManager.Singleton.SceneManager.ActiveSceneSynchronizationEnabled = true;

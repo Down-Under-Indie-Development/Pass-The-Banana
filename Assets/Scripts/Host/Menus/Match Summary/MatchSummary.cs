@@ -98,7 +98,7 @@ namespace PTB.Menus
                 passes = passes
             };
 
-            string name = SteamManager.ConnectedToSteam ? steamName : clientId;
+            string name = SteamManager.Instance.connectedToSteam ? steamName : clientId;
 
             playerCard.SetPlayerCardStats(name, scoreData, place);
             cardNetObj.transform.SetParent(_playerContentGO.transform);

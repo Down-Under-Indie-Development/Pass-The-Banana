@@ -10,10 +10,11 @@ using Doc.Networking.Session;
 using Steamworks;
 using Unity.Collections;
 using Doc.Networking.Steam;
+using Unity.Scripting.LifecycleManagement;
 
 namespace Doc.Networking
 {
-    public class BootstrapNetworkManager : NetworkBehaviour
+    public partial class BootstrapNetworkManager : NetworkBehaviour
     {
         #region Singleton
         public static BootstrapNetworkManager Instance;
@@ -24,6 +25,8 @@ namespace Doc.Networking
         #endregion
 
         public LobbyInfo lobbyData { get; private set; }
+
+        [AutoStaticsCleanup]
         public static Dictionary<ulong, ulong> ConnectedPlayers = new();
 
         private void Awake()
@@ -146,10 +149,29 @@ namespace Doc.Networking
 
         #endregion
 
-        #region Players
+        #region Player Tracking
+        public static void AddPlayer(ulong clientId, ulong steamId)
+        {
+            if (ConnectedPlayers.ContainsKey(clientId)) { Debug.LogWarning($"Already contains key for: {clientId}"); return; }
+            ConnectedPlayers.Add(clientId, steamId);
+
+            Debug.Log($"<color={LogColours.Unity}>[UNITY]</color> {clientId} ({steamId}) added");
+
+        }
+
+        public static void RemovePlayer(ulong clientId)
+        {
+            if (!ConnectedPlayers.ContainsKey(clientId)) { Debug.LogWarning($"Player: {clientId} is not in the list"); return; }
+            ConnectedPlayers.Remove(clientId);
+
+            Debug.Log($"<color={LogColours.Unity}>[UNITY]</color> {clientId} removed");
+
+        }
+
+
         public static string GetPlayerSteamName(ulong clientId)
         {
-            if (!SteamManager.ConnectedToSteam) return null;
+            if (!SteamManager.Instance.connectedToSteam) return null;
 
             List<Friend> lobbyMembers = SteamManager.myLobby.Value.Members.ToList();
             for (int i = 0; i < NetworkManager.Singleton.ConnectedClients.Count; i++)
@@ -178,6 +200,12 @@ namespace Doc.Networking
 
         }
         #endregion
+
+        [Rpc(SendTo.Server)]
+        public void AskToLeaveRPC(ulong clientId)
+        {
+            NetworkManager.Singleton.DisconnectClient(clientId);
+        }
 
     }
 }
