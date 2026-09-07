@@ -216,8 +216,6 @@ namespace Doc.Networking.Steam
             GUIUtility.systemCopyBuffer = lobby.Id.ToString(); // INFO: Copies lobby code to peoples keyboard
             myLobby = lobby;
 
-            BootstrapNetworkManager.AddPlayer((ulong)myLobby.Value.MemberCount - 1, SteamClient.SteamId.Value);
-
         }
 
         #endregion
@@ -254,14 +252,13 @@ namespace Doc.Networking.Steam
         private void OnLobbyMemberJoined(Lobby lobby, Friend friend)
         {
             Debug.Log($"{friend.Name} is joining!");
-            BootstrapNetworkManager.AddPlayer((ulong)myLobby.Value.MemberCount - 1, SteamClient.SteamId.Value);
 
         }
 
 
         private void OnLobbyEntered(Lobby lobby)
         {
-            OnSteamClientEntered(lobby);
+            OnSteamClientEntered(lobby, SteamClient.SteamId);
             if (SteamClient.SteamId != lobby.Owner.Id) Debug.Log($"<color={LogColours.Steamworks}>[STEAM]</color> <color={LogColours.Client}>[CLIENT]</color> You entered {lobby.Owner.Name}'s lobby!");
 
 
@@ -284,7 +281,7 @@ namespace Doc.Networking.Steam
         #endregion
 
         #region Host
-        protected virtual void OnSteamHostEntered()
+        protected virtual void OnSteamHostEntered(ulong steamId)
         {
             NetworkUtilEventManager.OnSteamHostConnect?.Invoke();
             Debug.Log($"{CheckPrivilege()} Oh herro mister Host!");
@@ -302,12 +299,12 @@ namespace Doc.Networking.Steam
         #endregion
 
         #region Client
-        protected virtual void OnSteamClientEntered(Lobby lobby)
+        protected virtual void OnSteamClientEntered(Lobby lobby, ulong steamId)
         {
             // INFO: Client
             myLobby = lobby;
 
-            if (SteamClient.SteamId == lobby.Owner.Id) { OnSteamHostEntered(); return; }
+            if (SteamClient.SteamId == lobby.Owner.Id) { OnSteamHostEntered(steamId); return; }
             _facepunchTransport.targetSteamId = lobby.Owner.Id;
             NetworkUtilEventManager.OnSteamClientConnect?.Invoke();
 
@@ -335,8 +332,6 @@ namespace Doc.Networking.Steam
             myLobby = null;
 
         }
-
-
 
         #endregion
 

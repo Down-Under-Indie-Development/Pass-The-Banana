@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using Doc.Networking.Events;
 using System.Threading.Tasks;
+using Steamworks;
 
 /// <summary>
 /// Handles Unity Netcode side for connecting and disconnecting clients
@@ -49,8 +50,6 @@ namespace Doc.Networking.Unity
             try
             {
                 NetworkManager.Singleton.StartClient();
-                NetworkManager.Singleton.OnConnectionEvent += OnConnectionEvent;
-                NetworkManager.Singleton.OnClientStopped += OnClientStopped;
 
             }
             catch (System.Exception ex)
@@ -59,9 +58,12 @@ namespace Doc.Networking.Unity
 
             }
 
+            NetworkManager.Singleton.OnConnectionEvent += OnConnectionEvent;
+            NetworkManager.Singleton.OnClientStopped += OnClientStopped;
             Debug.Log($"{CheckPrivilege()} Client has started");
-            NetworkUtilEventManager.OnStartUnityClient?.Invoke(); // INFO: Client started let other scripts know
             await SceneManager.UnloadSceneAsync(BootstrapManager.Instance.mainMenuScene);
+
+            NetworkUtilEventManager.OnStartUnityClient?.Invoke(); // INFO: Client started let other scripts know
 
         }
 
@@ -99,10 +101,23 @@ namespace Doc.Networking.Unity
             Debug.Log($"{connectionEventData.EventType}");
             switch (connectionEventData.EventType)
             {
+                case ConnectionEvent.ClientConnected:
+                    OnClientConnected(networkManager, connectionEventData);
+                    break;
                 case ConnectionEvent.ClientDisconnected:
                     OnClientKicked(networkManager, connectionEventData);
                     break;
             }
+        }
+
+        protected virtual void OnClientConnected(NetworkManager networkManager, ConnectionEventData connectionEventData)
+        {
+            if (connectionEventData.EventType != ConnectionEvent.ClientConnected) return;
+            if (!networkManager.IsServer) return;
+
+            BootstrapNetworkManager.AddPlayer(connectionEventData.ClientId, BootstrapNetworkManager.GetPlayerSteamClient(connectionEventData.ClientId).Id);
+            Debug.Log($"<color={LogColours.Lobby}>[LOBBY]</color> {connectionEventData.ClientId} has joined!");
+
         }
 
         protected virtual void OnClientKicked(NetworkManager networkManager, ConnectionEventData connectionEventData)
@@ -126,15 +141,7 @@ namespace Doc.Networking.Unity
             try
             {
                 NetworkManager.Singleton.StartHost();
-                NetworkManager.Singleton.OnClientStopped += OnClientStopped;
 
-                // INFO: Configure Network Manager
-                NetworkManager.Singleton.SceneManager.ActiveSceneSynchronizationEnabled = true;
-                NetworkManager.Singleton.SceneManager.PostSynchronizationSceneUnloading = true;
-                NetworkManager.Singleton.SceneManager.SetClientSynchronizationMode(LoadSceneMode.Additive);
-
-                Debug.Log($"{CheckPrivilege()} Unity Server has started");
-                NetworkUtilEventManager.OnStartUnityHost?.Invoke(); // INFO: Host started let other scripts know
 
             }
             catch (System.Exception ex)
@@ -142,6 +149,19 @@ namespace Doc.Networking.Unity
                 Debug.LogError($"{ex.Message}");
 
             }
+
+            BootstrapNetworkManager.AddPlayer(NetworkManager.Singleton.LocalClientId, SteamClient.SteamId);
+
+            NetworkManager.Singleton.OnConnectionEvent += OnConnectionEvent;
+            NetworkManager.Singleton.OnClientStopped += OnClientStopped;
+
+            // INFO: Configure Network Manager
+            NetworkManager.Singleton.SceneManager.ActiveSceneSynchronizationEnabled = true;
+            NetworkManager.Singleton.SceneManager.PostSynchronizationSceneUnloading = true;
+            NetworkManager.Singleton.SceneManager.SetClientSynchronizationMode(LoadSceneMode.Additive);
+
+            Debug.Log($"{CheckPrivilege()} Unity Server has started");
+            NetworkUtilEventManager.OnStartUnityHost?.Invoke(); // INFO: Host started let other scripts know
 
         }
 

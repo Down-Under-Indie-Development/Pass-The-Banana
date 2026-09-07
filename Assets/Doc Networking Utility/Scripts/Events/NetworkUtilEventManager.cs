@@ -37,6 +37,7 @@ namespace Doc.Networking.Events
         #region Client
         public static NoArgs OnStartUnityClient;
         public static NoArgs OnStopUnityClient;
+        public static NoArgs OnUnityClientStarted;
 
         #endregion
 

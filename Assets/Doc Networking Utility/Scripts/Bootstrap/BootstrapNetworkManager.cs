@@ -169,19 +169,19 @@ namespace Doc.Networking
         }
 
 
-        public static string GetPlayerSteamName(ulong clientId)
+        public static Friend GetPlayerSteamClient(ulong clientId)
         {
-            if (!SteamManager.Instance.connectedToSteam) return null;
+            if (!SteamManager.Instance.connectedToSteam) return default;
 
             List<Friend> lobbyMembers = SteamManager.myLobby.Value.Members.ToList();
             for (int i = 0; i < NetworkManager.Singleton.ConnectedClients.Count; i++)
             {
                 if (lobbyMembers[i].Id == ConnectedPlayers[clientId])
-                    return lobbyMembers[i].Name;
+                    return lobbyMembers[i];
 
             }
 
-            return null;
+            return default;
 
         }
 

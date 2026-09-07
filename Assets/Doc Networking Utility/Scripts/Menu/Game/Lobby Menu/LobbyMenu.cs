@@ -29,17 +29,13 @@ namespace Doc.Networking.Menus.Game
         #region Events
         protected virtual void OnEnable()
         {
-            SteamMatchmaking.OnLobbyEntered += OnLobbyEntered;
             NetworkManager.Singleton.OnConnectionEvent += OnUnityClientDisconnect;
 
         }
 
         protected virtual void OnDisable()
         {
-            SteamMatchmaking.OnLobbyEntered -= OnLobbyEntered;
-
             if (NetworkManager.Singleton == null) return;
-
             NetworkManager.Singleton.OnConnectionEvent -= OnUnityClientDisconnect;
 
         }
@@ -55,8 +51,7 @@ namespace Doc.Networking.Menus.Game
             }
 
             if (_leaveGameBtn != null) _leaveGameBtn.onClick.AddListener(LeaveGame);
-
-            Refresh();
+            if (IsServer) Refresh();
 
         }
 
@@ -78,15 +73,6 @@ namespace Doc.Networking.Menus.Game
         public void Refresh()
         {
             RefreshUI();
-        }
-        #endregion
-
-        #region Steamworks
-
-        protected virtual void OnLobbyEntered(Lobby lobby)
-        {
-            RefreshUI();
-
         }
         #endregion
 
@@ -127,7 +113,7 @@ namespace Doc.Networking.Menus.Game
             foreach (ulong clientId in NetworkManager.Singleton.ConnectedClientsIds)
             {
                 bool isHost = clientId == 0;
-                string displayName = SteamManager.Instance.connectedToSteam ? BootstrapNetworkManager.GetPlayerSteamName(clientId) : clientId.ToString();
+                string displayName = SteamManager.Instance.connectedToSteam ? BootstrapNetworkManager.GetPlayerSteamClient(clientId).Name : clientId.ToString();
                 TellPlayerListRPC(displayName, isHost);
 
             }
@@ -146,6 +132,13 @@ namespace Doc.Networking.Menus.Game
 
         protected virtual void OnUnityClientDisconnect(NetworkManager networkManager, ConnectionEventData connectionEventData)
         {
+            if (connectionEventData.EventType == ConnectionEvent.PeerConnected)
+            {
+                Refresh();
+                return;
+
+            }
+
             if (connectionEventData.EventType != ConnectionEvent.ClientDisconnected) return;
 
             if (connectionEventData.ClientId == networkManager.LocalClientId)
