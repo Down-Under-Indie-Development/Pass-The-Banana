@@ -106,9 +106,7 @@ namespace Doc.Networking.Unity
                 case ConnectionEvent.ClientConnected:
                     OnClientConnected(networkManager, connectionEventData);
                     break;
-                case ConnectionEvent.ClientDisconnected:
-                    OnClientKicked(networkManager, connectionEventData);
-                    break;
+
             }
         }
 
@@ -118,16 +116,6 @@ namespace Doc.Networking.Unity
             if (!networkManager.IsServer) return;
 
             Debug.Log($"<color={LogColours.Lobby}>[LOBBY]</color> {connectionEventData.ClientId} has joined!");
-
-        }
-
-        protected virtual void OnClientKicked(NetworkManager networkManager, ConnectionEventData connectionEventData)
-        {
-            if (networkManager.IsServer && connectionEventData.ClientId != 0) BootstrapNetworkManager.Instance.RemovePlayer(connectionEventData.ClientId);
-            if (connectionEventData.ClientId != networkManager.LocalClientId) return;
-
-            StopUnityClient();
-            Debug.Log($"<color={LogColours.Lobby}>[LOBBY]</color> You've been kicked from the lobby!");
 
         }
 

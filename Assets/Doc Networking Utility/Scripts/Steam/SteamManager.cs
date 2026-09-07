@@ -327,7 +327,7 @@ namespace Doc.Networking.Steam
         #endregion
 
         #region Client
-        protected virtual async void OnSteamClientEntered(Lobby lobby)
+        protected virtual void OnSteamClientEntered(Lobby lobby)
         {
             // INFO: Client
             myLobby = lobby;
@@ -341,7 +341,7 @@ namespace Doc.Networking.Steam
 
         protected virtual void OnSteamClientLeave()
         {
-            if (!connectedToSteam) { Debug.LogError($"Client is not connected, cannot disconnect!"); return; }
+            if (!connectedToSteam) return;
             if (_facepunchTransport != null) _facepunchTransport.targetSteamId = 0;
 
             // INFO: Leave the lobby
