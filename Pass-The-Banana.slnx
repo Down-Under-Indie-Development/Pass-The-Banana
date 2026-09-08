@@ -1,6 +1,7 @@
 ﻿<Solution>
   <Project Path="Unity.Timeline.csproj" />
   <Project Path="Unity.Multiplayer.Tools.NetStats.csproj" />
+  <Project Path="Assembly-CSharp.csproj" />
   <Project Path="Unity.InputSystem.csproj" />
   <Project Path="Unity.RenderPipelines.GPUDriven.Runtime.csproj" />
   <Project Path="Unity.Services.DeploymentApi.csproj" />
@@ -25,7 +26,6 @@
   <Project Path="Unity.RenderPipelines.Universal.Editor.csproj" />
   <Project Path="Unity.PerformanceTesting.Editor.csproj" />
   <Project Path="UnityEngine.TestRunner.csproj" />
-  <Project Path="Assembly-CSharp.csproj" />
   <Project Path="Unity.2D.Tilemap.Editor.csproj" />
   <Project Path="Unity.Services.Core.Environments.Editor.csproj" />
   <Project Path="Unity.Multiplayer.Tools.NetworkProfiler.Editor.csproj" />
@@ -170,6 +170,7 @@
   <Project Path="Unity.RenderPipelines.Core.ShaderLibrary.csproj" />
   <Project Path="Unity.Timeline.Player.csproj" />
   <Project Path="Unity.Multiplayer.Tools.NetStats.Player.csproj" />
+  <Project Path="Assembly-CSharp.Player.csproj" />
   <Project Path="Unity.InputSystem.Player.csproj" />
   <Project Path="Unity.RenderPipelines.GPUDriven.Runtime.Player.csproj" />
   <Project Path="Unity.Services.Multiplayer.Player.csproj" />
@@ -183,7 +184,6 @@
   <Project Path="Unity.Collections.Player.csproj" />
   <Project Path="Unity.2D.IK.Runtime.Player.csproj" />
   <Project Path="UnityEngine.TestRunner.Player.csproj" />
-  <Project Path="Assembly-CSharp.Player.csproj" />
   <Project Path="Unity.Netcode.Runtime.Player.csproj" />
   <Project Path="Unity.Networking.Transport.Player.csproj" />
   <Project Path="Unity.Services.Authentication.Player.csproj" />
