@@ -1,10 +1,10 @@
 using System;
 using Unity.Netcode;
 using UnityEngine;
-using Doc.Networking.Enums;
-using Doc.Networking.Unity;
+using DocNet.Enums;
+using DocNet.Unity;
 
-namespace Doc.Networking.Session
+namespace DocNet.Session
 {
     public class SessionStateManager : NetworkBehaviour
     {

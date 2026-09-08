@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Doc.Networking.Data
+namespace DocNet.Data
 {
     public class LobbyInfo
     {

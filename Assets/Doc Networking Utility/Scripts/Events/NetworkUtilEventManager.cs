@@ -1,8 +1,8 @@
 using UnityEngine;
-using Doc.Networking.Data;
+using DocNet.Data;
 using Steamworks.Data;
 
-namespace Doc.Networking.Events
+namespace DocNet.Events
 {
     public static class NetworkUtilEventManager
     {

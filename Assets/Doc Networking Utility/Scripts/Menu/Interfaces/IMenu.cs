@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Doc.Networking.Menus.Interfaces
+namespace DocNet.Menus.Interfaces
 {
     public interface IMenu
     {

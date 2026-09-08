@@ -3,14 +3,15 @@ using Steamworks.Data;
 using Steamworks;
 using UnityEngine.UI;
 using TMPro;
-using Doc.Networking.Menus.Interfaces;
+using DocNet.Menus.Interfaces;
 using Unity.Netcode;
-using Doc.Networking.Events;
-using Doc.Networking.Steam;
-using Doc.Networking.Data;
+using DocNet.Events;
+using DocNet.Steam;
+using DocNet.Data;
 using System.Threading.Tasks;
+using DocNet.Utility;
 
-namespace Doc.Networking.Menus.Game
+namespace DocNet.Menus.Game
 {
     public class LobbyUIManager : NetworkBehaviour, IMenu
     {

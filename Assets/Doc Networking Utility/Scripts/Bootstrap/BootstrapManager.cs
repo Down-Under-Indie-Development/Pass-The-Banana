@@ -4,10 +4,9 @@ using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using Doc.Networking.Steam;
-using Doc.Networking.Session;
-
-namespace Doc.Networking
+using DocNet.Steam;
+using DocNet.Utility;
+namespace DocNet
 {
     public class BootstrapManager : MonoBehaviour
     {

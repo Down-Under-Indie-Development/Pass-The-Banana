@@ -4,15 +4,14 @@ using UnityEngine.SceneManagement;
 using System.Collections.Generic;
 using System.Linq;
 using System;
-using Doc.Networking.Events;
-using Doc.Networking.Data;
-using Doc.Networking.Session;
+using DocNet.Events;
+using DocNet.Data;
+using DocNet.Session;
 using Steamworks;
-using Unity.Collections;
-using Doc.Networking.Steam;
-using Unity.Scripting.LifecycleManagement;
+using DocNet.Steam;
+using DocNet.Utility;
 
-namespace Doc.Networking
+namespace DocNet
 {
     public partial class BootstrapNetworkManager : NetworkBehaviour
     {
@@ -207,12 +206,6 @@ namespace Doc.Networking
 
         }
         #endregion
-
-        [Rpc(SendTo.Server)]
-        public void AskToLeaveRPC(ulong clientId)
-        {
-            NetworkManager.Singleton.DisconnectClient(clientId);
-        }
 
     }
 }

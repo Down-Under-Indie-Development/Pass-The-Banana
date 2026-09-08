@@ -2,11 +2,12 @@ using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
 using UnityEngine;
 using UnityEngine.UI;
-using Doc.Networking.Events;
-using Doc.Networking.Data;
+using DocNet.Events;
+using DocNet.Data;
 using TMPro;
+using DocNet.Utility;
 
-namespace Doc.Networking.Menus.Game
+namespace DocNet.Menus.Game
 {
     public class HostGame : MonoBehaviour
     {

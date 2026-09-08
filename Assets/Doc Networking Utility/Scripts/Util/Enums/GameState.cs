@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Doc.Networking.Enums
+namespace DocNet.Enums
 {
     // INFO: Game state
     public enum GameState

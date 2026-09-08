@@ -1,11 +1,12 @@
 using UnityEngine;
 using Unity.Netcode;
 using TMPro;
-using Doc.Networking.Menus.Interfaces;
-using Doc.Networking.Enums;
-using Doc.Networking.Events;
+using DocNet.Menus.Interfaces;
+using DocNet.Enums;
+using DocNet.Events;
+using DocNet.Utility;
 
-namespace Doc.Networking.Menus
+namespace DocNet.Menus
 {
     public class MainMenu : MonoBehaviour, IMenu
     {

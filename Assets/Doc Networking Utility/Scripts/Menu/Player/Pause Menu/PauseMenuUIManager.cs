@@ -1,9 +1,11 @@
 using UnityEngine;
-using Doc.Networking;
-using Doc.Networking.Events;
-using Doc.Networking.Steam;
+using DocNet;
+using DocNet.Events;
+using DocNet.Steam;
+using DocNet.Utility;
+using Unity.Netcode;
 
-namespace Doc.Networking.Menus.Player
+namespace DocNet.Menus.Player
 {
     public class PauseMenuUIManager : MonoBehaviour
     {

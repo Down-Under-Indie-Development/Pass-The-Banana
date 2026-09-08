@@ -1,19 +1,18 @@
-using Doc.Networking;
+using DocNet;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using Doc.Networking.Events;
+using DocNet.Events;
 using System.Threading.Tasks;
 using Steamworks;
-using Doc.Networking.Steam;
-using System.Linq;
-using Unity.VisualScripting;
+using DocNet.Steam;
+using DocNet.Utility;
 using System.Collections;
 
 /// <summary>
 /// Handles Unity Netcode side for connecting and disconnecting clients
 /// </summary>
-namespace Doc.Networking.Unity
+namespace DocNet.Unity
 {
     public class UnityNetworkManager : MonoBehaviour
     {

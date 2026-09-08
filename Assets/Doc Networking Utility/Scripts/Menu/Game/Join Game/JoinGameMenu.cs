@@ -1,14 +1,15 @@
-using Doc.Networking.Menus.Interfaces;
+using DocNet.Menus.Interfaces;
 using Steamworks;
 using TMPro;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using Doc.Networking.Events;
-using Doc.Networking.Unity;
+using DocNet.Events;
+using DocNet.Unity;
+using DocNet.Utility;
 
-namespace Doc.Networking.Menus.Game
+namespace DocNet.Menus.Game
 {
     public class JoinGameMenu : MonoBehaviour, IMenu
     {

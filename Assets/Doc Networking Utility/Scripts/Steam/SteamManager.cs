@@ -4,14 +4,12 @@ using Steamworks.Data;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
-using Doc.Networking.Events;
-using Doc.Networking.Data;
+using DocNet.Events;
+using DocNet.Data;
 using Unity.Scripting.LifecycleManagement;
-using Unity.VisualScripting;
-using System.Linq;
-using System.Threading.Tasks;
+using DocNet.Utility;
 
-namespace Doc.Networking.Steam
+namespace DocNet.Steam
 {
 
     public partial class SteamManager : NetworkBehaviour
@@ -56,7 +54,7 @@ namespace Doc.Networking.Steam
 
         private void OnNetworkClientConnected(ulong clientId)
         {
-            if (IsClient && !IsServer) AskServerToRegisterRPC(SteamClient.SteamId);
+            AskServerToRegisterRPC(SteamClient.SteamId, clientId);
 
         }
 
@@ -64,14 +62,14 @@ namespace Doc.Networking.Steam
         private void OnEnable()
         {
             SubscribeToEvents();
-            NetworkManager.Singleton.OnClientConnectedCallback += OnNetworkClientConnected;
+
 
         }
 
         private void OnDisable()
         {
             UnSubscribeToEvents();
-            NetworkManager.Singleton.OnClientConnectedCallback -= OnNetworkClientConnected;
+
 
         }
 
@@ -93,6 +91,7 @@ namespace Doc.Networking.Steam
 
             #region Client
             // INFO: Client
+            NetworkManager.Singleton.OnClientConnectedCallback += OnNetworkClientConnected;
             NetworkUtilEventManager.OnSteamClientDisconnect += OnSteamClientLeave;
             SteamMatchmaking.OnLobbyEntered += OnLobbyEntered;
 
@@ -119,6 +118,7 @@ namespace Doc.Networking.Steam
             // INFO: Client
             SteamMatchmaking.OnLobbyEntered -= OnLobbyEntered;
             NetworkUtilEventManager.OnSteamClientDisconnect -= OnSteamClientLeave;
+            NetworkManager.Singleton.OnClientConnectedCallback -= OnNetworkClientConnected;
             #endregion
 
         }
@@ -229,8 +229,6 @@ namespace Doc.Networking.Steam
             GUIUtility.systemCopyBuffer = lobby.Id.ToString(); // INFO: Copies lobby code to peoples keyboard
             myLobby = lobby;
 
-            BootstrapNetworkManager.Instance.RegisterPlayer(NetworkManager.Singleton.ConnectedClientsIds.Last(), SteamClient.SteamId);
-
         }
 
         #endregion
@@ -308,6 +306,7 @@ namespace Doc.Networking.Steam
         {
             Debug.Log($"{CheckPrivilege()} Oh herro mister Host!");
             SteamFriends.SetRichPresence("connect", myLobby.Value.Id.ToString());
+
         }
 
         protected virtual void OnSteamHostLeave()
@@ -318,12 +317,11 @@ namespace Doc.Networking.Steam
         }
 
         [Rpc(SendTo.Server)]
-        private void AskServerToRegisterRPC(ulong steamId, RpcParams rpcParams = default)
+        private void AskServerToRegisterRPC(ulong steamId, ulong clientId)
         {
-            ulong clientId = rpcParams.Receive.SenderClientId;
             BootstrapNetworkManager.Instance.RegisterPlayer(clientId, steamId); // INFO: Register Player
-
         }
+
         #endregion
 
         #region Client

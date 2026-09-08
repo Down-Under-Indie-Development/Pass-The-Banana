@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.Audio;
 using UnityEngine.UI;
 
-namespace Doc.Networking.Menus.Player
+namespace DocNet.Menus.Player
 {
     public class OptionsMenu : MonoBehaviour
     {

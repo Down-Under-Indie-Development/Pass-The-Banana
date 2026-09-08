@@ -2,7 +2,7 @@ using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
 
-namespace Doc.Networking.Data
+namespace DocNet.Data
 {
     public class PlayerUIInfo : MonoBehaviour
     {
