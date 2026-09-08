@@ -23,7 +23,7 @@ namespace DocNet.Steam
         [field: Header("Steam Settings")]
         [field: SerializeField] public uint appID { get; protected set; } = 480;
 
-        public bool connectedToSteam => SteamClient.IsValid && SteamClient.IsLoggedOn;
+        public bool connectedToSteam => SteamClient.IsValid;
 
         [AutoStaticsCleanup]
         public static Lobby? myLobby { get; protected set; }
@@ -91,9 +91,9 @@ namespace DocNet.Steam
 
             #region Client
             // INFO: Client
-            NetworkManager.Singleton.OnClientConnectedCallback += OnNetworkClientConnected;
             NetworkUtilEventManager.OnSteamClientDisconnect += OnSteamClientLeave;
             SteamMatchmaking.OnLobbyEntered += OnLobbyEntered;
+            NetworkManager.OnClientConnectedCallback += OnNetworkClientConnected;
 
             #endregion
 
@@ -118,7 +118,9 @@ namespace DocNet.Steam
             // INFO: Client
             SteamMatchmaking.OnLobbyEntered -= OnLobbyEntered;
             NetworkUtilEventManager.OnSteamClientDisconnect -= OnSteamClientLeave;
-            NetworkManager.Singleton.OnClientConnectedCallback -= OnNetworkClientConnected;
+
+            if (NetworkManager == null) return;
+            NetworkManager.OnClientConnectedCallback -= OnNetworkClientConnected;
             #endregion
 
         }
@@ -129,15 +131,15 @@ namespace DocNet.Steam
         // INFO: Establish connection to steam servers
         public virtual bool EstablishSteamConnection()
         {
-            if (connectedToSteam) { Debug.Log($"Attempted to initialise Steam but already connected?"); return false; }
+            // if (connectedToSteam) { Debug.Log($"Attempted to initialise Steam but already connected?"); return false; }
 
             try
             {
                 SteamClient.Init(appID);
             }
-            catch (System.Exception e)
+            catch (System.Exception ex)
             {
-                Debug.LogError($"{e.Message}");
+                Debug.LogError($"{ex}");
                 EvtSteamInitialisedError?.Invoke();
 
                 return false;

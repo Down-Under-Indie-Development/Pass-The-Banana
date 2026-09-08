@@ -17,17 +17,21 @@ MonoBehaviour:
   <questions>k__BackingField:
   - question: Test?
     answers:
-    - TeSt!
-    - teST?
-    - Test
-    - TEST!!!!!
-    correctAnswerIndex: 2
-    <difficulty>k__BackingField: 30
+    - answer: test
+      correctAnswer: 1
+    - answer: TeSt!
+      correctAnswer: 0
+    - answer: teST?
+      correctAnswer: 0
+    - answer: afdadefrsfad
+      correctAnswer: 0
   - question: Not Test?
     answers:
-    - Test
-    - Test
-    - Test
-    - Test
-    correctAnswerIndex: 0
-    <difficulty>k__BackingField: 120
+    - answer: No
+      correctAnswer: 0
+    - answer: Yes
+      correctAnswer: 1
+    - answer: Maybe
+      correctAnswer: 0
+    - answer: Probably!
+      correctAnswer: 0

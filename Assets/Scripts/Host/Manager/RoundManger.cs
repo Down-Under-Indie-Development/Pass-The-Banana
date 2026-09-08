@@ -200,14 +200,19 @@ namespace PTB.Managers
             // INFO: Show all players score
             SpawnMatchSummary(_gameManager.scoreManager.GetAllPlayerScores(), ReturnToLobby);
 
-            // INFO: Destroy player game objects
-            _gameManager.bootstrapNetworkManager.ForEachPlayer(p => Destroy(p.gameObject));
 
         }
         #endregion
 
         #region Utility
-        private void ReturnToLobby() => _gameManager.bootstrapNetworkManager.ReturnToLobbyRPC();
+        private void ReturnToLobby()
+        {
+            // INFO: Destroy player game objects
+            _gameManager.bootstrapNetworkManager.ForEachPlayer(p => Destroy(p.gameObject));
+            _gameManager.bootstrapNetworkManager.ReturnToLobbyRPC();
+
+        }
+
         private bool IsGameOver() => currentRound >= _gameManager.currentGameLobbyData.numberOfRounds;
 
         #endregion

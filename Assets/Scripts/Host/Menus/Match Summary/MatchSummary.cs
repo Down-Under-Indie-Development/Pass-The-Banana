@@ -49,8 +49,15 @@ namespace PTB.Menus
             // INFO: Last player delay
             yield return new WaitForSeconds(endPause);
 
+
+            if (IsServer || (IsServer && onCompleted == null))
+            {
+                DeleteChildObjects();
+                NetworkObject.Despawn(true);
+
+            }
+
             onCompleted?.Invoke();
-            if (IsServer || (IsServer && onCompleted == null)) DeleteChildObject();
 
         }
 
@@ -102,20 +109,12 @@ namespace PTB.Menus
         }
 
         #region Utility
-        private void DeleteChildObject()
+        private void DeleteChildObjects()
         {
-            // Despawn all player card children first
+            // INFO: Destroy all player card
             foreach (Transform child in _playerContentGO.transform)
-            {
-                NetworkObject childNetworkObject = child.GetComponent<NetworkObject>();
-                if (childNetworkObject != null)
-                {
-                    childNetworkObject.Despawn(true);
-                }
-            }
+                Destroy(child.gameObject);
 
-            // Then despawn the MatchSummary itself
-            NetworkObject.Despawn(true);
         }
         #endregion
 
