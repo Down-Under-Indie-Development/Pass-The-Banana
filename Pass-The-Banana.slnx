@@ -25,6 +25,7 @@
   <Project Path="Unity.RenderPipelines.Universal.Editor.csproj" />
   <Project Path="Unity.PerformanceTesting.Editor.csproj" />
   <Project Path="UnityEngine.TestRunner.csproj" />
+  <Project Path="Assembly-CSharp.csproj" />
   <Project Path="Unity.2D.Tilemap.Editor.csproj" />
   <Project Path="Unity.Services.Core.Environments.Editor.csproj" />
   <Project Path="Unity.Multiplayer.Tools.NetworkProfiler.Editor.csproj" />
@@ -82,7 +83,6 @@
   <Project Path="Unity.RenderPipelines.Universal.2D.Editor.Overrides.csproj" />
   <Project Path="Unity.2D.Animation.Profiler.Editor.csproj" />
   <Project Path="Unity.Networking.Editor.csproj" />
-  <Project Path="Assembly-CSharp.csproj" />
   <Project Path="Unity.Services.Authentication.PlayerAccounts.Editor.csproj" />
   <Project Path="Unity.PlasticSCM.Editor.Assistant.csproj" />
   <Project Path="Unity.2D.Sprite.Editor.csproj" />
@@ -183,6 +183,7 @@
   <Project Path="Unity.RenderPipelines.Universal.Runtime.Player.csproj" />
   <Project Path="Unity.2D.IK.Runtime.Player.csproj" />
   <Project Path="UnityEngine.TestRunner.Player.csproj" />
+  <Project Path="Assembly-CSharp.Player.csproj" />
   <Project Path="Unity.Netcode.Runtime.Player.csproj" />
   <Project Path="Unity.Networking.Transport.Player.csproj" />
   <Project Path="Unity.Services.Authentication.Player.csproj" />
@@ -205,7 +206,6 @@
   <Project Path="Unity.InternalAPIEngineBridge.001.Player.csproj" />
   <Project Path="Unity.Multiplayer.Tools.Initialization.Player.csproj" />
   <Project Path="Unity.VisualScripting.State.Player.csproj" />
-  <Project Path="Assembly-CSharp.Player.csproj" />
   <Project Path="Unity.Multiplayer.Tools.NetworkSimulator.Runtime.Player.csproj" />
   <Project Path="Unity.Multiplayer.Tools.MetricTestData.Player.csproj" />
   <Project Path="Unity.Multiplayer.Center.NetcodeForGameObjectsExample.Player.csproj" />
