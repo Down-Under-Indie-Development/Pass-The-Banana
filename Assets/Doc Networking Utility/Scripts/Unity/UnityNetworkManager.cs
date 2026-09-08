@@ -48,22 +48,22 @@ namespace DocNet.Unity
 
         #region Unity Client
         // INFO: Start Client Connection 
-        protected virtual void OnStartUnityClient()
+        protected virtual async void OnStartUnityClient()
         {
             try
             {
                 NetworkManager.Singleton.StartClient();
                 NetworkManager.Singleton.OnConnectionEvent += OnConnectionEvent;
                 NetworkManager.Singleton.OnClientStopped += OnClientStopped;
-                Debug.Log($"{CheckPrivilege()} Client has started");
 
-                SceneManager.UnloadSceneAsync(BootstrapManager.Instance.mainMenuScene);
+                Debug.Log($"{CheckPrivilege()} Client has started");
+                await SceneManager.UnloadSceneAsync(BootstrapManager.Instance.mainMenuScene);
+
 
             }
             catch (System.Exception ex)
             {
-                Debug.LogError($"{ex.Message}");
-
+                Debug.LogError($"{ex}");
             }
 
         }
