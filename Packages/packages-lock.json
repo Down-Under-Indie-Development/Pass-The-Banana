@@ -1,13 +1,13 @@
 {
   "dependencies": {
-    "com.community.netcode.transport.facepunch": {
-      "version": "https://github.com/Unity-Technologies/multiplayer-community-contributions.git?path=/Transports/com.community.netcode.transport.facepunch",
+    "com.thedoctortm.docnetutility": {
+      "version": "https://github.com/The-DoctorTM/DocNet-Utility.git",
       "depth": 0,
       "source": "git",
       "dependencies": {
-        "com.unity.netcode.gameobjects": "1.0.0-pre.4"
+        "com.unity.netcode.gameobjects": "2.13.2"
       },
-      "hash": "f5d80002708c530ad5b95b66f4c20751e0925123"
+      "hash": "994fc749fc9bd48c3929957145a04b80e5b3869a"
     },
     "com.unity.2d.animation": {
       "version": "16.0.1",
