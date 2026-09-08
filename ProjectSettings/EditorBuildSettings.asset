@@ -6,13 +6,13 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Doc Networking Utility/Scenes/BootstrapScene.unity
+    path: Assets/DocNet Utility/Scenes/BootstrapScene.unity
     guid: 2ee2125e877cfd549b4689b212c969b2
   - enabled: 1
-    path: Assets/Doc Networking Utility/Scenes/MainMenuScene.unity
+    path: Assets/DocNet Utility/Scenes/MainMenuScene.unity
     guid: ebc3631f1466e0942a1a175135d8c5a4
   - enabled: 1
-    path: Assets/Doc Networking Utility/Scenes/LobbyScene.unity
+    path: Assets/DocNet Utility/Scenes/LobbyScene.unity
     guid: 7856b10836cb32a419393560b099880e
   - enabled: 1
     path: Assets/Scenes/TestScene.unity
