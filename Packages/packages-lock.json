@@ -5,9 +5,10 @@
       "depth": 0,
       "source": "git",
       "dependencies": {
-        "com.unity.netcode.gameobjects": "2.13.2"
+        "com.unity.netcode.gameobjects": "2.13.2",
+        "com.unity.ugui": "2.6.0"
       },
-      "hash": "994fc749fc9bd48c3929957145a04b80e5b3869a"
+      "hash": "d67e558413a02ce1f0ce1a4e47bfe16ec85896b8"
     },
     "com.unity.2d.animation": {
       "version": "16.0.1",
