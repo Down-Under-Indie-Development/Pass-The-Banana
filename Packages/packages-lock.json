@@ -1,7 +1,7 @@
 {
   "dependencies": {
     "com.thedoctortm.docnetutility": {
-      "version": "https://github.com/The-DoctorTM/DocNet-Utility.git",
+      "version": "https://github.com/The-DoctorTM/DocNet.git",
       "depth": 0,
       "source": "git",
       "dependencies": {

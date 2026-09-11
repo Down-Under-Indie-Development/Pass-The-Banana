@@ -212,7 +212,7 @@ MonoBehaviour:
   <lobbyScene>k__BackingField: LobbyScene
   <gameplayScenes>k__BackingField:
   - TestScene
-  <minimumPlayers>k__BackingField: 0
+  <minimumPlayers>k__BackingField: 2
   <selectedTransport>k__BackingField: 0
 --- !u!1 &1443685446
 GameObject:
@@ -316,7 +316,7 @@ MonoBehaviour:
     PlayerPrefab: {fileID: 0}
     Prefabs:
       NetworkPrefabsLists:
-      - {fileID: 11400000, guid: 792276f92507f3a4197915b2ef8eb808, type: 2}
+      - {fileID: 11400000, guid: 59639de6927fd744e8f5abf90ddc98c4, type: 2}
     TickRate: 30
     ClientConnectionBufferTimeout: 10
     ConnectionApproval: 0

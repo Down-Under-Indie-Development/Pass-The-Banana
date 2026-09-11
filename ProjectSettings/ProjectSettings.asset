@@ -598,7 +598,7 @@ PlayerSettings:
   platformArchitecture: {}
   scriptingBackend:
     Android: 1
-    Standalone: 1
+    Standalone: 0
   il2cppCompilerConfiguration: {}
   il2cppCodeGeneration:
     Standalone: 0
@@ -618,8 +618,8 @@ PlayerSettings:
   editorAssembliesCompatibilityLevel: 1
   m_RenderingPath: 1
   m_MobileRenderingPath: 1
-  metroPackageName: Pass The Banana
-  metroPackageVersion: 
+  metroPackageName: PassTheBanana
+  metroPackageVersion: 1.0.0.0
   metroCertificatePath: 
   metroCertificatePassword: 
   metroCertificateSubject: 
@@ -627,7 +627,7 @@ PlayerSettings:
   metroCertificateNotAfter: 0000000000000000
   metroApplicationDescription: Pass The Banana
   wsaImages: {}
-  metroTileShortName: 
+  metroTileShortName: Pass The Banana
   metroTileShowName: 0
   metroMediumTileShowName: 0
   metroLargeTileShowName: 0
